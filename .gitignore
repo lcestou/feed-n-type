@@ -1,0 +1,9 @@
+# Ignore platform-specific environment file
+.env
+
+# Ignore other sensitive files
+*.env
+.env.*
+
+# Ignore Docker volumes and build cache
+.docker/

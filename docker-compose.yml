@@ -1,0 +1,42 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      # Load platform-specific environment variables
+      - .env
+    container_name: ${COMPOSE_PROJECT_NAME:-$(basename $(pwd))}-dev
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    # Run as claudeuser (uid 1000) to access GVFS and have proper user experience
+    user: "1000:1000"
+    privileged: true
+    environment:
+      # Pass all platform paths, container will choose the right ones
+      NAS_DEV_ROOT_LINUX: ${NAS_DEV_ROOT_LINUX}
+      NAS_DEV_ROOT_MAC: ${NAS_DEV_ROOT_MAC}
+      HOST_HOME_LINUX: ${HOST_HOME_LINUX}
+      HOST_HOME_MAC: ${HOST_HOME_MAC}
+      HOST_RUN_USER_LINUX: ${HOST_RUN_USER_LINUX}
+      HOST_RUN_USER_MAC: ${HOST_RUN_USER_MAC}
+    volumes:
+      # Mount current directory as /workspace (standard for dev containers)
+      - .:/workspace:cached
+      
+      # Try to mount both platform paths (one will fail silently)
+      - ${HOST_HOME_LINUX:-/tmp}:${HOST_HOME_LINUX:-/tmp}
+      - ${HOST_HOME_MAC:-/tmp}:${HOST_HOME_MAC:-/tmp}
+      - ${HOST_RUN_USER_LINUX:-/tmp}:/run/user/1000:rshared
+      # Optional: Share docker socket for docker-in-docker scenarios
+      # - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      # Svelte/Vite development ports
+      - "5173:5173"
+      - "5174:5174"
+      - "5175:5175"
+      - "5176:5176"
+      - "5177:5177"
+      - "5178:5178"
+    working_dir: /workspace

@@ -1,0 +1,35 @@
+{
+  "name": "${localWorkspaceFolderBasename} Dev",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  
+  // Features to add to the dev container
+  "features": {},
+  
+  // Use 'forwardPorts' to make a list of ports inside the container available locally
+  "forwardPorts": [5173, 5174, 5175, 5176, 5177, 5178],
+  
+  // Use 'postCreateCommand' to run commands after the container is created
+  // "postCreateCommand": "npm install",
+  
+  // Configure tool-specific properties
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        }
+      }
+    }
+  },
+  
+  // Connect as claudeuser for proper dev experience
+  "remoteUser": "claudeuser",
+  
+  // Environment variables handled by docker-compose.yml
+  "remoteEnv": {}
+}
