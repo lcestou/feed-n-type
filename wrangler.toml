@@ -1,0 +1,32 @@
+name = "feed-n-type"
+compatibility_date = "2025-01-21"
+pages_build_output_dir = ".svelte-kit/cloudflare"
+
+# Uncomment and configure if you need KV namespaces
+# [[kv_namespaces]]
+# binding = "KV"
+# id = "your-kv-namespace-id"
+
+# Uncomment and configure if you need Durable Objects
+# [[durable_objects.bindings]]
+# name = "DO"
+# class_name = "DurableObject"
+# script_name = "worker"
+
+# Uncomment and configure if you need R2 buckets
+# [[r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "your-bucket-name"
+
+# Uncomment and configure if you need D1 databases
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "your-database-name"
+# database_id = "your-database-id"
+
+# Environment-specific configuration
+[env.preview]
+name = "feed-n-type-preview"
+
+[env.production]
+name = "feed-n-type"
