@@ -23,10 +23,9 @@ RUN npm install -g npm@latest --force && \
     npm install -g @google/gemini-cli && \
     chown -R claudeuser:node $(npm -g config get prefix)
 
-# Configure pnpm to avoid permission issues
-# Set pnpm store to user home directory to work with NAS mounts
-RUN mkdir -p /home/claudeuser/.local/share && \
-    pnpm config set store-dir /home/claudeuser/pnpm-store --global && \
+# Configure pnpm to avoid permission issues and use local store
+RUN mkdir -p /home/claudeuser/.local/share/pnpm && \
+    pnpm config set store-dir ~/.local/share/pnpm --global && \
     pnpm config set allow-scripts true --global && \
     chown -R claudeuser:node /home/claudeuser/.local
 
