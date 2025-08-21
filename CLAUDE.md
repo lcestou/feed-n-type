@@ -49,6 +49,7 @@ Development server runs on port 5173 (exposed through Docker). Additional ports 
 ### Project Structure
 
 Currently a skeleton project. Main development will happen in:
+
 - `/src/routes/` - SvelteKit routes and pages
 - `/src/lib/` - Shared components and utilities
 - `/static/` - Static assets
@@ -56,6 +57,7 @@ Currently a skeleton project. Main development will happen in:
 ## Architecture Notes
 
 The application will:
+
 1. Allow users to select content feeds (games, topics)
 2. Fetch/display content from these feeds
 3. Track typing progress and accuracy
