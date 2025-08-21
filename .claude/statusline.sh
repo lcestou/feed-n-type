@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Auto-detect if we need to re-execute from the correct path
+# This handles both container (/workspace) and host environments
+if [ "$1" != "--no-redirect" ]; then
+    if [ -f "/workspace/.claude/statusline.sh" ] && [ "$0" != "/workspace/.claude/statusline.sh" ]; then
+        # We're in container but called from wrong path
+        exec /workspace/.claude/statusline.sh --no-redirect
+    fi
+fi
+
 # Read JSON input from Claude Code
 input=$(cat)
 

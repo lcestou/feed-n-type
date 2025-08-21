@@ -12,7 +12,7 @@ services:
     restart: unless-stopped
     # Run as claudeuser (uid 1000) to access GVFS and have proper user experience
     user: '${DOCKER_USER:-1000:1000}'
-    privileged: ${DOCKER_PRIVILEGED:-false}
+    privileged: ${DOCKER_PRIVILEGED:-true}
     environment:
       # Pass all platform paths, container will choose the right ones
       NAS_DEV_ROOT_LINUX: ${NAS_DEV_ROOT_LINUX}
@@ -24,17 +24,24 @@ services:
     volumes:
       # Mount current directory as /workspace (standard for dev containers)
       - .:/workspace:cached
-
-      # NAS mount for development
-      - ${NAS_DEV_ROOT_MAC}:${NAS_DEV_ROOT_MAC}
+      
+      # Cross-platform NAS mounts 
+      # Mac: Direct volume mount
+      - ${NAS_DEV_ROOT_MAC:-/tmp}:${NAS_DEV_ROOT_MAC:-/tmp}
+      # Linux: Access via GVFS mount (available through /run/user mount below)
+      
+      # Platform-specific system mounts  
+      - ${HOST_HOME_LINUX:-/tmp}:${HOST_HOME_LINUX:-/tmp}
+      - ${HOST_HOME_MAC:-/tmp}:${HOST_HOME_MAC:-/tmp}
+      - ${HOST_RUN_USER_LINUX:-/tmp}:/run/user/1000:rshared
       # Optional: Share docker socket for docker-in-docker scenarios
       # - /var/run/docker.sock:/var/run/docker.sock
     ports:
       # Svelte/Vite development ports
-      - '5173:5173'
-      - '5174:5174'
-      - '5175:5175'
-      - '5176:5176'
-      - '5177:5177'
-      - '5178:5178'
+      - "5173:5173"
+      - "5174:5174"
+      - "5175:5175"
+      - "5176:5176"
+      - "5177:5177"
+      - "5178:5178"
     working_dir: /workspace
