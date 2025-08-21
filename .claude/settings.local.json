@@ -27,6 +27,10 @@
 					{
 						"type": "command",
 						"command": "uv run .claude/hooks/post_tool_use.py"
+					},
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/changelog-update.py"
 					}
 				]
 			}
