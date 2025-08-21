@@ -2,9 +2,13 @@ FROM node:22-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install essentials
+# Install essentials and add GitHub CLI repository
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends rsync sudo jq git && \
+    apt-get install -y --no-install-recommends rsync sudo jq git curl gpg && \
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg arch=amd64] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+    apt-get update && \
+    apt-get install -y gh && \
     rm -rf /var/lib/apt/lists/*
 
 # Rename node user to claudeuser and give sudo access
