@@ -1,0 +1,70 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(git push:*)",
+			"Bash(pnpm check:*)",
+			"Bash(pnpm build:*)",
+			"Bash(./.claude/hooks/update-changelog.sh:*)",
+			"Bash(git add:*)",
+			"Bash(docker:*)",
+			"Bash(docker-compose:*)"
+		],
+		"deny": []
+	},
+	"hooks": {
+		"UserPromptSubmit": [
+			{
+				"matcher": "*",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cat CLAUDE.md"
+					},
+					{
+						"type": "command",
+						"command": "git status --porcelain"
+					},
+					{
+						"type": "command",
+						"command": "echo '=== Recent Dev Server Output ==='; tail -10 ~/.claude/dev.log 2>/dev/null | grep -E '(Error|Failed|✘|Warning|⚠️)' | tail -3 || echo 'No recent dev errors'"
+					},
+					{
+						"type": "command",
+						"command": ".claude/hooks/check-console-logs.sh"
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 .claude/hooks/security-check.py"
+					}
+				]
+			},
+			{
+				"matcher": "Write|Edit|MultiEdit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "./.claude/hooks/semantic-enhance.sh"
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "Write|Edit|MultiEdit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "./.claude/hooks/smart-lint.sh"
+					}
+				]
+			}
+		]
+	}
+}
