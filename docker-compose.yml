@@ -11,8 +11,8 @@ services:
     stdin_open: true
     restart: unless-stopped
     # Run as claudeuser (uid 1000) to access GVFS and have proper user experience
-    user: "1000:1000"
-    privileged: true
+    user: "${DOCKER_USER:-1000:1000}"
+    privileged: ${DOCKER_PRIVILEGED:-false}
     environment:
       # Pass all platform paths, container will choose the right ones
       NAS_DEV_ROOT_LINUX: ${NAS_DEV_ROOT_LINUX}
@@ -25,10 +25,8 @@ services:
       # Mount current directory as /workspace (standard for dev containers)
       - .:/workspace:cached
       
-      # Try to mount both platform paths (one will fail silently)
-      - ${HOST_HOME_LINUX:-/tmp}:${HOST_HOME_LINUX:-/tmp}
-      - ${HOST_HOME_MAC:-/tmp}:${HOST_HOME_MAC:-/tmp}
-      - ${HOST_RUN_USER_LINUX:-/tmp}:/run/user/1000:rshared
+      # NAS mount for development
+      - ${NAS_DEV_ROOT_MAC}:${NAS_DEV_ROOT_MAC}
       # Optional: Share docker socket for docker-in-docker scenarios
       # - /var/run/docker.sock:/var/run/docker.sock
     ports:
