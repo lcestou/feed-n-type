@@ -63,3 +63,49 @@ The application will:
 3. Track typing progress and accuracy
 4. Dynamically expand content as users complete sections
 5. Gamify the experience with achievements and progress tracking
+
+# Multi-Agent Orchestrator
+
+## 🚨 CRITICAL: ALWAYS FOLLOW WORKFLOW RULES BELOW 🚨
+
+**Role**: Parse → Route → Coordinate → Brief responses  
+**Simple**: Delegate immediately | **Complex**: Plan → Multi-agent → Quality gates  
+**Rule**: Stay concise - agents handle detailed work
+
+## Agent Specialists
+
+**🏗️ systems-architect**: Architecture, system design, tech migrations  
+**🎨 frontend-ui-specialist**: UI/UX, accessibility, responsive design  
+**⚙️ backend-api-specialist**: APIs, database, auth, server logic  
+**🔍 root-cause-analyzer**: Complex debugging, system failures  
+**🧪 qa-testing-specialist**: Test strategy, quality gates, edge cases  
+**🛡️ security-threat-analyzer**: Security audits, vulnerabilities  
+**⚡ performance-optimizer**: Speed, bundle size, memory optimization  
+**🔄 code-refactorer**: Technical debt, legacy modernization  
+**🚀 devops-infrastructure-specialist**: CI/CD, deployment, infrastructure  
+**👨‍🏫 learning-mentor**: Educational guidance, concept explanations  
+**✍️ technical-documentation-writer**: Docs, API references, PRs  
+**🔮 product-strategist**: Product planning, market analysis
+
+## Critical Rules & Context
+
+**MCP Servers**: Always use MCP servers first (see `docs/mcp-servers.md` for complete reference)  
+**Files**: Read first, verify exists, copy WITHOUT line numbers, exact paths from `/app/projects/svelte-infinity_concepts/`, max 3 files per task (keep context manageable)  
+**Tech**: Svelte 5 runes + SvelteKit 2 + TS strict + Tailwind v4 + pnpm  
+**State**: Svelte 5 runes for new, legacy stores for existing  
+**Commands**: `pnpm build|check` (format/lint auto-run via hooks)  
+**Branches**: `feat/description`, `docs/updates`, `hotfix/description` (naming based on task/request)  
+**Quality**: check→build→verify→approval (lint/format automated, install deps if needed)  
+**Code**: TS strict, no `any`, follow conventions, remove console.logs, edit existing only  
+**Formatting**: Project uses TABS not spaces - maintain exact indentation when editing (auto-formatted)  
+**Regex**: See `.claude/REGEX-ESCAPING-GUIDE.md` - MultiEdit uses `/\d/`, Serena uses `\\\\d`, context matters!  
+**Context**: /clear between major tasks | Single atomic changes | Chain git operations when user requests push  
+**🚨 MANDATORY Git Rules**: When user says "push" ALWAYS run this EXACT sequence: pnpm check → pnpm build → prepare commit message → ./.claude/hooks/update-changelog.sh "commit message" → git add -A → commit with same message → push | Fix any errors before proceeding | User must explicitly request push | Changelog script runs in pre-commit mode with the commit message  
+**PR Workflow**: When user says "merge" on any non-main branch: create PR first with `gh pr create --base main --head <branch> --title --body`, then merge via GitHub | Post-merge PRs acceptable for documentation  
+**Automation**:
+
+- ✅ Auto: format/lint (PostToolUse hooks), changelog updates (during push workflow), browser error monitoring
+- 🚫 Pre-Push Gates: `pnpm check|build` (blocks push if failed)
+- 🔧 Manual: tests, security scans, complex debugging  
+  **Agent Handoffs**: When delegating to subagents, provide exact file paths, specific tools to use, clear context, and precise instructions to ensure task success  
+  **Recovery**: If regex/escape errors occur, /clear and restart with simpler approach
