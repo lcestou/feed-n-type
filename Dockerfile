@@ -23,6 +23,13 @@ RUN npm install -g npm@latest --force && \
     npm install -g @google/gemini-cli && \
     chown -R claudeuser:node $(npm -g config get prefix)
 
+# Configure pnpm to avoid permission issues
+# Set pnpm store to user home directory to work with NAS mounts
+RUN mkdir -p /home/claudeuser/.local/share && \
+    pnpm config set store-dir /home/claudeuser/pnpm-store --global && \
+    pnpm config set allow-scripts true --global && \
+    chown -R claudeuser:node /home/claudeuser/.local
+
 # Install uv for all users
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     cp /root/.local/bin/uv* /usr/local/bin/ && \

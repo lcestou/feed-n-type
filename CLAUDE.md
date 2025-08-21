@@ -23,6 +23,8 @@ The project is containerized. To work on the project:
    ```
 4. **Run development server**: `pnpm run dev --open` or simply type `dev` (custom alias)
 
+**Note**: pnpm is pre-configured in the container to use `/home/claudeuser/pnpm-store` and allow build scripts. A local `.npmrc` file in the workspace ensures proper configuration.
+
 ### Common Commands
 
 - **Development server**: `pnpm run dev` or `dev` (opens browser automatically)
