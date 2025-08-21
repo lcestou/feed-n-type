@@ -6,7 +6,7 @@ const config = {
 	// Consult https://svelte.dev/docs/kit/integrations
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
-	kit: { 
+	kit: {
 		adapter: adapter({
 			// See https://developers.cloudflare.com/pages/framework-guides/deploy-a-svelte-site/#functions
 			// for more information about Cloudflare Pages and Workers
@@ -14,7 +14,7 @@ const config = {
 				include: ['/*'],
 				exclude: ['<all>']
 			}
-		}) 
+		})
 	}
 };
 
