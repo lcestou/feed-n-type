@@ -1,25 +1,71 @@
 {
 	"statusLine": {
 		"type": "command",
-		"command": ".claude/statusline.sh",
+		"command": "uv run .claude/status_lines/statusline.py",
 		"padding": 0
 	},
 	"permissions": {
-		"allow": [
-			"Bash(git push:*)",
-			"Bash(pnpm check:*)",
-			"Bash(pnpm build:*)",
-			"Bash(./.claude/hooks/update-changelog.sh:*)",
-			"Bash(git add:*)",
-			"Bash(docker:*)",
-			"Bash(docker-compose:*)"
-		],
+		"allow": [],
 		"deny": []
 	},
 	"hooks": {
+		"PreToolUse": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/pre_tool_use.py"
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/post_tool_use.py"
+					}
+				]
+			}
+		],
+		"Notification": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/notification.py --notify"
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/stop.py --chat"
+					}
+				]
+			}
+		],
+		"SubagentStop": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/subagent_stop.py --notify"
+					}
+				]
+			}
+		],
 		"UserPromptSubmit": [
 			{
-				"matcher": "*",
 				"hooks": [
 					{
 						"type": "command",
@@ -36,37 +82,32 @@
 					{
 						"type": "command",
 						"command": ".claude/hooks/check-console-logs.sh"
+					},
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/user_prompt_submit.py --log-only --store-last-prompt --name-agent"
 					}
 				]
 			}
 		],
-		"PreToolUse": [
+		"PreCompact": [
 			{
-				"matcher": "Bash",
+				"matcher": "",
 				"hooks": [
 					{
 						"type": "command",
-						"command": "python3 .claude/hooks/security-check.py"
-					}
-				]
-			},
-			{
-				"matcher": "Write|Edit|MultiEdit",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "./.claude/hooks/semantic-enhance.sh"
+						"command": "uv run .claude/hooks/pre_compact.py"
 					}
 				]
 			}
 		],
-		"PostToolUse": [
+		"SessionStart": [
 			{
-				"matcher": "Write|Edit|MultiEdit",
+				"matcher": "",
 				"hooks": [
 					{
 						"type": "command",
-						"command": "./.claude/hooks/smart-lint.sh"
+						"command": "uv run .claude/hooks/session_start.py"
 					}
 				]
 			}
