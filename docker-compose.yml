@@ -37,11 +37,9 @@ services:
       # Optional: Share docker socket for docker-in-docker scenarios
       # - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      # Svelte/Vite development ports
-      - '5173:5173'
-      - '5174:5174'
-      - '5175:5175'
-      - '5176:5176'
-      - '5177:5177'
-      - '5178:5178'
+      # Port range mapping - tries ports in order until finding a free one
+      # Format: "host_range:container_port" - Docker uses first available port in range
+      - "5173-5200:5173"   # Vite dev server - tries 5173, then 5174, 5175... until free
+      - "24678-24700:24678" # Vite HMR websocket - tries 24678, then 24679... until free
+      - "4173-4200:4173"   # Vite preview server - tries 4173, then 4174... until free
     working_dir: /workspace
