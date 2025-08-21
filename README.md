@@ -24,6 +24,7 @@ Instead of typing random phrases like "The quick brown fox...", kids can:
 
 - **Framework**: SvelteKit with Svelte 5
 - **Language**: TypeScript
+- **Package Manager**: pnpm
 - **Linting**: oxlint
 - **Styling**: TBD
 - **Database**: TBD
@@ -39,7 +40,49 @@ Designed for kids who want to improve their typing skills while reading about to
 
 ## 🛠️ Development
 
-This project is currently in early development. More details coming soon!
+### Prerequisites
+
+- Docker and Docker Compose
+- pnpm (installed in container)
+
+### Getting Started
+
+1. **Clone the repository**:
+```bash
+git clone https://github.com/lcestou/feed-n-type.git
+cd feed-n-type
+```
+
+2. **Start the development container**:
+```bash
+docker-compose up -d
+```
+
+3. **Enter the container**:
+```bash
+docker exec -it feed-n-type-dev bash
+```
+
+4. **Initialize the project** (first time only):
+```bash
+pnpm create svelte@latest . --template skeleton --typescript --prettier --eslint --vitest
+pnpm install
+```
+
+5. **Run the development server**:
+```bash
+pnpm run dev --open
+# or use the shortcut: dev
+```
+
+### Available Scripts
+
+- `pnpm run dev` - Start development server
+- `pnpm run build` - Build for production
+- `pnpm run preview` - Preview production build
+- `pnpm run check` - Run type checking
+- `pnpm run lint` - Run linting
+- `pnpm run test` - Run tests
 
 ## 📝 Future Ideas
 
