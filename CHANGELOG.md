@@ -15,6 +15,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **UI enhancements**: Improved main page design and user interface
+- **Layout improvements**: Updated site layout with sticky footer and full-width styling
+- **UI enhancements**: Improved main page design and user interface
 - **Layout improvements**: Updated site layout with sticky footer and full-width styling
 - **UI enhancements**: Improved main page design and user interface
 - **Layout improvements**: Updated site layout with sticky footer and full-width styling
