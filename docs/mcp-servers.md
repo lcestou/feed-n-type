@@ -28,12 +28,21 @@
 
 ### 🌐 Browser Automation
 
+#### Playwright MCP
 - **mcp**playwright**browser\_\***: Full browser control
   - Navigation: `navigate`, `navigate_back`, `navigate_forward`
   - Interaction: `click`, `type`, `hover`, `drag`, `select_option`
   - Analysis: `snapshot`, `take_screenshot`, `evaluate`
   - Tabs: `tab_list`, `tab_new`, `tab_select`, `tab_close`
   - System: `close`, `resize`, `install`, `console_messages`
+
+#### BrowserMCP (Lightweight Alternative)
+- **mcp**browsermcp**browser\_\***: Simplified browser automation
+  - Navigation: `browser_navigate`, `browser_go_back`, `browser_go_forward`
+  - Interaction: `browser_click`, `browser_type`, `browser_hover`, `browser_select_option`
+  - Analysis: `browser_snapshot`, `browser_screenshot`, `browser_get_console_logs`
+  - Input: `browser_press_key`, `browser_wait`
+  - **Note**: Lighter weight than Playwright, good for simpler automation tasks
 
 ### 💻 IDE Integration
 
@@ -96,10 +105,20 @@
 
 ### Browser Testing
 
+#### Using Playwright (Full-featured)
 ```
 1. mcp__playwright__browser_navigate - Go to URL
 2. mcp__playwright__browser_snapshot - Analyze page
 3. mcp__playwright__browser_click - Interact
+4. mcp__playwright__browser_evaluate - Execute JS
+```
+
+#### Using BrowserMCP (Lightweight)
+```
+1. mcp__browsermcp__browser_navigate - Go to URL
+2. mcp__browsermcp__browser_snapshot - Analyze page
+3. mcp__browsermcp__browser_click - Interact
+4. mcp__browsermcp__browser_wait - Wait for timing
 ```
 
 ## Best Practices
@@ -117,35 +136,43 @@ If you lose your MCP server configurations, here are the commands to add them ba
 
 ### Global MCP Servers (User-level)
 
+**Note**: Default scope is `local` (project-level). Use `--scope user` for global user-level servers.
+
 ```bash
-# Fetch - Web content fetching
-claude mcp add fetch -- uvx mcp-server-fetch
+# Fetch - Web content fetching (add --scope user for global)
+claude mcp add fetch --scope user -- uvx mcp-server-fetch
 
-# Memory - Knowledge graph operations
-claude mcp add memory -- npx -y @modelcontextprotocol/server-memory
+# Memory - Knowledge graph operations (add --scope user for global)
+claude mcp add memory --scope user -- npx -y @modelcontextprotocol/server-memory
 
-# Brave Search - Web and local search (requires API key)
-claude mcp add brave-search -- npx -y @modelcontextprotocol/server-brave-search
+# Brave Search - Web and local search (requires API key, add --scope user for global)
+claude mcp add brave-search --scope user -- npx -y @modelcontextprotocol/server-brave-search
 # Set environment variable: BRAVE_API_KEY=BSAIOwYqD1DttOlQ6b8yKNNIJJ8gFNF
 
-# Sequential Thinking - Advanced problem solving
-claude mcp add sequential-thinking -- npx -y @modelcontextprotocol/server-sequential-thinking
+# Sequential Thinking - Advanced problem solving (add --scope user for global)
+claude mcp add sequential-thinking --scope user -- npx -y @modelcontextprotocol/server-sequential-thinking
 
-# Playwright - Browser automation
-claude mcp add playwright -- npx @playwright/mcp@latest --isolated
+# Playwright - Browser automation (full-featured, add --scope user for global)
+claude mcp add playwright --scope user -- npx @playwright/mcp@latest --isolated
 
-# Context7 - Library documentation
-claude mcp add context7 -- npx -y @upstash/context7-mcp
+# BrowserMCP - Lightweight browser automation alternative (explicitly user-scoped)
+claude mcp add browsermcp --scope user "npx" "@browsermcp/mcp@latest"
 
-# Time - Timezone operations
-claude mcp add time -- uvx mcp-server-time
+# Context7 - Library documentation (add --scope user for global)
+claude mcp add context7 --scope user -- npx -y @upstash/context7-mcp
+
+# Time - Timezone operations (add --scope user for global)
+claude mcp add time --scope user -- uvx mcp-server-time
 ```
 
-### Project-specific MCP Servers
+### Project-specific MCP Servers (Local/Default)
 
 ```bash
-# Serena - Advanced IDE assistant (project-specific)
-claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena start-mcp-server --context ide-assistant --project $(pwd)
+# Serena - Advanced IDE assistant (user-scope for persistence across containers)
+claude mcp add serena --scope user -- uvx --from git+https://github.com/oraios/serena serena start-mcp-server --context ide-assistant --project $(pwd)
+
+# Or any server without --scope flag defaults to local/project level
+claude mcp add my-server -- /path/to/server
 ```
 
 ### Manual Configuration
@@ -178,6 +205,10 @@ If commands don't work, you can manually add to `~/.claude.json`:
 			"command": "npx",
 			"args": ["@playwright/mcp@latest", "--isolated"]
 		},
+		"browsermcp": {
+			"command": "npx",
+			"args": ["@browsermcp/mcp@latest"]
+		},
 		"context7": {
 			"command": "npx",
 			"args": ["-y", "@upstash/context7-mcp"]
@@ -204,3 +235,54 @@ If commands don't work, you can manually add to `~/.claude.json`:
 ```
 
 **Reference**: [Claude Code MCP Documentation](https://docs.anthropic.com/en/docs/claude-code/mcp)
+
+## Troubleshooting & Session Recovery
+
+### Common Issues
+
+#### Edit Tool Not Working
+If you encounter issues with the Edit tool not working:
+1. **Restart the session** - This often resolves temporary state issues
+2. **Verify file was read** - Always use Read tool before Edit
+3. **Check exact string matching** - Edit requires exact string matches including whitespace
+4. **Use MultiEdit for multiple changes** - More reliable for batch edits
+
+#### MCP Server Connection Lost
+If MCP servers become unavailable:
+1. Check server status with `ListMcpResourcesTool`
+2. Restart specific server if needed
+3. Re-add server using commands above
+4. Verify environment variables are set
+
+#### Session State Issues
+When experiencing persistent issues:
+- **Clear context**: Use `/clear` between major tasks
+- **Restart session**: Sometimes necessary for clean state
+- **Check hooks**: Verify hooks aren't blocking operations
+- **Validate paths**: Ensure working directory is correct
+
+### Quick Recovery Commands
+
+```bash
+# Check MCP server status
+claude mcp list
+
+# Restart all MCP servers
+claude mcp restart
+
+# Check Claude configuration
+cat ~/.claude.json
+
+# Verify project-specific settings
+cat .claude/claude.json
+```
+
+### Best Practices for Stability
+
+1. **Always read before edit** - Prevents state mismatches
+2. **Use MCP servers first** - More reliable than standard tools
+3. **Batch operations** - Run multiple commands in parallel
+4. **Regular saves** - Commit working changes frequently
+5. **Clear context** - Between unrelated tasks to prevent confusion
+
+**Last Updated**: Session restart fixes most edit issues - always worth trying first!
