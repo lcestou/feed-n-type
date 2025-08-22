@@ -1,6 +1,7 @@
 <script lang="ts">
 	import TypingArea from '$lib/components/TypingArea.svelte';
 	import VirtualKeyboard from '$lib/components/VirtualKeyboard.svelte';
+	import Typingotchi from '$lib/components/Typingotchi.svelte';
 	
 	// Sample text for typing practice
 	let practiceText = "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the alphabet at least once. It's perfect for typing practice because it helps you work on all the keys on your keyboard.";
@@ -10,6 +11,39 @@
 	let currentPosition = $state(0);
 	let pressedKey = $state<string>('');
 	let startTime = $state<number | null>(null);
+	
+	// Typingotchi state
+	let hasTypingError = $state(false);
+	let currentWpm = $state(0);
+	
+	// Calculate WPM and detect errors
+	let isTyping = $derived(userInput.length > 0 && currentPosition < practiceText.length);
+	
+	// Calculate WPM in real-time
+	$effect(() => {
+		if (startTime && userInput.length > 0) {
+			const timeMinutes = (Date.now() - startTime) / 1000 / 60;
+			const wordsTyped = userInput.trim().split(' ').length;
+			currentWpm = Math.round(wordsTyped / timeMinutes) || 0;
+		} else {
+			currentWpm = 0;
+		}
+	});
+	
+	// Detect typing errors for Typingotchi feedback
+	$effect(() => {
+		if (userInput.length > 0) {
+			const isCurrentCharCorrect = userInput[userInput.length - 1] === practiceText[userInput.length - 1];
+			hasTypingError = !isCurrentCharCorrect;
+			
+			// Clear error state after a short delay
+			if (hasTypingError) {
+				setTimeout(() => {
+					hasTypingError = false;
+				}, 1000);
+			}
+		}
+	});
 	
 	function handleKeyPress(key: string) {
 		// Show visual feedback
@@ -73,6 +107,8 @@
 		currentPosition = 0;
 		startTime = null;
 		pressedKey = '';
+		hasTypingError = false;
+		currentWpm = 0;
 	}
 	
 	// Handle physical keyboard input
@@ -131,26 +167,38 @@
 		</div>
 	</header>
 	
-	<!-- Main content area with split layout -->
+	<!-- Main content area with three-column layout -->
 	<main class="flex-1 p-4 max-w-7xl mx-auto w-full">
-		<div class="h-full flex flex-col gap-4">
-			<!-- Upper portion: Text display area (60% of space) -->
-			<div class="flex-[3] min-h-0">
-				<TypingArea 
-					text={practiceText}
-					userInput={userInput}
-					currentPosition={currentPosition}
-				/>
-			</div>
-			
-			<!-- Lower portion: Virtual keyboard (40% of space) -->
-			<div class="flex-[2] min-h-0 flex items-center justify-center">
-				<div class="w-full max-w-4xl">
-					<VirtualKeyboard 
-						onKeyPress={handleKeyPress}
-						pressedKey={pressedKey}
+		<div class="h-full flex gap-4">
+			<!-- Left + Center: Original typing interface -->
+			<div class="flex-1 flex flex-col gap-4">
+				<!-- Upper portion: Text display area (60% of space) -->
+				<div class="flex-[3] min-h-0">
+					<TypingArea 
+						text={practiceText}
+						userInput={userInput}
+						currentPosition={currentPosition}
 					/>
 				</div>
+				
+				<!-- Lower portion: Virtual keyboard (40% of space) -->
+				<div class="flex-[2] min-h-0 flex items-center justify-center">
+					<div class="w-full max-w-4xl">
+						<VirtualKeyboard 
+							onKeyPress={handleKeyPress}
+							pressedKey={pressedKey}
+						/>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Right: Typingotchi -->
+			<div class="w-64 flex-shrink-0">
+				<Typingotchi 
+					isTyping={isTyping}
+					hasError={hasTypingError}
+					wpm={currentWpm}
+				/>
 			</div>
 		</div>
 	</main>

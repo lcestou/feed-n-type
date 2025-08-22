@@ -30,7 +30,7 @@
 					},
 					{
 						"type": "command",
-						"command": "uv run .claude/hooks/changelog-update.py"
+						"command": "echo 'Changelog updates now manual via CLAUDE.md instructions'"
 					}
 				]
 			}
@@ -53,10 +53,6 @@
 					{
 						"type": "command",
 						"command": "uv run .claude/hooks/stop.py --chat"
-					},
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/changelog-update.py"
 					}
 				]
 			}

@@ -51,8 +51,79 @@ def has_significant_changes(git_changes):
     except Exception:
         return False
 
+def get_file_diff_details(file_path):
+    """Get detailed diff information for a specific file"""
+    try:
+        # Get the actual diff content
+        result = subprocess.run(['git', 'diff', '--', file_path], 
+                              capture_output=True, text=True, cwd=Path.cwd())
+        diff_content = result.stdout
+        
+        # Also check staged changes
+        staged_result = subprocess.run(['git', 'diff', '--cached', '--', file_path], 
+                                     capture_output=True, text=True, cwd=Path.cwd())
+        if staged_result.stdout:
+            diff_content += staged_result.stdout
+        
+        return diff_content
+    except Exception:
+        return ""
+
+def analyze_semantic_changes(files_with_diffs):
+    """Analyze semantic meaning of changes using git diff content"""
+    added_entries = []
+    changed_entries = []
+    
+    for file_path, diff_content in files_with_diffs.items():
+        if not diff_content:
+            continue
+            
+        # Count additions vs modifications
+        added_lines = len([line for line in diff_content.split('\n') if line.startswith('+')])
+        removed_lines = len([line for line in diff_content.split('\n') if line.startswith('-')])
+        
+        # Detect new files (more additions than deletions)
+        is_new_file = added_lines > removed_lines * 2
+        
+        # Analyze file type and content
+        if file_path.endswith('.svelte'):
+            if is_new_file:
+                if 'component' in file_path.lower() or 'lib/' in file_path:
+                    component_name = Path(file_path).stem
+                    added_entries.append(f"- **{component_name} component**: New interactive component for enhanced user experience")
+                elif 'routes/' in file_path:
+                    if '+page.svelte' in file_path:
+                        route_parts = file_path.split('/')
+                        route_name = route_parts[-2] if len(route_parts) > 2 and route_parts[-2] != 'routes' else 'main'
+                        added_entries.append(f"- **{route_name} page**: New page with enhanced functionality")
+                    else:
+                        page_name = Path(file_path).stem
+                        added_entries.append(f"- **{page_name} page**: New page component")
+            else:
+                # Check what was modified
+                if 'id=' in diff_content and '+' in diff_content:
+                    changed_entries.append("- **Accessibility improvements**: Added semantic IDs for better interaction handling")
+                elif 'class=' in diff_content or 'style' in diff_content:
+                    changed_entries.append("- **UI styling**: Enhanced visual design and component styling")
+                elif 'function' in diff_content or 'let' in diff_content:
+                    changed_entries.append("- **Component logic**: Improved component functionality and state management")
+                
+        elif file_path.endswith('.ts') or file_path.endswith('.js'):
+            if is_new_file:
+                added_entries.append(f"- **{Path(file_path).stem} utility**: New TypeScript utility for enhanced functionality")
+            else:
+                changed_entries.append("- **Logic improvements**: Enhanced JavaScript/TypeScript functionality")
+                
+        elif file_path.endswith('.css'):
+            if is_new_file:
+                added_entries.append("- **Custom styling**: New CSS styles for improved visual design")
+            else:
+                changed_entries.append("- **Style updates**: Enhanced visual styling and design consistency")
+    
+    return added_entries, changed_entries
+
 def analyze_changes(git_changes):
-    """Analyze git changes and generate changelog entries with better categorization"""
+    """Analyze git changes with semantic understanding using diff content"""
     try:
         all_files = git_changes.get('staged_files', []) + git_changes.get('unstaged_files', [])
         significant_files = [f for f in all_files if f and not any(
@@ -65,58 +136,44 @@ def analyze_changes(git_changes):
         if not significant_files:
             return []
         
-        # Categorize changes more precisely
-        ui_changes = [f for f in significant_files if any(pattern in f for pattern in ['src/routes/', 'src/lib/', 'src/app.', 'static/'])]
-        config_changes = [f for f in significant_files if any(pattern in f for pattern in ['package.json', 'tailwind.', 'vite.', 'svelte.', 'docker', 'pnpm-lock'])]
-        docs_changes = [f for f in significant_files if any(pattern in f for pattern in ['.md', 'README', 'docs/'])]
-        test_changes = [f for f in significant_files if any(pattern in f for pattern in ['test', 'spec', '__tests__'])]
+        # Get diff details for each file
+        files_with_diffs = {}
+        for file_path in significant_files:
+            diff_content = get_file_diff_details(file_path)
+            if diff_content:
+                files_with_diffs[file_path] = diff_content
         
-        entries = []
+        # Perform semantic analysis
+        added_entries, changed_entries = analyze_semantic_changes(files_with_diffs)
         
-        # Handle UI changes with more detail
-        if ui_changes:
-            if any('header' in f.lower() for f in ui_changes):
-                entries.append("- **Navigation enhancements**: Updated header navigation with improved user interface")
-            elif any('layout' in f.lower() for f in ui_changes):
-                entries.append("- **Layout improvements**: Enhanced site layout and component structure")
-            elif any('routes' in f for f in ui_changes):
-                entries.append("- **Page updates**: Improved page components and user interface")
-            elif any('lib' in f for f in ui_changes):
-                entries.append("- **Component enhancements**: Updated shared components and utilities")
-            else:
-                entries.append("- **UI improvements**: Enhanced user interface components and styling")
+        # Combine entries (prioritize specific over generic)
+        all_entries = []
         
-        # Handle configuration changes
-        if config_changes:
-            if any('package.json' in f for f in config_changes):
-                entries.append("- **Dependencies**: Updated project dependencies and package configuration")
-            elif any('docker' in f.lower() for f in config_changes):
-                entries.append("- **Development environment**: Updated Docker configuration for better development workflow")
-            else:
-                entries.append("- **Configuration**: Updated project configuration and build settings")
+        # Add specific semantic entries first
+        all_entries.extend(added_entries)
+        all_entries.extend(changed_entries)
         
-        # Handle documentation
-        if docs_changes and not any('CHANGELOG' in f for f in docs_changes):
-            entries.append("- **Documentation**: Updated project documentation and guides")
+        # Fallback to generic categorization if no semantic matches
+        if not all_entries:
+            ui_changes = [f for f in significant_files if any(pattern in f for pattern in ['src/routes/', 'src/lib/', 'src/app.', 'static/'])]
+            config_changes = [f for f in significant_files if any(pattern in f for pattern in ['package.json', 'tailwind.', 'vite.', 'svelte.', 'docker', 'pnpm-lock'])]
+            docs_changes = [f for f in significant_files if any(pattern in f for pattern in ['.md', 'README', 'docs/'])]
+            
+            if ui_changes:
+                all_entries.append("- **UI improvements**: Enhanced user interface components and functionality")
+            if config_changes:
+                all_entries.append("- **Configuration**: Updated project configuration and build settings")
+            if docs_changes and not any('CHANGELOG' in f for f in docs_changes):
+                all_entries.append("- **Documentation**: Updated project documentation and guides")
         
-        # Handle tests
-        if test_changes:
-            entries.append("- **Testing**: Enhanced test coverage and test utilities")
+        return all_entries[:3]  # Limit to 3 most significant entries
         
-        # Fallback for uncategorized changes
-        if not entries and significant_files:
-            if len(significant_files) == 1:
-                entries.append(f"- **Code enhancement**: Updated {significant_files[0]} for improved functionality")
-            else:
-                entries.append(f"- **Code improvements**: Enhanced {len(significant_files)} files for better functionality")
-        
-        return entries
-        
-    except Exception:
+    except Exception as e:
+        # Fallback to basic analysis
         return []
 
 def update_changelog(entries):
-    """Update CHANGELOG.md with new entries, avoiding duplicates"""
+    """Update CHANGELOG.md with new entries, organized by date and categorized into Added/Changed sections"""
     try:
         changelog_path = Path('CHANGELOG.md')
         if not changelog_path.exists():
@@ -133,42 +190,71 @@ def update_changelog(entries):
         if not match:
             return False
         
+        # Get current date for organization
+        today = datetime.now().strftime('%Y-%m-%d')
+        
         # Get existing entries to avoid duplicates
         insert_pos = match.end()
         next_section = re.search(r'\n## \[', content[insert_pos:])
         existing_section = content[insert_pos:insert_pos + (next_section.start() if next_section else len(content))]
         
-        # Filter out entries that already exist
-        new_entries = []
+        # Check for today's date section
+        today_section_pattern = f'#### {today}'
+        has_today_section = today_section_pattern in existing_section
+        
+        # Categorize entries into Added vs Changed
+        added_entries = []
+        changed_entries = []
+        
         for entry in entries:
             # Check if this entry (or similar) already exists
-            entry_key = entry.split('**')[1] if '**' in entry else entry.split(':')[0]
+            entry_key = entry.split('**')[1].split('**')[0] if '**' in entry else entry.split(':')[0]
             if entry_key not in existing_section:
-                new_entries.append(entry)
+                # Determine if it's an addition or change
+                if any(keyword in entry.lower() for keyword in ['new ', 'component:', 'page:', 'utility:', 'added']):
+                    added_entries.append(entry)
+                else:
+                    changed_entries.append(entry)
         
         # If no new entries, don't update
-        if not new_entries:
+        if not added_entries and not changed_entries:
             return False
         
-        # Find or create Changed section
-        if '### Changed' in existing_section:
-            # Find existing Changed section and add to it
-            changed_pattern = r'(### Changed\s*\n)'
-            changed_match = re.search(changed_pattern, existing_section)
-            if changed_match:
-                # Insert after existing Changed header, but check for existing entries
-                pos = insert_pos + changed_match.end()
-                # Add entries with proper spacing
-                entries_text = '\n'.join(new_entries) + '\n'
-                new_content = content[:pos] + entries_text + content[pos:]
-            else:
-                # This shouldn't happen, but handle gracefully
-                new_entries_section = '\n### Changed\n\n' + '\n'.join(new_entries) + '\n'
-                new_content = content[:insert_pos] + new_entries_section + content[insert_pos:]
+        new_content = content
+        
+        # Create daily sections with entries
+        daily_content = f'\n#### {today}\n\n'
+        
+        if added_entries:
+            daily_content += '**Added:**\n' + '\n'.join(added_entries) + '\n\n'
+        
+        if changed_entries:
+            daily_content += '**Changed:**\n' + '\n'.join(changed_entries) + '\n'
+        
+        # Insert the daily section
+        if has_today_section:
+            # Find existing today section and append to it
+            today_pattern = f'(#### {today}\\s*\\n)'
+            today_match = re.search(today_pattern, existing_section)
+            if today_match:
+                # Find end of today's section (next #### or ###)
+                rest_of_section = existing_section[today_match.end():]
+                next_day = re.search(r'\n####', rest_of_section)
+                next_category = re.search(r'\n###', rest_of_section)
+                
+                # Determine where today's section ends
+                if next_day and (not next_category or next_day.start() < next_category.start()):
+                    end_pos = today_match.end() + next_day.start()
+                elif next_category:
+                    end_pos = today_match.end() + next_category.start()
+                else:
+                    end_pos = len(existing_section)
+                
+                pos = insert_pos + end_pos
+                new_content = new_content[:pos] + '\n' + daily_content.strip() + '\n' + new_content[pos:]
         else:
-            # Add new Changed section
-            new_entries_section = '\n### Changed\n\n' + '\n'.join(new_entries) + '\n'
-            new_content = content[:insert_pos] + new_entries_section + content[insert_pos:]
+            # Add new daily section at the beginning of Unreleased
+            new_content = new_content[:insert_pos] + daily_content + new_content[insert_pos:]
         
         # Only write if content actually changed
         if new_content != content:

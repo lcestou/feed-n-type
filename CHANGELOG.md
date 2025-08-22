@@ -7,8 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### 2025-01-22
+
+**Added:**
+- **Typingotchi component**: Interactive tamagotchi-like pet that reacts to typing performance with real-time animations and mood indicators
+- **VirtualKeyboard component**: Authentic Mac-style virtual keyboard with proper QWERTY layout, Caps Lock key, and realistic styling
+
+**Changed:**
+- **Keyboard layout**: Updated virtual keyboard to neutral PC layout with standard Ctrl/Alt/Menu keys, removed arrow keys and Mac-specific symbols
+- **Hook system**: Replaced automated changelog hooks with manual update instruction in CLAUDE.md for better reliability
+- **Accessibility**: Added semantic IDs and ARIA labels to header navigation elements
+
 ### Added
 
+- **Accessibility improvements**: Added semantic IDs for better interaction handling
 - **Feed & Type branding**: Gamified typing learning tool with engaging content themes
 - **Minimal header navigation**: Clean design with keyboard and sound toggle icons
 - **Gaming-themed footer**: Brand-appropriate footer with gradient styling and gaming references
