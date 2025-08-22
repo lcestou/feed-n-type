@@ -13,9 +13,10 @@
 	</main>
 
 	<footer>
-		<p>
-			visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to learn about SvelteKit
-		</p>
+		<div class="footer-content">
+			<p class="brand-text">🎮 Feed & Type - Making typing fun with content you love!</p>
+			<p class="topics">Practice with Minecraft, Roblox, Pokemon & more</p>
+		</div>
 	</footer>
 </div>
 
@@ -42,16 +43,34 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		padding: 12px;
+		padding: 16px 12px;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		margin-top: auto;
 	}
 
-	footer a {
-		font-weight: bold;
+	.footer-content {
+		text-align: center;
+		max-width: 600px;
+	}
+
+	.brand-text {
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	}
+
+	.topics {
+		font-size: 0.9rem;
+		opacity: 0.9;
+		margin: 0;
+		font-weight: 400;
 	}
 
 	@media (min-width: 480px) {
 		footer {
-			padding: 12px 0;
+			padding: 20px 0;
 		}
 	}
 </style>
