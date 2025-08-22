@@ -53,6 +53,10 @@
 					{
 						"type": "command",
 						"command": "uv run .claude/hooks/stop.py --chat"
+					},
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/changelog-update.py"
 					}
 				]
 			}

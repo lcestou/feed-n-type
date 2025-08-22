@@ -52,36 +52,63 @@ def has_significant_changes(git_changes):
         return False
 
 def analyze_changes(git_changes):
-    """Analyze git changes and generate changelog entries"""
+    """Analyze git changes and generate changelog entries with better categorization"""
     try:
         all_files = git_changes.get('staged_files', []) + git_changes.get('unstaged_files', [])
         significant_files = [f for f in all_files if f and not any(
             pattern in f for pattern in [
                 'logs/', '.log', '.tmp', 'node_modules/', 
-                '.claude/hooks/', 'CHANGELOG.md'
+                '.claude/hooks/', 'CHANGELOG.md', '.git/'
             ]
         )]
         
-        # Categorize changes
-        ui_changes = [f for f in significant_files if any(pattern in f for pattern in ['src/routes/', 'src/lib/', 'src/app.'])]
-        config_changes = [f for f in significant_files if any(pattern in f for pattern in ['package.json', 'tailwind.', 'vite.', 'svelte.'])]
+        if not significant_files:
+            return []
+        
+        # Categorize changes more precisely
+        ui_changes = [f for f in significant_files if any(pattern in f for pattern in ['src/routes/', 'src/lib/', 'src/app.', 'static/'])]
+        config_changes = [f for f in significant_files if any(pattern in f for pattern in ['package.json', 'tailwind.', 'vite.', 'svelte.', 'docker', 'pnpm-lock'])]
+        docs_changes = [f for f in significant_files if any(pattern in f for pattern in ['.md', 'README', 'docs/'])]
+        test_changes = [f for f in significant_files if any(pattern in f for pattern in ['test', 'spec', '__tests__'])]
         
         entries = []
         
+        # Handle UI changes with more detail
         if ui_changes:
-            if any('layout' in f.lower() for f in ui_changes):
-                entries.append("- **Layout improvements**: Updated site layout with sticky footer and full-width styling")
-            if any('page' in f for f in ui_changes):
-                entries.append("- **UI enhancements**: Improved main page design and user interface")
             if any('header' in f.lower() for f in ui_changes):
-                entries.append("- **Navigation updates**: Enhanced header navigation with improved iconography")
+                entries.append("- **Navigation enhancements**: Updated header navigation with improved user interface")
+            elif any('layout' in f.lower() for f in ui_changes):
+                entries.append("- **Layout improvements**: Enhanced site layout and component structure")
+            elif any('routes' in f for f in ui_changes):
+                entries.append("- **Page updates**: Improved page components and user interface")
+            elif any('lib' in f for f in ui_changes):
+                entries.append("- **Component enhancements**: Updated shared components and utilities")
+            else:
+                entries.append("- **UI improvements**: Enhanced user interface components and styling")
         
+        # Handle configuration changes
         if config_changes:
-            entries.append("- **Configuration updates**: Updated project configuration and build settings")
+            if any('package.json' in f for f in config_changes):
+                entries.append("- **Dependencies**: Updated project dependencies and package configuration")
+            elif any('docker' in f.lower() for f in config_changes):
+                entries.append("- **Development environment**: Updated Docker configuration for better development workflow")
+            else:
+                entries.append("- **Configuration**: Updated project configuration and build settings")
         
-        # Generic fallback
+        # Handle documentation
+        if docs_changes and not any('CHANGELOG' in f for f in docs_changes):
+            entries.append("- **Documentation**: Updated project documentation and guides")
+        
+        # Handle tests
+        if test_changes:
+            entries.append("- **Testing**: Enhanced test coverage and test utilities")
+        
+        # Fallback for uncategorized changes
         if not entries and significant_files:
-            entries.append(f"- **Code improvements**: Updated {len(significant_files)} files for better functionality")
+            if len(significant_files) == 1:
+                entries.append(f"- **Code enhancement**: Updated {significant_files[0]} for improved functionality")
+            else:
+                entries.append(f"- **Code improvements**: Enhanced {len(significant_files)} files for better functionality")
         
         return entries
         
@@ -89,7 +116,7 @@ def analyze_changes(git_changes):
         return []
 
 def update_changelog(entries):
-    """Update CHANGELOG.md with new entries"""
+    """Update CHANGELOG.md with new entries, avoiding duplicates"""
     try:
         changelog_path = Path('CHANGELOG.md')
         if not changelog_path.exists():
@@ -106,41 +133,72 @@ def update_changelog(entries):
         if not match:
             return False
         
-        # Insert new entries after [Unreleased]
+        # Get existing entries to avoid duplicates
         insert_pos = match.end()
-        
-        # Check if there are already entries in Unreleased section
         next_section = re.search(r'\n## \[', content[insert_pos:])
-        existing_content = content[insert_pos:insert_pos + (next_section.start() if next_section else len(content))].strip()
+        existing_section = content[insert_pos:insert_pos + (next_section.start() if next_section else len(content))]
         
-        # Add new entries
-        new_entries = '\n### Changed\n\n' + '\n'.join(entries) + '\n'
+        # Filter out entries that already exist
+        new_entries = []
+        for entry in entries:
+            # Check if this entry (or similar) already exists
+            entry_key = entry.split('**')[1] if '**' in entry else entry.split(':')[0]
+            if entry_key not in existing_section:
+                new_entries.append(entry)
         
-        if existing_content:
-            # If there's existing content, add to it
-            if '### Changed' in existing_content:
-                # Find existing Changed section and add to it
-                changed_pattern = r'(### Changed\s*\n)'
-                changed_match = re.search(changed_pattern, existing_content)
-                if changed_match:
-                    # Insert after existing Changed header
-                    pos = insert_pos + changed_match.end()
-                    new_content = content[:pos] + '\n'.join(entries) + '\n' + content[pos:]
-                else:
-                    # Add new Changed section
-                    new_content = content[:insert_pos] + new_entries + content[insert_pos:]
+        # If no new entries, don't update
+        if not new_entries:
+            return False
+        
+        # Find or create Changed section
+        if '### Changed' in existing_section:
+            # Find existing Changed section and add to it
+            changed_pattern = r'(### Changed\s*\n)'
+            changed_match = re.search(changed_pattern, existing_section)
+            if changed_match:
+                # Insert after existing Changed header, but check for existing entries
+                pos = insert_pos + changed_match.end()
+                # Add entries with proper spacing
+                entries_text = '\n'.join(new_entries) + '\n'
+                new_content = content[:pos] + entries_text + content[pos:]
             else:
-                # Add new Changed section at the beginning
-                new_content = content[:insert_pos] + new_entries + content[insert_pos:]
+                # This shouldn't happen, but handle gracefully
+                new_entries_section = '\n### Changed\n\n' + '\n'.join(new_entries) + '\n'
+                new_content = content[:insert_pos] + new_entries_section + content[insert_pos:]
         else:
-            # No existing content, add new section
-            new_content = content[:insert_pos] + new_entries + content[insert_pos:]
+            # Add new Changed section
+            new_entries_section = '\n### Changed\n\n' + '\n'.join(new_entries) + '\n'
+            new_content = content[:insert_pos] + new_entries_section + content[insert_pos:]
         
-        # Write updated changelog
-        with open(changelog_path, 'w') as f:
-            f.write(new_content)
+        # Only write if content actually changed
+        if new_content != content:
+            with open(changelog_path, 'w') as f:
+                f.write(new_content)
+            return True
         
-        return True
+        return False
+        
+    except Exception:
+        return False
+
+def should_update_changelog(input_data):
+    """Update changelog when file changes are made (but avoid git operations)"""
+    try:
+        tool_name = input_data.get('toolName', '')
+        
+        # Don't update during git operations (to avoid infinite loops)
+        if any(keyword in tool_name.lower() for keyword in ['git', 'bash']):
+            return False
+            
+        # Update on file editing operations
+        if any(keyword in tool_name.lower() for keyword in ['edit', 'write', 'multiedit']):
+            return True
+        
+        # Update on agent task completions
+        if 'task' in tool_name.lower():
+            return True
+        
+        return False
         
     except Exception:
         return False
@@ -149,6 +207,10 @@ def main():
     try:
         # Read JSON input from stdin
         input_data = json.load(sys.stdin)
+        
+        # Only update on specific triggers (commits, builds, etc.)
+        if not should_update_changelog(input_data):
+            sys.exit(0)
         
         # Get git changes information
         git_changes = get_git_changes()
