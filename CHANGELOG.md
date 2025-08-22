@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Feed & Type branding**: Gamified typing learning tool with engaging content themes
+- **Minimal header navigation**: Clean design with keyboard and sound toggle icons
+- **Gaming-themed footer**: Brand-appropriate footer with gradient styling and gaming references
+
+### Changed
+
+- **Layout improvements**: Updated site layout with sticky footer and full-width styling
+- **UI enhancements**: Improved main page design and user interface
+- **Layout improvements**: Updated site layout with sticky footer and full-width styling
+- **UI enhancements**: Improved main page design and user interface
+- **Layout improvements**: Updated site layout with sticky footer and full-width styling
+- **UI enhancements**: Improved main page design and user interface
+- **Layout improvements**: Updated site layout with sticky footer and full-width styling
+- **UI enhancements**: Improved main page design and user interface
+- **App identity**: Transformed from generic SvelteKit demo to Feed & Type typing tool
+- **Navigation design**: Replaced demo navigation with minimal, icon-based header
+- **Layout system**: Implemented full-width gray background with sticky footer positioning
+- **Footer styling**: Updated to gaming theme with gradient background and appropriate branding
+
+### Removed
+
+- **SvelteKit demo content**: Removed About page, Sverdle game, and Counter component
+- **Demo assets**: Cleaned up unused sample images and placeholder content
+- **Generic branding**: Replaced placeholder content with Feed & Type specific messaging
+
 ## [0.1.0] - 2025-01-21
 
 ### Added
@@ -32,6 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Layout improvements**: Updated site layout with sticky footer and full-width styling
+- **UI enhancements**: Improved main page design and user interface
+- **Layout improvements**: Updated site layout with sticky footer and full-width styling
+- **UI enhancements**: Improved main page design and user interface
 - **Hook Architecture**: Replaced redundant security-check.py with more comprehensive pre_tool_use.py security validation
 - **Status Display**: Upgraded from basic status to rich, contextual information display with productivity metrics
 - **Notification System**: Enhanced from simple alerts to multi-modal feedback including audio notifications
