@@ -7,18 +7,52 @@
 
 	let { isTyping = false, hasError = false, wpm = 0 }: TypingotchiProps = $props();
 	
+	// ASCII art faces for different moods
+	const asciiArt = {
+		neutral: `
+ ┌─────┐
+ │ ◕ ◕ │
+ │  ─  │
+ │ [_] │
+ └─────┘`,
+		focused: `
+ ┌─────┐
+ │ ◔ ◔ │
+ │  ○  │
+ │ [_] │
+ └─────┘`,
+		happy: `
+ ┌─────┐
+ │ ◕ ◕ │
+ │  ∩  │
+ │ ◡_◡ │
+ └─────┘`,
+		excited: `
+ ┌─────┐
+ │ ★ ★ │
+ │  ∆  │
+ │ ◡_◡ │
+ └─────┘`,
+		worried: `
+ ┌─────┐
+ │ × × │
+ │  ~  │
+ │ ∪_∪ │
+ └─────┘`
+	};
+
 	// Character states based on typing performance, user interaction, and emotional feedback
 	let character = $derived(() => {
 		if (hasError) {
-			return { emoji: '😓', status: 'Oops! Try again', mood: 'worried' };
+			return { ascii: asciiArt.worried, status: 'Oops! Try again', mood: 'worried' };
 		} else if (isTyping && wpm > 60) {
-			return { emoji: '🤩', status: 'Amazing speed!', mood: 'excited' };
+			return { ascii: asciiArt.excited, status: 'Amazing speed!', mood: 'excited' };
 		} else if (isTyping && wpm > 30) {
-			return { emoji: '😊', status: 'Great job!', mood: 'happy' };
+			return { ascii: asciiArt.happy, status: 'Great job!', mood: 'happy' };
 		} else if (isTyping) {
-			return { emoji: '😌', status: 'Keep going!', mood: 'focused' };
+			return { ascii: asciiArt.focused, status: 'Keep going!', mood: 'focused' };
 		} else {
-			return { emoji: '🙂', status: 'Ready to type!', mood: 'neutral' };
+			return { ascii: asciiArt.neutral, status: 'Ready to type!', mood: 'neutral' };
 		}
 	});
 
@@ -40,11 +74,9 @@
 <div id="typingotchi-container" class="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200 h-full flex flex-col items-center justify-center space-y-4" role="region" aria-label="Typingotchi pet">
 	<!-- Pet Header -->
 	<div id="typingotchi-header" class="text-center">
-		<h3 id="typingotchi-title" class="text-lg font-semibold text-gray-800 mb-2">Typingotchi</h3>
-		<div id="typingotchi-avatar" class="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center border-2 border-purple-200">
-			<span id="typingotchi-emoji" class="text-3xl {animationClass()}" role="img" aria-label="typing pet emotion: {character().mood}">
-				{character().emoji}
-			</span>
+		<h3 id="typingotchi-title" class="text-lg font-semibold text-gray-800 mb-2">Key-otchi</h3>
+		<div id="typingotchi-avatar" class="bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl p-3 border-2 border-purple-200 shadow-inner {animationClass()}">
+			<pre id="typingotchi-ascii" class="text-xs leading-tight font-mono text-gray-700 select-none" role="img" aria-label="typing pet emotion: {character().mood}">{character().ascii}</pre>
 		</div>
 	</div>
 
@@ -76,19 +108,19 @@
 	<div id="typingotchi-actions" class="flex gap-2" role="group" aria-label="Pet care actions">
 		<button 
 			id="typingotchi-feed"
-			class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors cursor-default"
+			class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors cursor-default font-mono"
 			type="button"
-			aria-label="Feed your Typingotchi"
+			aria-label="Feed your Key-otchi"
 		>
-			🍎 Feed
+			◊ Feed
 		</button>
 		<button 
 			id="typingotchi-play"
-			class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors cursor-default"
+			class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors cursor-default font-mono"
 			type="button"
-			aria-label="Play with your Typingotchi"
+			aria-label="Play with your Key-otchi"
 		>
-			🎮 Play
+			♦ Play
 		</button>
 	</div>
 </div>

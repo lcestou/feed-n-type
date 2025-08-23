@@ -170,10 +170,9 @@
 					</button>
 				</nav>
 				
-				<!-- Center: Title and Mode -->
+				<!-- Center: Title -->
 				<div class="flex flex-col items-center">
 					<h1 class="text-2xl font-bold text-gray-900">Feed-n-Type</h1>
-					<span class="text-sm text-gray-500">Practice Mode</span>
 				</div>
 				
 				<!-- Right: WPM Stats and Reset Button -->
