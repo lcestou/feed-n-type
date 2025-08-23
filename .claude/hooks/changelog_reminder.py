@@ -218,10 +218,12 @@ class ChangelogAnalyzer:
         if len(sorted_files) > 3:
             lines.append(f"  ... and {len(sorted_files) - 3} more files")
         
-        # Add helpful suggestion
+        # Add helpful suggestion with agent trigger
         if not self.has_todays_entry():
             today = self.get_current_date_entry()
             lines.append(f"  💡 Tip: Run with --auto-update to create {today} entry automatically")
+            lines.append("")
+            lines.append("🤖 UPDATE CHANGELOG: technical-documentation-writer should update CHANGELOG.md with today's entry")
         
         return '\n'.join(lines)
     
@@ -250,7 +252,7 @@ class ChangelogAnalyzer:
             # Generate and display reminder
             reminder = self.generate_reminder(categories, all_changes, suggestions)
             if reminder:
-                print(reminder)
+                print(reminder, file=sys.stderr)
                 
         except Exception as e:
             # Fail silently to avoid disrupting workflow

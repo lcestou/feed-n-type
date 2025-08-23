@@ -31,6 +31,10 @@
 					{
 						"type": "command",
 						"command": "uv run .claude/hooks/changelog_reminder.py"
+					},
+					{
+						"type": "command",
+						"command": "echo '@agent-technical-documentation-writer please update the changelog with the changes made in this session'"
 					}
 				]
 			}

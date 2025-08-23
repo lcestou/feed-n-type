@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Docker compose volumes**: Improved NAS mount configuration with better fallback handling and cross-platform compatibility
 - **PostToolUse hook**: Replaced bash changelog reminder with Python version for better integration and functionality
 - **Accessibility enhancements**: All interactive components now have proper semantic IDs, ARIA labels, and role attributes for screen reader support
+- **UI styling**: Updated reset button color styling from blue to indigo for improved visual design
 
 
 
