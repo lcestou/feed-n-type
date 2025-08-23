@@ -3,9 +3,12 @@
 		isTyping: boolean;
 		hasError: boolean;
 		wpm: number;
+		streak: number;
+		isOnFire: boolean;
+		fireLevel: number;
 	}
 
-	let { isTyping = false, hasError = false, wpm = 0 }: TypingotchiProps = $props();
+	let { isTyping = false, hasError = false, wpm = 0, streak = 0, isOnFire = false, fireLevel = 0 }: TypingotchiProps = $props();
 	
 	// ASCII art faces for different moods (just the face, no frame)
 	const asciiArt = {
@@ -20,17 +23,26 @@
 		excited: `★ ★
 ◡_◡`,
 		worried: `× ×
-∪_∪`
+∪_∪`,
+		heatingUp: `◉ ◉
+ ◡ `,
+		onFire: `✦ ✦
+◡_◡`,
+		superFire: `✺ ✺
+◊◡◊`
 	};
 
 	// Blinking animation state
 	let isBlinking = $state(false);
 
+	// Determine if we should be in neutral state (avoiding circular dependency)
+	let isNeutralState = $derived(!hasError && !isTyping);
+
 	// Set up idle blinking animation
 	let blinkInterval: ReturnType<typeof setInterval>;
 	$effect(() => {
 		// Only blink when in neutral mood
-		if (character().mood === 'neutral') {
+		if (isNeutralState) {
 			blinkInterval = setInterval(() => {
 				isBlinking = true;
 				setTimeout(() => {
@@ -39,15 +51,24 @@
 			}, 3000); // Blink every 3 seconds
 		} else {
 			clearInterval(blinkInterval);
-			isBlinking = false;
+			if (isBlinking) {
+				isBlinking = false;
+			}
 		}
 
 		return () => clearInterval(blinkInterval);
 	});
 
-	// Character states based on typing performance, user interaction, and emotional feedback
+	// Character states based on typing performance, streak, and feedback
 	let character = $derived(() => {
-		if (hasError) {
+		// Streak states have priority over other states
+		if (fireLevel === 3) {
+			return { ascii: asciiArt.superFire, status: `SUPER FIRE! ${streak} streak!`, mood: 'superFire' };
+		} else if (fireLevel === 2) {
+			return { ascii: asciiArt.onFire, status: `ON FIRE! ${streak} streak!`, mood: 'onFire' };
+		} else if (fireLevel === 1) {
+			return { ascii: asciiArt.heatingUp, status: `Heating up! ${streak} streak!`, mood: 'heatingUp' };
+		} else if (hasError) {
 			return { ascii: asciiArt.worried, status: 'Oops! Try again', mood: 'worried' };
 		} else if (isTyping && wpm > 60) {
 			return { ascii: asciiArt.excited, status: 'Amazing speed!', mood: 'excited' };
@@ -65,6 +86,12 @@
 	// Animation classes based on mood
 	let animationClass = $derived(() => {
 		switch (character().mood) {
+			case 'superFire':
+				return 'fire-super animate-bounce';
+			case 'onFire':
+				return 'fire-glow animate-pulse';
+			case 'heatingUp':
+				return 'fire-warm';
 			case 'excited':
 				return 'animate-bounce';
 			case 'happy':
@@ -75,14 +102,36 @@
 				return '';
 		}
 	});
+	
+	// Fire effect classes based on fire level
+	let fireEffectClass = $derived(() => {
+		switch (fireLevel) {
+			case 3:
+				return 'fire-aura-super';
+			case 2:
+				return 'fire-aura-glow';
+			case 1:
+				return 'fire-aura-warm';
+			default:
+				return '';
+		}
+	});
 </script>
 
 <div id="typingotchi-container" class="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200 h-full flex flex-col items-center justify-center space-y-4" role="region" aria-label="Typingotchi pet">
 	<!-- Pet Header -->
 	<div id="typingotchi-header" class="text-center">
 		<h3 id="typingotchi-title" class="text-lg font-semibold text-gray-800 mb-2">Key-otchi</h3>
-		<div id="typingotchi-avatar" class="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center border-2 border-purple-200 {animationClass()}">
-			<pre id="typingotchi-ascii" class="text-xs leading-tight font-mono text-gray-700 select-none bg-transparent" style="background: transparent !important; box-shadow: none !important;" role="img" aria-label="typing pet emotion: {character().mood}">{character().ascii}</pre>
+		<div class="relative">
+			<!-- Fire aura background effect -->
+			{#if fireLevel > 0}
+				<div class="absolute inset-0 rounded-xl {fireEffectClass()}" style="z-index: 0;"></div>
+			{/if}
+			
+			<!-- Pet avatar -->
+			<div id="typingotchi-avatar" class="relative w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center border-2 border-purple-200 {animationClass()}" style="z-index: 1;">
+				<pre id="typingotchi-ascii" class="text-xs leading-tight font-mono text-gray-700 select-none bg-transparent" style="background: transparent !important; box-shadow: none !important;" role="img" aria-label="typing pet emotion: {character().mood}">{character().ascii}</pre>
+			</div>
 		</div>
 	</div>
 
@@ -98,12 +147,27 @@
 				<div id="typingotchi-wpm" aria-label="Words per minute">Speed: {wpm} WPM</div>
 			{/if}
 			
+			{#if streak > 0}
+				<div id="typingotchi-streak" aria-label="Current streak" class="{fireLevel > 0 ? 'text-orange-600 font-semibold' : 'text-blue-600'}">
+					🔥 Streak: {streak}
+				</div>
+			{/if}
+			
 			<!-- Mood indicator -->
 			<div id="typingotchi-mood" class="flex items-center justify-center gap-1" role="img" aria-label="Mood level: {character().mood}">
 				<span class="text-xs">Mood:</span>
 				<div class="flex gap-1">
 					{#each Array(3) as _, i}
-						<div id="mood-indicator-{i}" class="w-2 h-2 rounded-full {i < (character().mood === 'excited' ? 3 : character().mood === 'happy' ? 2 : character().mood === 'worried' ? 0 : 1) ? 'bg-green-400' : 'bg-gray-300'}"></div>
+						<div id="mood-indicator-{i}" class="w-2 h-2 rounded-full {
+							i < (character().mood === 'superFire' ? 3 : 
+								 character().mood === 'onFire' ? 3 : 
+								 character().mood === 'heatingUp' ? 2 : 
+								 character().mood === 'excited' ? 3 : 
+								 character().mood === 'happy' ? 2 : 
+								 character().mood === 'worried' ? 0 : 1) 
+								 ? (fireLevel > 0 ? 'bg-orange-400' : 'bg-green-400') 
+								 : 'bg-gray-300'
+						}"></div>
 					{/each}
 				</div>
 			</div>
@@ -130,3 +194,68 @@
 		</button>
 	</div>
 </div>
+
+<style>
+	/* Fire effect animations and styles */
+	.fire-aura-warm {
+		background: radial-gradient(circle, rgba(255, 183, 77, 0.3) 0%, rgba(255, 183, 77, 0.1) 70%, transparent 100%);
+		animation: warmGlow 2s ease-in-out infinite alternate;
+	}
+	
+	.fire-aura-glow {
+		background: radial-gradient(circle, rgba(255, 107, 53, 0.5) 0%, rgba(255, 183, 77, 0.3) 50%, rgba(255, 183, 77, 0.1) 70%, transparent 100%);
+		animation: fireGlow 1.5s ease-in-out infinite alternate;
+	}
+	
+	.fire-aura-super {
+		background: radial-gradient(circle, rgba(255, 69, 0, 0.7) 0%, rgba(255, 107, 53, 0.5) 30%, rgba(255, 183, 77, 0.3) 60%, rgba(255, 183, 77, 0.1) 80%, transparent 100%);
+		animation: superFireGlow 1s ease-in-out infinite alternate;
+	}
+	
+	.fire-warm {
+		filter: hue-rotate(20deg) saturate(1.2);
+	}
+	
+	.fire-glow {
+		filter: hue-rotate(30deg) saturate(1.5) brightness(1.1);
+		text-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+	}
+	
+	.fire-super {
+		filter: hue-rotate(40deg) saturate(2) brightness(1.3);
+		text-shadow: 0 0 12px rgba(255, 69, 0, 0.8), 0 0 20px rgba(255, 107, 53, 0.6);
+	}
+	
+	@keyframes warmGlow {
+		0% {
+			opacity: 0.6;
+			transform: scale(1);
+		}
+		100% {
+			opacity: 0.8;
+			transform: scale(1.05);
+		}
+	}
+	
+	@keyframes fireGlow {
+		0% {
+			opacity: 0.7;
+			transform: scale(1.02);
+		}
+		100% {
+			opacity: 1;
+			transform: scale(1.1);
+		}
+	}
+	
+	@keyframes superFireGlow {
+		0% {
+			opacity: 0.8;
+			transform: scale(1.05);
+		}
+		100% {
+			opacity: 1;
+			transform: scale(1.15);
+		}
+	}
+</style>

@@ -17,8 +17,15 @@
 	let hasTypingError = $state(false);
 	let currentWpm = $state(0);
 	
+	// Fire streak system - simple approach without effects
+	let currentStreak = $state(0);
+	
 	// Calculate WPM and detect errors
 	let isTyping = $derived(userInput.length > 0 && currentPosition < practiceText.length);
+	
+	// Fire level calculations disabled for now
+	let fireLevel = 0;
+	let isOnFire = false;
 	
 	// Calculate WPM in real-time
 	$effect(() => {
@@ -110,6 +117,7 @@
 		pressedKey = '';
 		hasTypingError = false;
 		currentWpm = 0;
+		currentStreak = 0;
 	}
 	
 	// Handle physical keyboard input
@@ -229,6 +237,9 @@
 					isTyping={isTyping}
 					hasError={hasTypingError}
 					wpm={currentWpm}
+					streak={0}
+					isOnFire={false}
+					fireLevel={0}
 				/>
 			</div>
 		</div>
