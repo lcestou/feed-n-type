@@ -1,0 +1,38 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      # Load environment variables
+      - .env
+    container_name: ${COMPOSE_PROJECT_NAME}-dev
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    # Run as claudeuser (uid 1000) for proper user experience
+    user: '${DOCKER_USER:-1000:1000}'
+    privileged: ${DOCKER_PRIVILEGED:-true}
+    environment:
+      # Mac-only environment variables
+      NAS_DEV_ROOT_MAC: ${NAS_DEV_ROOT_MAC}
+      HOST_HOME_MAC: ${HOST_HOME_MAC}
+      # Set Linux paths to empty so startup script detects Mac
+      NAS_DEV_ROOT_LINUX: ""
+      HOST_HOME_LINUX: ""
+      HOST_RUN_USER_LINUX: ""
+      HOST_RUN_USER_MAC: ${HOST_RUN_USER_MAC}
+    volumes:
+      # Mount current directory as /workspace (standard for dev containers)
+      - .:/workspace:cached
+
+      # Mac NAS mount
+      - ${NAS_DEV_ROOT_MAC}:${NAS_DEV_ROOT_MAC}
+      
+      # Mac home directory
+      - ${HOST_HOME_MAC}:${HOST_HOME_MAC}
+      
+      # Optional: Share docker socket for docker-in-docker scenarios
+      # - /var/run/docker.sock:/var/run/docker.sock
+    # ports: # Cursor handles port forwarding automatically
+    working_dir: /workspace

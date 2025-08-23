@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### 2025-08-23
 
 **Added:**
+- **Configuration updates**: Updated project configuration files
 - **Component updates in +page**
 - **Slash command configuration**: Created `/dev` command that runs the `dev` alias in background for quick development server startup
 - **Intelligent changelog reminder**: Implemented smart PostToolUse hook (`changelog_reminder.py`) that detects file changes and provides contextual reminders
