@@ -83,7 +83,13 @@ Currently a skeleton project. Main development will happen in:
 **Formatting**: Project uses TABS not spaces - maintain exact indentation when editing (auto-formatted)  
 **Regex**: See `.claude/REGEX-ESCAPING-GUIDE.md` - MultiEdit uses `/\d/`, Serena uses `\\\\d`, context matters!  
 **Context**: /clear between major tasks | Single atomic changes | Chain git operations when user requests push  
-**🚨 MANDATORY Git Rules**: When user says "push" ALWAYS run this EXACT sequence: pnpm check → pnpm build → prepare commit message → git add -A → commit with same message → push | Fix any errors before proceeding | User must explicitly request push  
+**🚨 MANDATORY Git Rules**: When user says "push" ALWAYS run this EXACT sequence:
+1. `pnpm check` → `pnpm build` (verify code quality)
+2. Run `./.claude/hooks/changelog_reminder.py` to analyze changes (detects modified files, categorizes changes, suggests commit topics)
+3. Based on the script's analysis, craft an intelligent commit message that reflects actual changes
+4. Run `./.claude/hooks/changelog_reminder.py --auto-update` to update CHANGELOG.md
+5. `git add -A` → commit with crafted message → push
+Fix any errors before proceeding | User must explicitly request push  
 **PR Workflow**: When user says "merge" on any non-main branch: create PR first with `gh pr create --base main --head <branch> --title --body`, then merge via GitHub | Post-merge PRs acceptable for documentation  
 
 ## Automation

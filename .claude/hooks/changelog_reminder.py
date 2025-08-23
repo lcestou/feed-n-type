@@ -29,22 +29,31 @@ class ChangelogAnalyzer:
     def get_git_changes(self) -> Tuple[Set[str], Set[str], bool]:
         """Get uncommitted and staged changes, plus changelog modification status."""
         try:
-            # Get uncommitted changes
-            result = subprocess.run(['git', 'diff', '--name-only'], 
+            # Get ALL changes using git status --porcelain for complete detection
+            result = subprocess.run(['git', 'status', '--porcelain'], 
                                   capture_output=True, text=True, cwd=self.root_path)
-            uncommitted = set(result.stdout.strip().split('\n')) if result.stdout.strip() else set()
             
-            # Get staged changes
-            result = subprocess.run(['git', 'diff', '--cached', '--name-only'], 
-                                  capture_output=True, text=True, cwd=self.root_path)
-            staged = set(result.stdout.strip().split('\n')) if result.stdout.strip() else set()
+            all_changes = set()
+            staged = set()
+            for line in result.stdout.strip().split('\n'):
+                if not line:
+                    continue
+                # Parse git status format: XY filename
+                # X = staged status, Y = unstaged status
+                status = line[:2]
+                filename = line[3:].strip()
+                
+                # Add to all changes regardless of status
+                all_changes.add(filename)
+                
+                # Check if staged (X position not space or ?)
+                if status[0] not in ' ?':
+                    staged.add(filename)
             
             # Check if CHANGELOG.md is modified
-            result = subprocess.run(['git', 'diff', '--name-only', 'CHANGELOG.md'], 
-                                  capture_output=True, text=True, cwd=self.root_path)
-            changelog_modified = bool(result.stdout.strip())
+            changelog_modified = 'CHANGELOG.md' in all_changes
             
-            return uncommitted, staged, changelog_modified
+            return all_changes, staged, changelog_modified
             
         except subprocess.CalledProcessError:
             return set(), set(), False
@@ -80,22 +89,52 @@ class ChangelogAnalyzer:
         """Analyze code changes to suggest changelog entries."""
         suggestions = []
         
+        # Get git status to identify file states
+        result = subprocess.run(['git', 'status', '--porcelain'], 
+                              capture_output=True, text=True, cwd=self.root_path)
+        
+        file_states = {}
+        for line in result.stdout.strip().split('\n'):
+            if not line:
+                continue
+            status = line[:2]
+            filename = line[3:].strip()
+            file_states[filename] = status
+        
         for file in files:
             try:
-                # Get diff for the file
+                status = file_states.get(file, '  ')
+                
+                # Handle deleted files
+                if 'D' in status:
+                    suggestions.append(f"Removed {file}")
+                    continue
+                
+                # Handle new files
+                if '?' in status or 'A' in status:
+                    if '.svelte' in file:
+                        suggestions.append(f"New component: {file}")
+                    elif any(file.endswith(ext) for ext in ['.ts', '.js', '.py']):
+                        suggestions.append(f"New module: {file}")
+                    else:
+                        suggestions.append(f"Added {file}")
+                    continue
+                
+                # Analyze modified files
                 result = subprocess.run(['git', 'diff', file], 
                                       capture_output=True, text=True, cwd=self.root_path)
                 diff_content = result.stdout
                 
-                # Analyze diff patterns
-                if '+export' in diff_content or '+function' in diff_content:
-                    suggestions.append(f"New functionality in {file}")
-                elif '+component' in diff_content.lower() or '.svelte' in file:
-                    suggestions.append(f"Component updates in {file}")
-                elif '+import' in diff_content:
-                    suggestions.append(f"Dependencies updated in {file}")
-                elif 'fix' in diff_content.lower():
-                    suggestions.append(f"Bug fixes in {file}")
+                if diff_content:
+                    # Analyze diff patterns
+                    if '+export' in diff_content or '+function' in diff_content:
+                        suggestions.append(f"New functionality in {file}")
+                    elif '+component' in diff_content.lower() or '.svelte' in file:
+                        suggestions.append(f"Component updates in {file}")
+                    elif '+import' in diff_content:
+                        suggestions.append(f"Dependencies updated in {file}")
+                    elif 'fix' in diff_content.lower():
+                        suggestions.append(f"Bug fixes in {file}")
                     
             except subprocess.CalledProcessError:
                 continue
@@ -230,8 +269,7 @@ class ChangelogAnalyzer:
     def run(self, auto_update: bool = False) -> None:
         """Main execution logic."""
         try:
-            uncommitted, staged, changelog_modified = self.get_git_changes()
-            all_changes = uncommitted | staged
+            all_changes, staged, changelog_modified = self.get_git_changes()
             
             # Skip if no changes or changelog already modified
             if not all_changes:
