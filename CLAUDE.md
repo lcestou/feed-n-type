@@ -34,8 +34,7 @@
 **Formatting**: Project uses TABS not spaces - maintain exact indentation when editing (auto-formatted)  
 **Regex**: See `.claude/REGEX-ESCAPING-GUIDE.md` - MultiEdit uses `/\d/`, Serena uses `\\\\d`, context matters!  
 **Context**: /clear between major tasks | Single atomic changes | Chain git operations when user requests push  
-**🚨 MANDATORY Git Rules**: When user says "push" ALWAYS run this EXACT sequence: pnpm check → pnpm build → prepare commit message → git add -A → commit with same message → push | Fix any errors before proceeding | User must explicitly request push  
-**📝 MANDATORY Changelog Rule**: After completing ANY task (component creation, bug fixes, feature additions, UI changes, etc.), ALWAYS update CHANGELOG.md with a new daily entry under [Unreleased] section using format: `#### YYYY-MM-DD` with **Added:** and **Changed:** subsections. Be specific about what was accomplished.  
+**🚨 MANDATORY Git Rules**: When user says "push" ALWAYS run this EXACT sequence: pnpm check → pnpm build → prepare commit message → git add -A → commit with same message → push | Fix any errors before proceeding | User must explicitly request push    
 **PR Workflow**: When user says "merge" on any non-main branch: create PR first with `gh pr create --base main --head <branch> --title --body`, then merge via GitHub | Post-merge PRs acceptable for documentation  
 **Automation**:
 

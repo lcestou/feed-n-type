@@ -1,0 +1,10 @@
+{
+	"commands": [
+		{
+			"name": "dev",
+			"description": "Start the development server in the background",
+			"command": "dev",
+			"background": true
+		}
+	]
+}

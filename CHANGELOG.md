@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+#### 2025-08-23
+
+**Added:**
+- **Slash command configuration**: Created `/dev` command that runs the `dev` alias in background for quick development server startup
+- **Intelligent changelog reminder**: Implemented smart PostToolUse hook (`changelog_reminder.py`) that detects file changes and provides contextual reminders
+- **Auto-update capability**: Changelog reminder can now automatically generate entries with `--auto-update` flag
+- **Semantic IDs and ARIA labels**: Added comprehensive accessibility improvements to all typing components (VirtualKeyboard, Typingotchi, TypingArea)
+
+**Changed:**
+- **Project branding**: Updated main h1 title from "Feed & Type" to "Feed-n-Type" for consistent brand naming
+- **Docker compose volumes**: Improved NAS mount configuration with better fallback handling and cross-platform compatibility
+- **PostToolUse hook**: Replaced bash changelog reminder with Python version for better integration and functionality
+- **Accessibility enhancements**: All interactive components now have proper semantic IDs, ARIA labels, and role attributes for screen reader support
+
+
 
 #### 2025-01-22
 

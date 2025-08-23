@@ -69,27 +69,33 @@
 	}
 </script>
 
-<div class="pc-keyboard">
+<div id="virtual-keyboard" class="pc-keyboard" role="group" aria-label="Virtual keyboard">
 	<!-- Main keyboard rows -->
 	{#each keyboardRows as row, rowIndex}
-		<div class="keyboard-row row-{rowIndex + 1}">
+		<div id="keyboard-row-{rowIndex + 1}" class="keyboard-row row-{rowIndex + 1}" role="row">
 			<!-- Left modifier key -->
 			{#if row.leftModifier}
 				<button 
+					id="key-{row.leftModifier.key.toLowerCase()}"
 					class="key modifier-key {row.leftModifier.class} {isKeyPressed(row.leftModifier.key) ? 'pressed' : ''}"
 					onclick={() => handleKeyClick(row.leftModifier.key)}
 					type="button"
+					aria-label="{row.leftModifier.label} key"
+					aria-pressed={isKeyPressed(row.leftModifier.key)}
 				>
 					{row.leftModifier.label}
 				</button>
 			{/if}
 			
 			<!-- Regular keys -->
-			{#each row.keys as key}
+			{#each row.keys as key, keyIndex}
 				<button 
+					id="key-{key.replace(/[^a-z0-9]/gi, '')}-{rowIndex}-{keyIndex}"
 					class="key regular-key {isKeyPressed(key) ? 'pressed' : ''}"
 					onclick={() => handleKeyClick(key)}
 					type="button"
+					aria-label="{key.toUpperCase()} key"
+					aria-pressed={isKeyPressed(key)}
 				>
 					{key.toUpperCase()}
 				</button>
@@ -98,9 +104,12 @@
 			<!-- Right modifier key -->
 			{#if row.rightModifier}
 				<button 
+					id="key-{row.rightModifier.key.toLowerCase()}"
 					class="key modifier-key {row.rightModifier.class} {isKeyPressed(row.rightModifier.key) ? 'pressed' : ''}"
 					onclick={() => handleKeyClick(row.rightModifier.key)}
 					type="button"
+					aria-label="{row.rightModifier.label} key"
+					aria-pressed={isKeyPressed(row.rightModifier.key)}
 				>
 					{row.rightModifier.label}
 				</button>
@@ -109,12 +118,15 @@
 	{/each}
 
 	<!-- Bottom row with space bar and modifiers -->
-	<div class="keyboard-row bottom-row">
-		{#each bottomRowKeys as key}
+	<div id="keyboard-bottom-row" class="keyboard-row bottom-row" role="row">
+		{#each bottomRowKeys as key, keyIndex}
 			<button 
+				id="key-{key.key.toLowerCase().replace(/\s+/g, '-')}"
 				class="key {key.class} {isKeyPressed(key.key) ? 'pressed' : ''}"
 				onclick={() => handleKeyClick(key.key)}
 				type="button"
+				aria-label="{key.key === 'Space' ? 'Space bar' : key.label + ' key'}"
+				aria-pressed={isKeyPressed(key.key)}
 			>
 				{key.label}
 			</button>

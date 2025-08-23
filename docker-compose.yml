@@ -25,15 +25,17 @@ services:
       # Mount current directory as /workspace (standard for dev containers)
       - .:/workspace:cached
 
-      # Cross-platform NAS mounts
-      # Mac: Direct volume mount
+      # Cross-platform NAS mounts with fallback to /tmp if not set
+      # Mac: Direct volume mount (only mounts if path exists)
       - ${NAS_DEV_ROOT_MAC:-/tmp}:${NAS_DEV_ROOT_MAC:-/tmp}
-      # Linux: Access via GVFS mount (available through /run/user mount below)
-
-      # Platform-specific system mounts
+      
+      # Platform-specific system mounts with /tmp fallback
+      # These will mount /tmp:/tmp if the environment variables aren't set or paths don't exist
+      # On Mac: HOST_HOME_LINUX will be /tmp, HOST_RUN_USER_LINUX will be /tmp
+      # On Linux: HOST_HOME_MAC will be /tmp
       - ${HOST_HOME_LINUX:-/tmp}:${HOST_HOME_LINUX:-/tmp}
       - ${HOST_HOME_MAC:-/tmp}:${HOST_HOME_MAC:-/tmp}
-      - ${HOST_RUN_USER_LINUX:-/tmp}:/run/user/1000:rshared
+      - ${HOST_RUN_USER_LINUX:-/tmp}:${HOST_RUN_USER_LINUX:-/tmp}
       # Optional: Share docker socket for docker-in-docker scenarios
       # - /var/run/docker.sock:/var/run/docker.sock
     ports:

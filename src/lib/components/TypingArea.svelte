@@ -8,9 +8,11 @@
 	let { text, userInput, currentPosition }: Props = $props();
 
 	// Split text into characters for individual styling
+	// This allows us to highlight each character based on typing progress
 	let characters = $derived(text.split(''));
 	
 	// Determine character states (correct, incorrect, current, upcoming)
+	// Each character gets a state based on the user's typing progress
 	let characterStates = $derived(characters.map((char, index) => {
 		if (index < userInput.length) {
 			return userInput[index] === char ? 'correct' : 'incorrect';
@@ -22,19 +24,21 @@
 	}));
 </script>
 
-<div class="typing-area">
-	<div class="text-center mb-4">
-		<h2 class="text-xl font-semibold text-gray-800">Type the text below</h2>
-		<div class="text-sm text-gray-500 mt-1">
+<div id="typing-area" class="typing-area" role="region" aria-label="Typing practice area">
+	<div id="typing-header" class="text-center mb-4">
+		<h2 id="typing-title" class="text-xl font-semibold text-gray-800">Type the text below</h2>
+		<div id="typing-progress" class="text-sm text-gray-500 mt-1" role="status" aria-live="polite">
 			Progress: {userInput.length}/{text.length} characters
 		</div>
 	</div>
 	
-	<div class="text-display">
+	<div id="text-display" class="text-display" role="textbox" aria-readonly="true" aria-label="Text to type">
 		{#each characters as char, index}
 			<span 
+				id="char-{index}"
 				class="character {characterStates[index]}"
 				class:space={char === ' '}
+				aria-label="{char === ' ' ? 'space' : char} - {characterStates[index]}"
 			>
 				{char === ' ' ? '·' : char}
 			</span>
@@ -42,17 +46,17 @@
 	</div>
 	
 	<!-- Typing stats -->
-	<div class="stats-bar">
-		<div>
+	<div id="typing-stats" class="stats-bar" role="group" aria-label="Typing statistics">
+		<div id="accuracy-container">
 			{#if userInput.length > 0}
-				<span class="accuracy">
+				<span id="accuracy-stat" class="accuracy" role="status" aria-live="polite">
 					Accuracy: {Math.round((userInput.split('').filter((char, i) => char === characters[i]).length / userInput.length) * 100)}%
 				</span>
 			{:else}
-				<span>Start typing to see accuracy</span>
+				<span id="accuracy-placeholder">Start typing to see accuracy</span>
 			{/if}
 		</div>
-		<div class="wpm">
+		<div id="wpm-stat" class="wpm" role="status" aria-live="polite" aria-label="Words per minute">
 			WPM: 0
 		</div>
 	</div>

@@ -141,7 +141,7 @@
 </script>
 
 <svelte:head>
-	<title>Feed & Type</title>
+	<title>Feed-n-Type</title>
 	<meta name="description" content="Gamified typing practice with content you love" />
 </svelte:head>
 
@@ -152,7 +152,7 @@
 	<header class="bg-white shadow-sm border-b border-gray-200 px-4 py-3">
 		<div class="max-w-7xl mx-auto flex items-center justify-between">
 			<div class="flex items-center space-x-3">
-				<h1 class="text-2xl font-bold text-gray-900">Feed & Type</h1>
+				<h1 class="text-2xl font-bold text-gray-900">Feed-n-Type</h1>
 				<span class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">Practice Mode</span>
 			</div>
 			<div class="flex items-center space-x-4">
