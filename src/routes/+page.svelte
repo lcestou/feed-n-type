@@ -6,6 +6,7 @@
 	// Sample text for typing practice
 	let practiceText = "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the alphabet at least once. It's perfect for typing practice because it helps you work on all the keys on your keyboard.";
 	
+	// Enhanced typing state with error tracking and performance metrics
 	// Typing state
 	let userInput = $state('');
 	let currentPosition = $state(0);

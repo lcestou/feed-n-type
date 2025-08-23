@@ -126,15 +126,68 @@ class ChangelogAnalyzer:
                 diff_content = result.stdout
                 
                 if diff_content:
-                    # Analyze diff patterns
-                    if '+export' in diff_content or '+function' in diff_content:
-                        suggestions.append(f"New functionality in {file}")
-                    elif '+component' in diff_content.lower() or '.svelte' in file:
-                        suggestions.append(f"Component updates in {file}")
-                    elif '+import' in diff_content:
-                        suggestions.append(f"Dependencies updated in {file}")
-                    elif 'fix' in diff_content.lower():
-                        suggestions.append(f"Bug fixes in {file}")
+                    # Enhanced pattern analysis for more specific suggestions
+                    filename = Path(file).stem
+                    suggestions_for_file = []
+                    
+                    # Function/method analysis
+                    if '+export function' in diff_content or '+function ' in diff_content:
+                        func_matches = re.findall(r'\+.*?function\s+(\w+)', diff_content)
+                        if func_matches:
+                            suggestions_for_file.append(f"New function: {func_matches[0]} in {filename}")
+                        else:
+                            suggestions_for_file.append(f"New functionality in {filename}")
+                    
+                    # Class/interface analysis
+                    if '+class ' in diff_content or '+interface ' in diff_content:
+                        class_matches = re.findall(r'\+.*?(?:class|interface)\s+(\w+)', diff_content)
+                        if class_matches:
+                            suggestions_for_file.append(f"New class/interface: {class_matches[0]} in {filename}")
+                    
+                    # Component analysis for Svelte files
+                    if '.svelte' in file:
+                        if '+<script' in diff_content:
+                            suggestions_for_file.append(f"Script logic updated in {filename} component")
+                        elif '+<style' in diff_content:
+                            suggestions_for_file.append(f"Styling updated in {filename} component")
+                        elif any(tag in diff_content for tag in ['+<div', '+<button', '+<input', '+<form']):
+                            suggestions_for_file.append(f"Template structure updated in {filename} component")
+                        else:
+                            suggestions_for_file.append(f"Component updates in {filename}")
+                    
+                    # Configuration file analysis
+                    if file.endswith(('.json', '.yaml', '.yml', '.toml', '.env')):
+                        if 'package.json' in file:
+                            if '+dependencies' in diff_content or '+devDependencies' in diff_content:
+                                suggestions_for_file.append(f"Package dependencies updated")
+                            elif '+scripts' in diff_content:
+                                suggestions_for_file.append(f"NPM scripts updated")
+                        elif 'tsconfig.json' in file:
+                            suggestions_for_file.append(f"TypeScript configuration updated")
+                        else:
+                            suggestions_for_file.append(f"Configuration updated: {filename}")
+                    
+                    # Import/dependency analysis
+                    if '+import' in diff_content and not suggestions_for_file:
+                        import_matches = re.findall(r'\+import.*?from [\'"]([^\'"]+)[\'"]', diff_content)
+                        if import_matches:
+                            suggestions_for_file.append(f"New import: {import_matches[0]} in {filename}")
+                        else:
+                            suggestions_for_file.append(f"Dependencies updated in {filename}")
+                    
+                    # Bug fix detection
+                    if any(word in diff_content.lower() for word in ['fix', 'bug', 'error', 'issue']):
+                        suggestions_for_file.append(f"Bug fixes in {filename}")
+                    
+                    # Hook/automation analysis
+                    if 'hooks/' in file or 'scripts/' in file:
+                        suggestions_for_file.append(f"Automation script updated: {filename}")
+                    
+                    # Default fallback
+                    if not suggestions_for_file:
+                        suggestions_for_file.append(f"Updates in {filename}")
+                    
+                    suggestions.extend(suggestions_for_file)
                     
             except subprocess.CalledProcessError:
                 continue
@@ -180,8 +233,9 @@ class ChangelogAnalyzer:
             added_items = []
             if categories['code']:
                 for suggestion in suggestions:
-                    if 'New functionality' in suggestion or 'Component' in suggestion:
-                        added_items.append(f"- **{suggestion.split(' in ')[0]}**: Enhanced {Path(suggestion.split(' in ')[1]).stem} implementation")
+                    if 'New functionality' in suggestion or 'Component' in suggestion or 'Script logic' in suggestion or 'Template structure' in suggestion or 'New function' in suggestion or 'New class' in suggestion:
+                        # Use the specific suggestion directly instead of generic transformation
+                        added_items.append(f"- **{suggestion}**")
             
             if categories['config']:
                 added_items.append("- **Configuration updates**: Updated project configuration files")
@@ -195,10 +249,9 @@ class ChangelogAnalyzer:
             changed_items = []
             if categories['code']:
                 for suggestion in suggestions:
-                    if 'fix' in suggestion.lower():
-                        changed_items.append(f"- **Bug fixes**: Resolved issues in {Path(suggestion.split(' in ')[1]).stem}")
-                    elif 'Dependencies' in suggestion:
-                        changed_items.append(f"- **Dependencies**: Updated imports in {Path(suggestion.split(' in ')[1]).stem}")
+                    if 'fix' in suggestion.lower() or 'Bug fixes' in suggestion or 'Dependencies updated' in suggestion or 'Updates in' in suggestion or 'Automation script' in suggestion:
+                        # Use the specific suggestion directly
+                        changed_items.append(f"- **{suggestion}**")
             
             if categories['docs']:
                 changed_items.append("- **Documentation**: Updated project documentation")
@@ -211,14 +264,84 @@ class ChangelogAnalyzer:
             new_entry = "".join(new_entry_parts)
             insert_pos = unreleased_match.end()
             
-            # Check if today's entry already exists
+            # Check if today's entry already exists and update accordingly
             if self.has_todays_entry():
-                print(f"ℹ️  Today's entry already exists in CHANGELOG.md")
-                return True
-            
-            # Insert the new entry
-            updated_content = content[:insert_pos] + new_entry + content[insert_pos:]
-            self.changelog_path.write_text(updated_content)
+                # Find today's entry and its content
+                today_entry_pattern = re.escape(today_entry)
+                # Match from today's date until the next date entry or major section
+                match = re.search(f'({today_entry_pattern})(.*?)(?=\n####|\n##|$)', content, re.DOTALL)
+                if match:
+                    existing_content = match.group(2)
+                    # Find where to insert within today's section
+                    # Look for existing Added/Changed sections
+                    has_added = '**Added:**' in existing_content
+                    has_changed = '**Changed:**' in existing_content
+                    
+                    # Separate new items by category
+                    new_added_items = []
+                    new_changed_items = []
+                    current_section = None
+                    
+                    for line in new_entry_parts[1:]:  # Skip date header
+                        if '**Added:**' in line:
+                            current_section = 'added'
+                        elif '**Changed:**' in line:
+                            current_section = 'changed'
+                        elif line.strip().startswith('- '):
+                            if current_section == 'added':
+                                new_added_items.append(line.strip())
+                            elif current_section == 'changed':
+                                new_changed_items.append(line.strip())
+                    
+                    # Insert new items into appropriate existing sections
+                    updated_content = content
+                    
+                    # Add to existing Added: section (within today's date only)
+                    if new_added_items and has_added:
+                        # Find today's section boundaries
+                        today_start = existing_content.find('**Added:**')
+                        today_end = existing_content.find('**Changed:**', today_start) if '**Changed:**' in existing_content[today_start:] else len(existing_content)
+                        
+                        # Add items right after the **Added:** header within today's section
+                        added_header_pos = match.start() + len(match.group(1)) + today_start + len('**Added:**\n')
+                        new_items = '\n'.join(new_added_items) + '\n'
+                        updated_content = content[:added_header_pos] + new_items + content[added_header_pos:]
+                    
+                    # Add to existing Changed: section (within today's date only)
+                    if new_changed_items and has_changed:
+                        # Find Changed section within today's content
+                        changed_start = existing_content.find('**Changed:**')
+                        if changed_start != -1:
+                            changed_header_pos = match.start() + len(match.group(1)) + changed_start + len('**Changed:**\n')
+                            new_items = '\n'.join(new_changed_items) + '\n'
+                            updated_content = content[:changed_header_pos] + new_items + content[changed_header_pos:]
+                    
+                    # Create new sections if they don't exist
+                    if new_added_items and not has_added:
+                        new_section = "**Added:**\n" + '\n'.join(new_added_items) + '\n\n'
+                        # Insert after today's date
+                        date_pos = updated_content.find(today_entry) + len(today_entry)
+                        updated_content = updated_content[:date_pos] + '\n\n' + new_section + updated_content[date_pos:]
+                    
+                    if new_changed_items and not has_changed:
+                        new_section = "**Changed:**\n" + '\n'.join(new_changed_items) + '\n\n'
+                        # Insert at end of today's section
+                        next_date = updated_content.find('\n####', updated_content.find(today_entry))
+                        if next_date == -1:
+                            updated_content = updated_content.rstrip() + '\n\n' + new_section
+                        else:
+                            updated_content = updated_content[:next_date] + '\n' + new_section + updated_content[next_date:]
+                    
+                    if new_added_items or new_changed_items:
+                        self.changelog_path.write_text(updated_content)
+                        print(f"✅ Updated existing {today_entry} entry in CHANGELOG.md")
+                    else:
+                        print(f"ℹ️  No new changes to add to {today_entry} entry")
+                    return True
+            else:
+                # Insert the new entry
+                updated_content = content[:insert_pos] + new_entry + content[insert_pos:]
+                self.changelog_path.write_text(updated_content)
             
             print(f"✅ Auto-updated CHANGELOG.md with {today_entry} entry")
             return True
