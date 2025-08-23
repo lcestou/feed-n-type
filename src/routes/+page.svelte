@@ -130,8 +130,8 @@
 		} else if (key === 'Shift') {
 			key = 'Shift';
 		} else if (key.length === 1) {
-			// Regular character
-			key = key.toLowerCase();
+			// Regular character - preserve case
+			// key stays as-is to match exact case in practice text
 		} else {
 			// Ignore other keys
 			return;

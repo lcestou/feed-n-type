@@ -7,39 +7,43 @@
 
 	let { isTyping = false, hasError = false, wpm = 0 }: TypingotchiProps = $props();
 	
-	// ASCII art faces for different moods
+	// ASCII art faces for different moods (just the face, no frame)
 	const asciiArt = {
-		neutral: `
- ┌─────┐
- │ ◕ ◕ │
- │  ─  │
- │ [_] │
- └─────┘`,
-		focused: `
- ┌─────┐
- │ ◔ ◔ │
- │  ○  │
- │ [_] │
- └─────┘`,
-		happy: `
- ┌─────┐
- │ ◕ ◕ │
- │  ∩  │
- │ ◡_◡ │
- └─────┘`,
-		excited: `
- ┌─────┐
- │ ★ ★ │
- │  ∆  │
- │ ◡_◡ │
- └─────┘`,
-		worried: `
- ┌─────┐
- │ × × │
- │  ~  │
- │ ∪_∪ │
- └─────┘`
+		neutral: `◕ ◕
+ ─ `,
+		neutralBlink: `─ ─
+ ─ `,
+		focused: `◔ ◔
+ ○ `,
+		happy: `◕ ◕
+◡_◡`,
+		excited: `★ ★
+◡_◡`,
+		worried: `× ×
+∪_∪`
 	};
+
+	// Blinking animation state
+	let isBlinking = $state(false);
+
+	// Set up idle blinking animation
+	let blinkInterval: ReturnType<typeof setInterval>;
+	$effect(() => {
+		// Only blink when in neutral mood
+		if (character().mood === 'neutral') {
+			blinkInterval = setInterval(() => {
+				isBlinking = true;
+				setTimeout(() => {
+					isBlinking = false;
+				}, 150); // Blink duration
+			}, 3000); // Blink every 3 seconds
+		} else {
+			clearInterval(blinkInterval);
+			isBlinking = false;
+		}
+
+		return () => clearInterval(blinkInterval);
+	});
 
 	// Character states based on typing performance, user interaction, and emotional feedback
 	let character = $derived(() => {
@@ -52,7 +56,9 @@
 		} else if (isTyping) {
 			return { ascii: asciiArt.focused, status: 'Keep going!', mood: 'focused' };
 		} else {
-			return { ascii: asciiArt.neutral, status: 'Ready to type!', mood: 'neutral' };
+			// Show blinking animation when neutral and idle
+			const currentAscii = isBlinking ? asciiArt.neutralBlink : asciiArt.neutral;
+			return { ascii: currentAscii, status: 'Ready to type!', mood: 'neutral' };
 		}
 	});
 
@@ -75,8 +81,8 @@
 	<!-- Pet Header -->
 	<div id="typingotchi-header" class="text-center">
 		<h3 id="typingotchi-title" class="text-lg font-semibold text-gray-800 mb-2">Key-otchi</h3>
-		<div id="typingotchi-avatar" class="bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl p-3 border-2 border-purple-200 shadow-inner {animationClass()}">
-			<pre id="typingotchi-ascii" class="text-xs leading-tight font-mono text-gray-700 select-none" role="img" aria-label="typing pet emotion: {character().mood}">{character().ascii}</pre>
+		<div id="typingotchi-avatar" class="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center border-2 border-purple-200 {animationClass()}">
+			<pre id="typingotchi-ascii" class="text-xs leading-tight font-mono text-gray-700 select-none bg-transparent" style="background: transparent !important; box-shadow: none !important;" role="img" aria-label="typing pet emotion: {character().mood}">{character().ascii}</pre>
 		</div>
 	</div>
 
