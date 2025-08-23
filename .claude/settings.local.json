@@ -30,7 +30,7 @@
 					},
 					{
 						"type": "command",
-						"command": "python3 .claude/hooks/post_tool_changelog.py"
+						"command": "uv run .claude/hooks/post_tool_changelog.py"
 					}
 				]
 			}
