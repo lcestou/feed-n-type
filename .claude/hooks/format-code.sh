@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Format and lint code files after edits
 
 FILE_PATH="$1"
