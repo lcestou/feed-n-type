@@ -15,9 +15,9 @@ pnpm check && pnpm build
 uv run ./.claude/hooks/changelog_reminder.py
 uv run ./.claude/hooks/changelog_reminder.py --auto-update
 
-# Commit and push with intelligent message
+# Commit and push with manual message
 git add -A
-git commit -m "$(uv run ./.claude/hooks/changelog_reminder.py --commit-message)"
+git commit -m "docs: Update project configuration and documentation"
 git push
 ```
 
