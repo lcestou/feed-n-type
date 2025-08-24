@@ -147,7 +147,7 @@ claude mcp add memory --scope user -- npx -y @modelcontextprotocol/server-memory
 
 # Brave Search - Web and local search (requires API key, add --scope user for global)
 claude mcp add brave-search --scope user -- npx -y @modelcontextprotocol/server-brave-search
-# Set environment variable: BRAVE_API_KEY=BSAIOwYqD1DttOlQ6b8yKNNIJJ8gFNF
+# Set environment variable: BRAVE_API_KEY=YOUR_API_KEY
 
 # Sequential Thinking - Advanced problem solving (add --scope user for global)
 claude mcp add sequential-thinking --scope user -- npx -y @modelcontextprotocol/server-sequential-thinking
@@ -194,7 +194,7 @@ If commands don't work, you can manually add to `~/.claude.json`:
 			"command": "npx",
 			"args": ["-y", "@modelcontextprotocol/server-brave-search"],
 			"env": {
-				"BRAVE_API_KEY": "BSAIOwYqD1DttOlQ6b8yKNNIJJ8gFNF"
+				"BRAVE_API_KEY": "API-KEY"
 			}
 		},
 		"sequential-thinking": {
