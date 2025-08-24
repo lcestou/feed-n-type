@@ -299,24 +299,37 @@ lint_javascript() {
         fi
     fi
     
-    # Prettier
-    if [[ -f ".prettierrc" ]] || [[ -f "prettier.config.js" ]] || [[ -f ".prettierrc.json" ]]; then
+    # Prettier - run from project root to find config
+    local project_root
+    project_root=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
+    
+    if [[ -f "$project_root/.prettierrc" ]] || [[ -f "$project_root/prettier.config.js" ]] || [[ -f "$project_root/.prettierrc.json" ]]; then
+        # Convert filtered files to absolute paths for prettier
+        local abs_files=""
+        for file in $filtered_files; do
+            if [[ "$file" = /* ]]; then
+                abs_files="$abs_files$file "
+            else
+                abs_files="$abs_files$PWD/$file "
+            fi
+        done
+        
         if command_exists prettier; then
             # Check if files need formatting
-            if ! echo "$filtered_files" | xargs prettier --check >/dev/null 2>&1; then
+            if ! echo "$abs_files" | xargs prettier --check >/dev/null 2>&1; then
                 # Apply formatting and capture any errors
                 local format_output
-                if ! format_output=$(echo "$filtered_files" | xargs prettier --write 2>&1); then
+                if ! format_output=$(cd "$project_root" && echo "$abs_files" | xargs prettier --write 2>&1); then
                     add_error "Prettier formatting failed"
                     echo "$format_output" >&2
                 fi
             fi
         elif command_exists npx; then
             # Check if files need formatting
-            if ! echo "$filtered_files" | xargs npx prettier --check >/dev/null 2>&1; then
+            if ! echo "$abs_files" | xargs npx prettier --check >/dev/null 2>&1; then
                 # Apply formatting and capture any errors
                 local format_output
-                if ! format_output=$(echo "$filtered_files" | xargs npx prettier --write 2>&1); then
+                if ! format_output=$(cd "$project_root" && echo "$abs_files" | xargs npx prettier --write 2>&1); then
                     add_error "Prettier formatting failed"
                     echo "$format_output" >&2
                 fi

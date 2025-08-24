@@ -31,6 +31,10 @@
 					{
 						"type": "command",
 						"command": "uv run .claude/hooks/post_tool_changelog.py"
+					},
+					{
+						"type": "command",
+						"command": ".claude/hooks/smart-lint.sh"
 					}
 				]
 			}
