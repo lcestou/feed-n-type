@@ -6,25 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 #### 2025-08-25
+
 **Added:**
+
 - **Configuration updates**: Updated project configuration files
 
 **Changed:**
+- **Bug fixes in +page**
+- **Bug fixes in Typingotchi**
+- **Documentation**: Updated project documentation
+
 - **Documentation**: Updated project documentation
 
 #### 2025-08-24
+
 **Added:**
+
 - **Configuration updates**: Updated project configuration files
 - **Configuration updates**: Updated project configuration files
 
 **Changed:**
+
 - **Documentation**: Updated project documentation
 - **Documentation**: Updated project documentation
 
 #### 2025-08-23
 
 **Added:**
+
 - **Configuration updates**: Updated project configuration files
 - **Component updates in +page**
 - **Slash command configuration**: Created `/dev` command that runs the `dev` alias in background for quick development server startup
@@ -35,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Component updates in +page**: Enhanced script logic with error tracking and performance metrics
 
 **Changed:**
+
 - **Bug fixes in +page**
 - **Documentation**: Updated project documentation
 - **Bug fixes in +page**
@@ -48,10 +60,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### 2025-01-22
 
 **Added:**
+
 - **Typingotchi component**: Interactive tamagotchi-like pet that reacts to typing performance with real-time animations and mood indicators
 - **VirtualKeyboard component**: Authentic Mac-style virtual keyboard with proper QWERTY layout, Caps Lock key, and realistic styling
 
 **Changed:**
+
 - **Keyboard layout**: Updated virtual keyboard to neutral PC layout with standard Ctrl/Alt/Menu keys, removed arrow keys and Mac-specific symbols
 - **Hook system**: Replaced automated changelog hooks with manual update instruction in CLAUDE.md for better reliability
 - **Accessibility**: Added semantic IDs and ARIA labels to header navigation elements

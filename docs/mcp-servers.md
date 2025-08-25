@@ -29,6 +29,7 @@
 ### 🌐 Browser Automation
 
 #### Playwright MCP
+
 - **mcp**playwright**browser\_\***: Full browser control
   - Navigation: `navigate`, `navigate_back`, `navigate_forward`
   - Interaction: `click`, `type`, `hover`, `drag`, `select_option`
@@ -37,6 +38,7 @@
   - System: `close`, `resize`, `install`, `console_messages`
 
 #### BrowserMCP (Lightweight Alternative)
+
 - **mcp**browsermcp**browser\_\***: Simplified browser automation
   - Navigation: `browser_navigate`, `browser_go_back`, `browser_go_forward`
   - Interaction: `browser_click`, `browser_type`, `browser_hover`, `browser_select_option`
@@ -106,6 +108,7 @@
 ### Browser Testing
 
 #### Using Playwright (Full-featured)
+
 ```
 1. mcp__playwright__browser_navigate - Go to URL
 2. mcp__playwright__browser_snapshot - Analyze page
@@ -114,6 +117,7 @@
 ```
 
 #### Using BrowserMCP (Lightweight)
+
 ```
 1. mcp__browsermcp__browser_navigate - Go to URL
 2. mcp__browsermcp__browser_snapshot - Analyze page
@@ -241,21 +245,27 @@ If commands don't work, you can manually add to `~/.claude.json`:
 ### Common Issues
 
 #### Edit Tool Not Working
+
 If you encounter issues with the Edit tool not working:
+
 1. **Restart the session** - This often resolves temporary state issues
 2. **Verify file was read** - Always use Read tool before Edit
 3. **Check exact string matching** - Edit requires exact string matches including whitespace
 4. **Use MultiEdit for multiple changes** - More reliable for batch edits
 
 #### MCP Server Connection Lost
+
 If MCP servers become unavailable:
+
 1. Check server status with `ListMcpResourcesTool`
 2. Restart specific server if needed
 3. Re-add server using commands above
 4. Verify environment variables are set
 
 #### Session State Issues
+
 When experiencing persistent issues:
+
 - **Clear context**: Use `/clear` between major tasks
 - **Restart session**: Sometimes necessary for clean state
 - **Check hooks**: Verify hooks aren't blocking operations

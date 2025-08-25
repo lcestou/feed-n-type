@@ -71,13 +71,15 @@
 
 <div id="virtual-keyboard" class="pc-keyboard" role="group" aria-label="Virtual keyboard">
 	<!-- Main keyboard rows -->
-	{#each keyboardRows as row, rowIndex}
+	{#each keyboardRows as row, rowIndex (rowIndex)}
 		<div id="keyboard-row-{rowIndex + 1}" class="keyboard-row row-{rowIndex + 1}" role="row">
 			<!-- Left modifier key -->
 			{#if row.leftModifier}
-				<button 
+				<button
 					id="key-{row.leftModifier.key.toLowerCase()}"
-					class="key modifier-key {row.leftModifier.class} {isKeyPressed(row.leftModifier.key) ? 'pressed' : ''}"
+					class="key modifier-key {row.leftModifier.class} {isKeyPressed(row.leftModifier.key)
+						? 'pressed'
+						: ''}"
 					onclick={() => handleKeyClick(row.leftModifier.key)}
 					type="button"
 					aria-label="{row.leftModifier.label} key"
@@ -86,11 +88,11 @@
 					{row.leftModifier.label}
 				</button>
 			{/if}
-			
+
 			<!-- Regular keys -->
-			{#each row.keys as key, keyIndex}
-				<button 
-					id="key-{key.replace(/[^a-z0-9]/gi, '')}-{rowIndex}-{keyIndex}"
+			{#each row.keys as key, keyIdx (key)}
+				<button
+					id="key-{key.replace(/[^a-z0-9]/gi, '')}-{rowIndex}-{keyIdx}"
 					class="key regular-key {isKeyPressed(key) ? 'pressed' : ''}"
 					onclick={() => handleKeyClick(key)}
 					type="button"
@@ -100,12 +102,14 @@
 					{key.toUpperCase()}
 				</button>
 			{/each}
-			
+
 			<!-- Right modifier key -->
 			{#if row.rightModifier}
-				<button 
+				<button
 					id="key-{row.rightModifier.key.toLowerCase()}"
-					class="key modifier-key {row.rightModifier.class} {isKeyPressed(row.rightModifier.key) ? 'pressed' : ''}"
+					class="key modifier-key {row.rightModifier.class} {isKeyPressed(row.rightModifier.key)
+						? 'pressed'
+						: ''}"
 					onclick={() => handleKeyClick(row.rightModifier.key)}
 					type="button"
 					aria-label="{row.rightModifier.label} key"
@@ -119,13 +123,13 @@
 
 	<!-- Bottom row with space bar and modifiers -->
 	<div id="keyboard-bottom-row" class="keyboard-row bottom-row" role="row">
-		{#each bottomRowKeys as key, keyIndex}
-			<button 
+		{#each bottomRowKeys as key (key.key)}
+			<button
 				id="key-{key.key.toLowerCase().replace(/\s+/g, '-')}"
 				class="key {key.class} {isKeyPressed(key.key) ? 'pressed' : ''}"
 				onclick={() => handleKeyClick(key.key)}
 				type="button"
-				aria-label="{key.key === 'Space' ? 'Space bar' : key.label + ' key'}"
+				aria-label={key.key === 'Space' ? 'Space bar' : key.label + ' key'}
 				aria-pressed={isKeyPressed(key.key)}
 			>
 				{key.label}
@@ -154,12 +158,20 @@
 	}
 
 	/* Row staggering for standard PC keyboard layout */
-	.row-1 { margin-left: 0; }
-	.row-2 { margin-left: 24px; }
-	.row-3 { margin-left: 36px; }
-	.row-4 { margin-left: 48px; }
-	.bottom-row { 
-		margin-left: 0; 
+	.row-1 {
+		margin-left: 0;
+	}
+	.row-2 {
+		margin-left: 24px;
+	}
+	.row-3 {
+		margin-left: 36px;
+	}
+	.row-4 {
+		margin-left: 48px;
+	}
+	.bottom-row {
+		margin-left: 0;
 		margin-top: 8px;
 		gap: 2px;
 	}
@@ -294,18 +306,42 @@
 			min-width: 32px;
 		}
 
-		.tab { width: 52px; }
-		.caps-lock { width: 64px; }
-		.left-shift, .right-shift { width: 76px; }
-		.backspace { width: 64px; }
-		.enter { width: 64px; }
-		.space { width: 200px; }
-		.ctrl, .alt { width: 44px; }
-		.menu { width: 36px; }
+		.tab {
+			width: 52px;
+		}
+		.caps-lock {
+			width: 64px;
+		}
+		.left-shift,
+		.right-shift {
+			width: 76px;
+		}
+		.backspace {
+			width: 64px;
+		}
+		.enter {
+			width: 64px;
+		}
+		.space {
+			width: 200px;
+		}
+		.ctrl,
+		.alt {
+			width: 44px;
+		}
+		.menu {
+			width: 36px;
+		}
 
-		.row-2 { margin-left: 20px; }
-		.row-3 { margin-left: 32px; }
-		.row-4 { margin-left: 40px; }
+		.row-2 {
+			margin-left: 20px;
+		}
+		.row-3 {
+			margin-left: 32px;
+		}
+		.row-4 {
+			margin-left: 40px;
+		}
 	}
 
 	@media (max-width: 640px) {
@@ -324,18 +360,42 @@
 			min-width: 28px;
 		}
 
-		.tab { width: 44px; }
-		.caps-lock { width: 56px; }
-		.left-shift, .right-shift { width: 64px; }
-		.backspace { width: 56px; }
-		.enter { width: 56px; }
-		.space { width: 160px; }
-		.ctrl, .alt { width: 36px; }
-		.menu { width: 32px; }
+		.tab {
+			width: 44px;
+		}
+		.caps-lock {
+			width: 56px;
+		}
+		.left-shift,
+		.right-shift {
+			width: 64px;
+		}
+		.backspace {
+			width: 56px;
+		}
+		.enter {
+			width: 56px;
+		}
+		.space {
+			width: 160px;
+		}
+		.ctrl,
+		.alt {
+			width: 36px;
+		}
+		.menu {
+			width: 32px;
+		}
 
-		.row-2 { margin-left: 16px; }
-		.row-3 { margin-left: 24px; }
-		.row-4 { margin-left: 32px; }
+		.row-2 {
+			margin-left: 16px;
+		}
+		.row-3 {
+			margin-left: 24px;
+		}
+		.row-4 {
+			margin-left: 32px;
+		}
 
 		.keyboard-row {
 			margin-bottom: 3px;

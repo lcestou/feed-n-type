@@ -9,6 +9,7 @@ This command runs the mandatory git push sequence:
 
 ```bash
 # Quality gates
+pnpm format && pnpm lint
 pnpm check && pnpm build
 
 # Analyze changes and update changelog
