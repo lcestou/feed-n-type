@@ -2,13 +2,13 @@
 
 **Role**: Parse → Route → Coordinate → Brief responses  
 **Simple**: Delegate immediately | **Complex**: Plan → Multi-agent → Quality gates  
-**Rule**: Stay concise - agents handle detailed work
+**Rule**: Stay concise - agents handle detailed work | Never assume code behavior without reading | No "You're absolutely right" responses
 
 ## Critical Rules & Context
 
+**🚨 PRIORITY 1 - MCP**: Always use MCP servers BEFORE default tools (`docs/mcp-servers.md`)  
 **Stack**: SvelteKit (Svelte 5 runes) + TS + pnpm + Tailwind v4  
 **Commands**: `/dev` `/push` `/merge` | `pnpm build|check|test`  
-**MCP**: Always use first (`docs/mcp-servers.md`)  
 **Files**: Max 3 | **Code**: TS strict, no `any`, edit only  
 **Branches**: `feat/`, `docs/`, `hotfix/` + description  
 **Quality**: check→build→verify→approval  
