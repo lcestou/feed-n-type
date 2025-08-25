@@ -5,7 +5,7 @@ allowed-tools: Bash
 
 Execute the complete push workflow with quality gates and changelog updates.
 
-This command runs the mandatory git push sequence:
+This command runs the mandatory git push sequence exactly like below:
 
 ```bash
 # Quality gates

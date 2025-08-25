@@ -29,16 +29,19 @@ def main():
     if not should_run_changelog_update(tool_name):
         return
     
-    # Run the changelog update silently
+    # Run the smart changelog update silently
     try:
-        script_path = Path(__file__).parent / "changelog_reminder.py"
+        script_path = Path(__file__).parent / "changelog_smart.py"
         result = subprocess.run([
             'python3', str(script_path), '--auto-update'
         ], capture_output=True, text=True, cwd=Path.cwd())
         
-        # Only print output if there were actual updates
-        if result.stdout and "✅" in result.stdout:
+        # Only print output if there were actual updates (but suppress duplicate prevention messages)
+        if result.stdout and "✅" in result.stdout and "duplicate" not in result.stdout.lower():
             print(result.stdout.strip(), file=sys.stderr)
+        elif result.stderr and "duplicate" in result.stderr.lower():
+            # Optionally log duplicate prevention (silent by default)
+            pass
             
     except Exception:
         # Fail silently to avoid disrupting workflow

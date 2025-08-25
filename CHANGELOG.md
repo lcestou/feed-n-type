@@ -10,35 +10,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### 2025-08-25
 
 **Added:**
-- **Configuration updates**: Updated project configuration files
 
-- **Configuration updates**: Updated project configuration files
+- **Template structure updated in +page component**
+- **Added changelog_smart script**
+- **Added changelog_dedup script**
 
 **Changed:**
 
 - **Bug fixes in +page**
 - **Bug fixes in Typingotchi**
-- **Documentation**: Updated project documentation
+- **Enhanced +page component template**
+- **Removed page.svelte.spec.ts**
+- **Updated CHANGELOG documentation**
 
-- **Documentation**: Updated project documentation
+**Added:**
+
+- **Added 1 new function(s) to vite.config**
+- **Added imports for vitest/config in vite.config**
+- **Added 2 new function(s) to post_tool_changelog**
 
 #### 2025-08-24
 
 **Added:**
 
 - **Configuration updates**: Updated project configuration files
-- **Configuration updates**: Updated project configuration files
 
 **Changed:**
 
-- **Documentation**: Updated project documentation
 - **Documentation**: Updated project documentation
 
 #### 2025-08-23
 
 **Added:**
 
-- **Configuration updates**: Updated project configuration files
 - **Component updates in +page**
 - **Slash command configuration**: Created `/dev` command that runs the `dev` alias in background for quick development server startup
 - **Intelligent changelog reminder**: Implemented smart PostToolUse hook (`changelog_reminder.py`) that detects file changes and provides contextual reminders
@@ -49,8 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Changed:**
 
-- **Bug fixes in +page**
-- **Documentation**: Updated project documentation
 - **Bug fixes in +page**
 - **Project branding**: Updated main h1 title from "Feed & Type" to "Feed-n-Type" for consistent brand naming
 - **Docker compose volumes**: Improved NAS mount configuration with better fallback handling and cross-platform compatibility
@@ -71,9 +73,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Keyboard layout**: Updated virtual keyboard to neutral PC layout with standard Ctrl/Alt/Menu keys, removed arrow keys and Mac-specific symbols
 - **Hook system**: Replaced automated changelog hooks with manual update instruction in CLAUDE.md for better reliability
 - **Accessibility**: Added semantic IDs and ARIA labels to header navigation elements
-
-### Added
-
 - **Accessibility improvements**: Added semantic IDs for better interaction handling
 - **Feed & Type branding**: Gamified typing learning tool with engaging content themes
 - **Minimal header navigation**: Clean design with keyboard and sound toggle icons
@@ -81,9 +80,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Split-screen typing interface**: TypingClub.com-style layout with text display and virtual keyboard
 - **Interactive typing components**: Real-time character highlighting, accuracy tracking, and progress display
 - **Virtual QWERTY keyboard**: Minimal keyboard layout with visual feedback for key presses
-
-### Changed
-
 - **Navigation enhancements**: Updated header navigation with improved user interface
 - **App identity**: Transformed from generic SvelteKit demo to Feed & Type typing tool
 - **Navigation design**: Replaced demo navigation with minimal, icon-based header
@@ -91,9 +87,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Footer styling**: Updated to gaming theme with gradient background and appropriate branding
 - **Typing interface**: Added split-screen layout with text display and virtual keyboard
 - **UI enhancements**: Improved main page design and user interface components
-
-### Removed
-
 - **SvelteKit demo content**: Removed About page, Sverdle game, and Counter component
 - **Demo assets**: Cleaned up unused sample images and placeholder content
 - **Generic branding**: Replaced placeholder content with Feed & Type specific messaging
@@ -123,8 +116,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Layout improvements**: Updated site layout with sticky footer and full-width styling
-- **UI enhancements**: Improved main page design and user interface
 - **Layout improvements**: Updated site layout with sticky footer and full-width styling
 - **UI enhancements**: Improved main page design and user interface
 - **Hook Architecture**: Replaced redundant security-check.py with more comprehensive pre_tool_use.py security validation

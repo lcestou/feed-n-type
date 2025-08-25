@@ -144,10 +144,10 @@
 </script>
 
 <svelte:head>
-	<title>Feed-n-Type - Gamified Typing Practice</title>
+	<title>Feed-n-Type - Interactive Typing Learning</title>
 	<meta
 		name="description"
-		content="Gamified typing practice with content you love - Practice Mode"
+		content="Interactive typing learning with engaging content - Practice Mode"
 	/>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta name="author" content="Feed-n-Type Team" />
@@ -156,7 +156,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 to-indigo-100">
+<div class="flex flex-1 flex-col bg-gradient-to-br from-blue-50 to-indigo-100">
 	<!-- Header with navigation icons, title and reset button -->
 	<header class="border-b border-gray-200 bg-white">
 		<div class="mx-auto max-w-6xl px-6">
