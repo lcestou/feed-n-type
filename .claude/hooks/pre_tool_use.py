@@ -51,6 +51,70 @@ def is_dangerous_rm_command(command):
     
     return False
 
+def is_dangerous_git_command(command):
+	"""
+	Comprehensive detection of dangerous git commands that could cause data loss.
+	Detects commands that can permanently delete commits, branches, or files.
+	"""
+	# Normalize command by removing extra spaces and converting to lowercase
+	normalized = ' '.join(command.lower().split())
+	
+	# Pattern 1: Hard reset commands that lose commits
+	reset_patterns = [
+		r'\bgit\s+reset\s+--hard\s+head~\d+',  # git reset --hard HEAD~X
+		r'\bgit\s+reset\s+--hard\s+[a-f0-9]{7,40}',  # git reset --hard <commit>
+		r'\bgit\s+reset\s+--hard\s+origin/',  # git reset --hard origin/branch
+	]
+	
+	# Pattern 2: Branch deletion commands
+	branch_deletion_patterns = [
+		r'\bgit\s+branch\s+-d\s+',  # git branch -D (force delete)
+		r'\bgit\s+branch\s+--delete\s+--force',  # git branch --delete --force
+		r'\bgit\s+update-ref\s+-d\s+refs/heads/',  # git update-ref -d refs/heads/
+	]
+	
+	# Pattern 3: Remote manipulation
+	remote_patterns = [
+		r'\bgit\s+remote\s+remove\s+',  # git remote remove
+		r'\bgit\s+remote\s+rm\s+',  # git remote rm
+	]
+	
+	# Pattern 4: Aggressive cleanup commands
+	cleanup_patterns = [
+		r'\bgit\s+clean\s+.*-[a-z]*f[a-z]*d',  # git clean -fd, -fdx
+		r'\bgit\s+clean\s+.*-[a-z]*d[a-z]*f',  # git clean -df, -dfx
+		r'\bgit\s+clean\s+.*-[a-z]*x',  # git clean with -x flag
+		r'\bgit\s+gc\s+--aggressive\s+--prune=now',  # aggressive garbage collection
+		r'\bgit\s+reflog\s+expire\s+--expire=now',  # expire reflog immediately
+	]
+	
+	# Pattern 5: History rewriting commands
+	history_patterns = [
+		r'\bgit\s+filter-branch',  # git filter-branch
+		r'\bgit\s+checkout\s+--orphan',  # git checkout --orphan
+	]
+	
+	# Combine all patterns
+	all_patterns = (reset_patterns + branch_deletion_patterns + 
+					remote_patterns + cleanup_patterns + history_patterns)
+	
+	# Check for dangerous patterns
+	for pattern in all_patterns:
+		if re.search(pattern, normalized):
+			return True
+	
+	# Special case: Check for deletion of main/master branches
+	main_branch_patterns = [
+		r'\bgit\s+branch\s+-d\s+(main|master)',
+		r'\bgit\s+update-ref\s+-d\s+refs/heads/(main|master)',
+	]
+	
+	for pattern in main_branch_patterns:
+		if re.search(pattern, normalized):
+			return True
+	
+	return False
+
 def is_env_file_access(tool_name, tool_input):
     """
     Check if any tool is trying to access .env files containing sensitive data.
@@ -95,13 +159,19 @@ def main():
             print("Use .env.sample for template files instead", file=sys.stderr)
             sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
         
-        # Check for dangerous rm -rf commands
+        # Check for dangerous rm -rf commands and dangerous git commands
         if tool_name == 'Bash':
             command = tool_input.get('command', '')
             
             # Block rm -rf commands with comprehensive pattern matching
             if is_dangerous_rm_command(command):
                 print("BLOCKED: Dangerous rm command detected and prevented", file=sys.stderr)
+                sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
+            
+            # Block dangerous git commands that could cause data loss
+            if is_dangerous_git_command(command):
+                print("BLOCKED: Dangerous git command detected and prevented", file=sys.stderr)
+                print("This command could cause permanent data loss or remove important git history", file=sys.stderr)
                 sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
         
         # Ensure log directory exists
