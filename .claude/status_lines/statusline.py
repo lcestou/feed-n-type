@@ -71,11 +71,14 @@ def estimate_context_usage(transcript_path):
         # Get file size in characters
         file_size = Path(transcript_path).stat().st_size
         
-        # Rough estimation: 1 token ≈ 4 characters
-        estimated_tokens = file_size // 4
+        # Fine-tuned estimation - finding the sweet spot:
+        # 8% left (92% used) = ~184k tokens, but we show 88% (~176k)
+        # Need to increase by ~8k tokens: try 1 token per 6.2 chars
+        estimated_tokens = file_size * 10 // 62
         
-        # Claude Code typically compacts at ~80% of 200k tokens (160k)
-        max_tokens = 160000
+        # Standard Claude Code context limit (200k tokens)
+        # Keep at documented limit to show accurate warning levels
+        max_tokens = 200000
         percentage = min(100, (estimated_tokens * 100) // max_tokens)
         
         return estimated_tokens, percentage
