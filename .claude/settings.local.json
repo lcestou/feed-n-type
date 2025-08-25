@@ -85,14 +85,6 @@
 					},
 					{
 						"type": "command",
-						"command": "echo '=== Recent Dev Server Output ==='; tail -10 ~/.claude/dev.log 2>/dev/null | grep -E '(Error|Failed|✘|Warning|⚠️)' | tail -3 || echo 'No recent dev errors'"
-					},
-					{
-						"type": "command",
-						"command": ".claude/hooks/check-console-logs.sh"
-					},
-					{
-						"type": "command",
 						"command": "uv run .claude/hooks/user_prompt_submit.py --log-only --store-last-prompt --name-agent"
 					}
 				]

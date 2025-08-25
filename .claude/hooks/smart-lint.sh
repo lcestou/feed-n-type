@@ -630,7 +630,8 @@ try_project_lint_command() {
     fi
     
     # Check language-specific opt-out
-    local opt_out_var="CLAUDE_HOOKS_${language^^}_USE_PROJECT_COMMANDS"
+    local language_upper=$(echo "$language" | tr '[:lower:]' '[:upper:]')
+    local opt_out_var="CLAUDE_HOOKS_${language_upper}_USE_PROJECT_COMMANDS"
     if [[ "${!opt_out_var:-true}" != "true" ]]; then
         log_debug "Project commands disabled for $language"
         return 1
