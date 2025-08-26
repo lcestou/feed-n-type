@@ -196,21 +196,27 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <div
+	id="main-app-container"
 	class="flex flex-1 flex-col bg-gradient-to-br from-blue-50 to-indigo-100"
 	data-testid="main-app-container"
 >
 	<!-- Header with navigation icons, title and reset button -->
-	<header class="border-b border-gray-200 bg-white" data-testid="main-header">
-		<div class="mx-auto max-w-6xl px-6">
+	<header id="main-header" class="border-b border-gray-200 bg-white" data-testid="main-header">
+		<div id="header-wrapper" class="mx-auto max-w-6xl px-6" data-testid="header-wrapper">
 			<div
+				id="header-content"
 				class="flex h-16 items-center justify-between"
 				role="banner"
 				data-testid="header-content"
 			>
 				<!-- Left: Navigation Icons -->
-				<nav class="flex items-center space-x-8" data-testid="navigation-controls">
+				<nav
+					id="navigation-controls"
+					class="flex items-center space-x-8"
+					data-testid="navigation-controls"
+				>
 					<button
-						id="keyboard-toggle"
+						id="keyboard-settings-button"
 						class="rounded-lg p-2 transition-colors hover:bg-gray-100"
 						aria-label="Keyboard settings"
 						data-testid="keyboard-settings-button"
@@ -227,7 +233,7 @@
 						</svg>
 					</button>
 					<button
-						id="sound-toggle"
+						id="sound-settings-button"
 						class="rounded-lg p-2 transition-colors hover:bg-gray-100"
 						aria-label="Sound settings"
 						data-testid="sound-settings-button"
@@ -249,13 +255,27 @@
 				</nav>
 
 				<!-- Center: Title -->
-				<div class="flex flex-col items-center" data-testid="app-title-container">
-					<h1 class="text-2xl font-bold text-gray-900" data-testid="app-title">Feed-n-Type</h1>
+				<div
+					id="app-title-container"
+					class="flex flex-col items-center"
+					data-testid="app-title-container"
+				>
+					<h1 id="app-title" class="text-2xl font-bold text-gray-900" data-testid="app-title">
+						Feed-n-Type
+					</h1>
 				</div>
 
 				<!-- Right: WPM Stats and Reset Button -->
-				<div class="flex items-center space-x-4" data-testid="header-stats-controls">
-					<div class="flex items-center space-x-2 text-gray-600" data-testid="wpm-display">
+				<div
+					id="header-stats-controls"
+					class="flex items-center space-x-4"
+					data-testid="header-stats-controls"
+				>
+					<div
+						id="wpm-display"
+						class="flex items-center space-x-2 text-gray-600"
+						data-testid="wpm-display"
+					>
 						<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
@@ -264,9 +284,12 @@
 								d="M13 10V3L4 14h7v7l9-11h-7z"
 							/>
 						</svg>
-						<span class="text-sm font-medium" data-testid="wpm-value">{currentWpm} WPM</span>
+						<span id="wpm-value" class="text-sm font-medium" data-testid="wpm-value"
+							>{currentWpm} WPM</span
+						>
 					</div>
 					<button
+						id="reset-exercise-button"
 						onclick={resetExercise}
 						class="flex items-center space-x-2 rounded-lg bg-indigo-600 px-3 py-2 text-white transition-colors hover:bg-indigo-700"
 						type="button"
@@ -288,12 +311,16 @@
 	</header>
 
 	<!-- Main content area with three-column layout -->
-	<main class="mx-auto w-full max-w-7xl flex-1 p-4" data-testid="main-content">
-		<div class="flex h-full gap-4" data-testid="main-layout-container">
+	<main id="main-content" class="mx-auto w-full max-w-7xl flex-1 p-4" data-testid="main-content">
+		<div id="main-layout-container" class="flex h-full gap-4" data-testid="main-layout-container">
 			<!-- Left + Center: Original typing interface -->
-			<div class="flex flex-1 flex-col gap-4" data-testid="typing-interface-container">
+			<div
+				id="typing-interface-container"
+				class="flex flex-1 flex-col gap-4"
+				data-testid="typing-interface-container"
+			>
 				<!-- Upper portion: Text display area (60% of space) -->
-				<div class="min-h-0 flex-[3]" data-testid="typing-area-container">
+				<div id="typing-area-section" class="min-h-0 flex-[3]" data-testid="typing-area-container">
 					<TypingArea
 						text={practiceText}
 						{userInput}
@@ -304,10 +331,15 @@
 
 				<!-- Lower portion: Virtual keyboard (40% of space) -->
 				<div
+					id="virtual-keyboard-section"
 					class="flex min-h-0 flex-[2] items-center justify-center"
 					data-testid="virtual-keyboard-container"
 				>
-					<div class="w-full max-w-4xl" data-testid="virtual-keyboard-wrapper">
+					<div
+						id="virtual-keyboard-wrapper"
+						class="w-full max-w-4xl"
+						data-testid="virtual-keyboard-wrapper"
+					>
 						<VirtualKeyboard
 							onKeyPress={handleKeyPress}
 							{pressedKey}
@@ -318,7 +350,7 @@
 			</div>
 
 			<!-- Right: Typingotchi -->
-			<div class="w-64 flex-shrink-0" data-testid="typingotchi-container">
+			<div id="typingotchi-section" class="w-64 flex-shrink-0" data-testid="typingotchi-container">
 				<Typingotchi
 					{isTyping}
 					hasError={hasTypingError}

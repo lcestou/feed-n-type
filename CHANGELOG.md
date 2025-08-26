@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Component updates in Typingotchi**
 
 **Changed:**
+- **Bug fixes in app.d**
+- **Bug fixes in +page**
 
 - **Documentation**: Updated project documentation
 - **Bug fixes in +page**
