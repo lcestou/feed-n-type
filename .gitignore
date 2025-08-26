@@ -173,4 +173,4 @@ Thumbs.db
 *.tmp
 *.temp
 .tmp/
-.temp/
+.temp/.claude/settings.local.json
