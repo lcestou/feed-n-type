@@ -6,6 +6,7 @@ allowed-tools: Bash
 Execute git push workflow with two modes:
 
 ## Standard Mode: `/push`
+
 Runs the complete push workflow with quality gates and changelog updates:
 
 ```bash
@@ -28,6 +29,7 @@ git push
 **Commit Message**: Intelligently crafted based on actual file changes
 
 ## Quick Mode: `/push quick`
+
 For simple changes (new files, documentation, configs) that don't need full validation:
 
 ```bash

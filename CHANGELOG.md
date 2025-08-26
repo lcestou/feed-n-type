@@ -6,18 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 #### 2025-08-26
+
 **Added:**
+
 - **Template structure updated in TypingArea component**
 - **Template structure updated in +page component**
 - **Template structure updated in VirtualKeyboard component**
 - **Component updates in Typingotchi**
 
 **Changed:**
+- **Documentation**: Updated project documentation
+
 - **Bug fixes in +page**
 - **Bug fixes in Typingotchi**
 - **Updates in +page**
-
 
 #### 2025-08-25
 
