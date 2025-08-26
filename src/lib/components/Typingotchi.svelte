@@ -1,11 +1,17 @@
 <script lang="ts">
 	/* eslint-disable @typescript-eslint/no-unused-vars */
+
+	/**
+	 * Props interface for the Typingotchi virtual pet component.
+	 * Defines the interactive pet that responds to typing performance and errors.
+	 */
 	interface TypingotchiProps {
 		isTyping: boolean;
 		hasError: boolean;
 		wpm: number;
 		streak: number;
 		fireLevel: number;
+		'data-component-id'?: string;
 	}
 
 	let {
@@ -13,10 +19,15 @@
 		hasError = false,
 		wpm = 0,
 		streak = 0,
-		fireLevel = 0
+		fireLevel = 0,
+		'data-component-id': componentId
 	}: TypingotchiProps = $props();
 
-	// ASCII art faces for different moods (just the face, no frame)
+	/**
+	 * ASCII art faces for different moods and emotional states.
+	 * Each mood represents a different typing performance or error state.
+	 * Contains just the face expressions without frames for clean display.
+	 */
 	const asciiArt = {
 		neutral: `◕ ◕
  ─ `,
@@ -38,13 +49,13 @@
 ◊◡◊`
 	};
 
-	// Blinking animation state
+	/** Reactive state controlling the blinking animation for neutral mood */
 	let isBlinking = $state(false);
 
-	// Determine if we should be in neutral state (avoiding circular dependency)
+	/** Derived state determining if pet should be in neutral state (no errors, not typing) */
 	let isNeutralState = $derived(!hasError && !isTyping);
 
-	// Set up idle blinking animation
+	/** Interval reference for managing the blinking animation timer */
 	let blinkInterval: ReturnType<typeof setInterval>;
 	$effect(() => {
 		// Only blink when in neutral mood
@@ -65,7 +76,18 @@
 		return () => clearInterval(blinkInterval);
 	});
 
-	// Character states based on typing performance, streak, and feedback
+	/**
+	 * Derived character state based on typing performance, streak, and error feedback.
+	 * Returns an object containing ASCII art, status message, and mood identifier.
+	 *
+	 * Priority order:
+	 * 1. Fire levels (3: super fire, 2: on fire, 1: heating up)
+	 * 2. Error state (worried mood)
+	 * 3. Typing performance (excited > happy > focused)
+	 * 4. Neutral state (with blinking animation)
+	 *
+	 * @returns Character state object with ascii, status, and mood properties
+	 */
 	let character = $derived(() => {
 		// Streak states have priority over other states
 		if (fireLevel === 3) {
@@ -97,7 +119,12 @@
 		}
 	});
 
-	// Animation classes based on mood
+	/**
+	 * Derived CSS animation classes based on the current character mood.
+	 * Maps mood states to corresponding Tailwind CSS animation classes.
+	 *
+	 * @returns CSS class string for animations (bounce, pulse, ping, etc.)
+	 */
 	let animationClass = $derived(() => {
 		switch (character().mood) {
 			case 'superFire':
@@ -117,7 +144,12 @@
 		}
 	});
 
-	// Fire effect classes based on fire level
+	/**
+	 * Derived CSS classes for fire aura effects based on current fire level.
+	 * Creates visual glow effects that intensify with higher fire levels.
+	 *
+	 * @returns CSS class string for fire aura effects
+	 */
 	let fireEffectClass = $derived(() => {
 		switch (fireLevel) {
 			case 3:
@@ -137,14 +169,26 @@
 	class="flex h-full flex-col items-center justify-center space-y-4 rounded-xl border-2 border-gray-200 bg-white p-6 shadow-lg"
 	role="region"
 	aria-label="Typingotchi pet"
+	data-component-id={componentId}
+	data-testid="typingotchi"
 >
 	<!-- Pet Header -->
-	<div id="typingotchi-header" class="text-center">
-		<h3 id="typingotchi-title" class="mb-2 text-lg font-semibold text-gray-800">Key-otchi</h3>
+	<div id="typingotchi-header" class="text-center" data-testid="typingotchi-header">
+		<h3
+			id="typingotchi-title"
+			class="mb-2 text-lg font-semibold text-gray-800"
+			data-testid="typingotchi-title"
+		>
+			Key-otchi
+		</h3>
 		<div class="relative">
 			<!-- Fire aura background effect -->
 			{#if fireLevel > 0}
-				<div class="absolute inset-0 rounded-xl {fireEffectClass()}" style="z-index: 0;"></div>
+				<div
+					class="absolute inset-0 rounded-xl {fireEffectClass()}"
+					style="z-index: 0;"
+					data-testid="typingotchi-fire-aura"
+				></div>
 			{/if}
 
 			<!-- Pet avatar -->
@@ -152,32 +196,41 @@
 				id="typingotchi-avatar"
 				class="relative flex h-20 w-20 items-center justify-center rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-100 to-blue-100 {animationClass()}"
 				style="z-index: 1;"
+				data-testid="typingotchi-avatar"
 			>
 				<pre
 					id="typingotchi-ascii"
 					class="bg-transparent font-mono text-xs leading-tight text-gray-700 select-none"
 					style="background: transparent !important; box-shadow: none !important;"
 					role="img"
-					aria-label="typing pet emotion: {character().mood}">{character().ascii}</pre>
+					aria-label="typing pet emotion: {character().mood}"
+					data-testid="typingotchi-ascii">{character().ascii}</pre>
 			</div>
 		</div>
 	</div>
 
 	<!-- Status Message -->
-	<div id="typingotchi-status" class="text-center">
+	<div id="typingotchi-status" class="text-center" data-testid="typingotchi-status">
 		<p
 			id="typingotchi-message"
 			class="mb-1 text-sm font-medium text-gray-700"
 			role="status"
 			aria-live="polite"
+			data-testid="typingotchi-message"
 		>
 			{character().status}
 		</p>
 
 		<!-- Stats -->
-		<div id="typingotchi-stats" class="space-y-1 text-xs text-gray-500">
+		<div
+			id="typingotchi-stats"
+			class="space-y-1 text-xs text-gray-500"
+			data-testid="typingotchi-stats"
+		>
 			{#if wpm > 0}
-				<div id="typingotchi-wpm" aria-label="Words per minute">Speed: {wpm} WPM</div>
+				<div id="typingotchi-wpm" aria-label="Words per minute" data-testid="typingotchi-wpm">
+					Speed: {wpm} WPM
+				</div>
 			{/if}
 
 			{#if streak > 0}
@@ -185,6 +238,7 @@
 					id="typingotchi-streak"
 					aria-label="Current streak"
 					class={fireLevel > 0 ? 'font-semibold text-orange-600' : 'text-blue-600'}
+					data-testid="typingotchi-streak"
 				>
 					🔥 Streak: {streak}
 				</div>
@@ -196,6 +250,7 @@
 				class="flex items-center justify-center gap-1"
 				role="img"
 				aria-label="Mood level: {character().mood}"
+				data-testid="typingotchi-mood"
 			>
 				<span class="text-xs">Mood:</span>
 				<div class="flex gap-1">
@@ -220,6 +275,7 @@
 									? 'bg-orange-400'
 									: 'bg-green-400'
 								: 'bg-gray-300'}"
+							data-testid="mood-indicator-{i}"
 						></div>
 					{/each}
 				</div>
@@ -228,12 +284,19 @@
 	</div>
 
 	<!-- Simple care actions -->
-	<div id="typingotchi-actions" class="flex gap-2" role="group" aria-label="Pet care actions">
+	<div
+		id="typingotchi-actions"
+		class="flex gap-2"
+		role="group"
+		aria-label="Pet care actions"
+		data-testid="typingotchi-actions"
+	>
 		<button
 			id="typingotchi-feed"
 			class="cursor-default rounded-full bg-purple-100 px-3 py-1 font-mono text-xs text-purple-700 transition-colors hover:bg-purple-200"
 			type="button"
 			aria-label="Feed your Key-otchi"
+			data-testid="typingotchi-feed-button"
 		>
 			◊ Feed
 		</button>
@@ -242,6 +305,7 @@
 			class="cursor-default rounded-full bg-blue-100 px-3 py-1 font-mono text-xs text-blue-700 transition-colors hover:bg-blue-200"
 			type="button"
 			aria-label="Play with your Key-otchi"
+			data-testid="typingotchi-play-button"
 		>
 			♦ Play
 		</button>

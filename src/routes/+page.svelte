@@ -3,25 +3,39 @@
 	import VirtualKeyboard from '$lib/components/VirtualKeyboard.svelte';
 	import Typingotchi from '$lib/components/Typingotchi.svelte';
 
-	// Sample text for typing practice
+	/** Sample pangram text for comprehensive typing practice covering all alphabet letters */
 	let practiceText =
 		"The quick brown fox jumps over the lazy dog. This pangram contains every letter of the alphabet at least once. It's perfect for typing practice because it helps you work on all the keys on your keyboard.";
 
 	// Enhanced typing state with error tracking and performance metrics
-	// Typing state
+
+	/** User's typed input string */
 	let userInput = $state('');
+
+	/** Current position/index in the practice text */
 	let currentPosition = $state(0);
+
+	/** Currently pressed key for visual feedback */
 	let pressedKey = $state<string>('');
+
+	/** Timestamp when typing session began (null if not started) */
 	let startTime = $state<number | null>(null);
 
 	// Typingotchi state
+	/** Whether there's currently a typing error for pet feedback */
 	let hasTypingError = $state(false);
+
+	/** Current words per minute calculation */
 	let currentWpm = $state(0);
 
-	// Calculate WPM and detect errors
+	/** Derived state indicating if user is actively typing */
 	let isTyping = $derived(userInput.length > 0 && currentPosition < practiceText.length);
 
-	// Calculate WPM in real-time
+	/**
+	 * Real-time WPM calculation effect.
+	 * Updates current WPM based on elapsed time and words typed.
+	 * Runs whenever typing state changes.
+	 */
 	$effect(() => {
 		if (startTime && userInput.length > 0) {
 			const timeMinutes = (Date.now() - startTime) / 1000 / 60;
@@ -32,7 +46,11 @@
 		}
 	});
 
-	// Detect typing errors for Typingotchi feedback
+	/**
+	 * Typing error detection effect for Typingotchi feedback.
+	 * Compares the last typed character with expected character
+	 * and sets error state with automatic timeout.
+	 */
 	$effect(() => {
 		if (userInput.length > 0) {
 			const isCurrentCharCorrect =
@@ -48,6 +66,13 @@
 		}
 	});
 
+	/**
+	 * Handles key press events from both virtual and physical keyboards.
+	 * Processes special keys (Backspace, Enter, Tab, Shift) and regular characters.
+	 * Manages typing state, position tracking, and exercise completion.
+	 *
+	 * @param key - The key that was pressed
+	 */
 	function handleKeyPress(key: string) {
 		// Show visual feedback
 		pressedKey = key;
@@ -93,6 +118,10 @@
 		}
 	}
 
+	/**
+	 * Handles completion of the typing exercise.
+	 * Calculates final WPM, shows completion alert, and resets for next practice.
+	 */
 	function handleExerciseComplete() {
 		const endTime = Date.now();
 		const timeMinutes = (endTime - (startTime || endTime)) / 1000 / 60;
@@ -105,6 +134,10 @@
 		resetExercise();
 	}
 
+	/**
+	 * Resets all typing state variables to initial values.
+	 * Clears user input, position, timers, and error states.
+	 */
 	function resetExercise() {
 		userInput = '';
 		currentPosition = 0;
@@ -114,7 +147,13 @@
 		currentWpm = 0;
 	}
 
-	// Handle physical keyboard input
+	/**
+	 * Handles physical keyboard input events.
+	 * Maps keyboard events to appropriate key strings and delegates to handleKeyPress.
+	 * Prevents default browser behavior and normalizes key representations.
+	 *
+	 * @param event - The keyboard event from the browser
+	 */
 	function handleKeydown(event: KeyboardEvent) {
 		event.preventDefault();
 
@@ -156,17 +195,25 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="flex flex-1 flex-col bg-gradient-to-br from-blue-50 to-indigo-100">
+<div
+	class="flex flex-1 flex-col bg-gradient-to-br from-blue-50 to-indigo-100"
+	data-testid="main-app-container"
+>
 	<!-- Header with navigation icons, title and reset button -->
-	<header class="border-b border-gray-200 bg-white">
+	<header class="border-b border-gray-200 bg-white" data-testid="main-header">
 		<div class="mx-auto max-w-6xl px-6">
-			<div class="flex h-16 items-center justify-between" role="banner">
+			<div
+				class="flex h-16 items-center justify-between"
+				role="banner"
+				data-testid="header-content"
+			>
 				<!-- Left: Navigation Icons -->
-				<nav class="flex items-center space-x-8">
+				<nav class="flex items-center space-x-8" data-testid="navigation-controls">
 					<button
 						id="keyboard-toggle"
 						class="rounded-lg p-2 transition-colors hover:bg-gray-100"
 						aria-label="Keyboard settings"
+						data-testid="keyboard-settings-button"
 					>
 						<svg
 							class="h-6 w-6 text-gray-600"
@@ -183,6 +230,7 @@
 						id="sound-toggle"
 						class="rounded-lg p-2 transition-colors hover:bg-gray-100"
 						aria-label="Sound settings"
+						data-testid="sound-settings-button"
 					>
 						<svg
 							class="h-6 w-6 text-gray-600"
@@ -201,13 +249,13 @@
 				</nav>
 
 				<!-- Center: Title -->
-				<div class="flex flex-col items-center">
-					<h1 class="text-2xl font-bold text-gray-900">Feed-n-Type</h1>
+				<div class="flex flex-col items-center" data-testid="app-title-container">
+					<h1 class="text-2xl font-bold text-gray-900" data-testid="app-title">Feed-n-Type</h1>
 				</div>
 
 				<!-- Right: WPM Stats and Reset Button -->
-				<div class="flex items-center space-x-4">
-					<div class="flex items-center space-x-2 text-gray-600">
+				<div class="flex items-center space-x-4" data-testid="header-stats-controls">
+					<div class="flex items-center space-x-2 text-gray-600" data-testid="wpm-display">
 						<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
@@ -216,12 +264,13 @@
 								d="M13 10V3L4 14h7v7l9-11h-7z"
 							/>
 						</svg>
-						<span class="text-sm font-medium">{currentWpm} WPM</span>
+						<span class="text-sm font-medium" data-testid="wpm-value">{currentWpm} WPM</span>
 					</div>
 					<button
 						onclick={resetExercise}
 						class="flex items-center space-x-2 rounded-lg bg-indigo-600 px-3 py-2 text-white transition-colors hover:bg-indigo-700"
 						type="button"
+						data-testid="reset-exercise-button"
 					>
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -239,31 +288,44 @@
 	</header>
 
 	<!-- Main content area with three-column layout -->
-	<main class="mx-auto w-full max-w-7xl flex-1 p-4">
-		<div class="flex h-full gap-4">
+	<main class="mx-auto w-full max-w-7xl flex-1 p-4" data-testid="main-content">
+		<div class="flex h-full gap-4" data-testid="main-layout-container">
 			<!-- Left + Center: Original typing interface -->
-			<div class="flex flex-1 flex-col gap-4">
+			<div class="flex flex-1 flex-col gap-4" data-testid="typing-interface-container">
 				<!-- Upper portion: Text display area (60% of space) -->
-				<div class="min-h-0 flex-[3]">
-					<TypingArea text={practiceText} {userInput} {currentPosition} />
+				<div class="min-h-0 flex-[3]" data-testid="typing-area-container">
+					<TypingArea
+						text={practiceText}
+						{userInput}
+						{currentPosition}
+						data-component-id="typing-area"
+					/>
 				</div>
 
 				<!-- Lower portion: Virtual keyboard (40% of space) -->
-				<div class="flex min-h-0 flex-[2] items-center justify-center">
-					<div class="w-full max-w-4xl">
-						<VirtualKeyboard onKeyPress={handleKeyPress} {pressedKey} />
+				<div
+					class="flex min-h-0 flex-[2] items-center justify-center"
+					data-testid="virtual-keyboard-container"
+				>
+					<div class="w-full max-w-4xl" data-testid="virtual-keyboard-wrapper">
+						<VirtualKeyboard
+							onKeyPress={handleKeyPress}
+							{pressedKey}
+							data-component-id="virtual-keyboard"
+						/>
 					</div>
 				</div>
 			</div>
 
 			<!-- Right: Typingotchi -->
-			<div class="w-64 flex-shrink-0">
+			<div class="w-64 flex-shrink-0" data-testid="typingotchi-container">
 				<Typingotchi
 					{isTyping}
 					hasError={hasTypingError}
 					wpm={currentWpm}
 					streak={0}
 					fireLevel={0}
+					data-component-id="typingotchi"
 				/>
 			</div>
 		</div>

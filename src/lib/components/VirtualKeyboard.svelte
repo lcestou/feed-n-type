@@ -1,12 +1,21 @@
 <script lang="ts">
+	/**
+	 * Props interface for the VirtualKeyboard component.
+	 * Provides an interactive virtual keyboard with visual feedback.
+	 */
 	interface Props {
 		onKeyPress: (key: string) => void;
 		pressedKey?: string;
+		'data-component-id'?: string;
 	}
 
-	let { onKeyPress, pressedKey }: Props = $props();
+	let { onKeyPress, pressedKey, 'data-component-id': componentId }: Props = $props();
 
-	// PC keyboard layout with proper staggering and key arrangement
+	/**
+	 * PC keyboard layout with proper staggering and key arrangement.
+	 * Represents the standard QWERTY layout with modifier keys.
+	 * Each row contains regular keys and optional left/right modifiers.
+	 */
 	const keyboardRows = [
 		// Numbers row with symbols
 		{
@@ -34,7 +43,10 @@
 		}
 	];
 
-	// Bottom row with modifiers and space bar - PC layout
+	/**
+	 * Bottom row with modifiers and space bar following PC layout conventions.
+	 * Contains control keys, alt keys, space bar, and menu key.
+	 */
 	const bottomRowKeys = [
 		{ key: 'Ctrl', label: 'Ctrl', class: 'ctrl' },
 		{ key: 'Alt', label: 'Alt', class: 'alt' },
@@ -44,6 +56,12 @@
 		{ key: 'RightCtrl', label: 'Ctrl', class: 'ctrl' }
 	];
 
+	/**
+	 * Handles virtual keyboard key clicks and maps them to appropriate functionality.
+	 * Processes special keys (Space, Shift, modifiers) and regular character keys.
+	 *
+	 * @param key - The key identifier that was clicked
+	 */
 	function handleKeyClick(key: string) {
 		// Map display keys to actual functionality
 		if (key === 'Space') {
@@ -61,6 +79,13 @@
 		}
 	}
 
+	/**
+	 * Determines if a key should be visually highlighted as pressed.
+	 * Handles special case mapping for space key and case-insensitive comparison.
+	 *
+	 * @param key - The key to check for pressed state
+	 * @returns True if the key should appear pressed
+	 */
 	function isKeyPressed(key: string): boolean {
 		if (key === 'Space') {
 			return pressedKey === ' ';
@@ -69,10 +94,22 @@
 	}
 </script>
 
-<div id="virtual-keyboard" class="pc-keyboard" role="group" aria-label="Virtual keyboard">
+<div
+	id="virtual-keyboard"
+	class="pc-keyboard"
+	role="group"
+	aria-label="Virtual keyboard"
+	data-component-id={componentId}
+	data-testid="virtual-keyboard"
+>
 	<!-- Main keyboard rows -->
 	{#each keyboardRows as row, rowIndex (rowIndex)}
-		<div id="keyboard-row-{rowIndex + 1}" class="keyboard-row row-{rowIndex + 1}" role="row">
+		<div
+			id="keyboard-row-{rowIndex + 1}"
+			class="keyboard-row row-{rowIndex + 1}"
+			role="row"
+			data-testid="keyboard-row-{rowIndex + 1}"
+		>
 			<!-- Left modifier key -->
 			{#if row.leftModifier}
 				<button
@@ -84,6 +121,7 @@
 					type="button"
 					aria-label="{row.leftModifier.label} key"
 					aria-pressed={isKeyPressed(row.leftModifier.key)}
+					data-testid="keyboard-key-{row.leftModifier.key.toLowerCase()}"
 				>
 					{row.leftModifier.label}
 				</button>
@@ -98,6 +136,7 @@
 					type="button"
 					aria-label="{key.toUpperCase()} key"
 					aria-pressed={isKeyPressed(key)}
+					data-testid="keyboard-key-{key.replace(/[^a-z0-9]/gi, '').toLowerCase()}"
 				>
 					{key.toUpperCase()}
 				</button>
@@ -114,6 +153,7 @@
 					type="button"
 					aria-label="{row.rightModifier.label} key"
 					aria-pressed={isKeyPressed(row.rightModifier.key)}
+					data-testid="keyboard-key-{row.rightModifier.key.toLowerCase()}"
 				>
 					{row.rightModifier.label}
 				</button>
@@ -122,7 +162,12 @@
 	{/each}
 
 	<!-- Bottom row with space bar and modifiers -->
-	<div id="keyboard-bottom-row" class="keyboard-row bottom-row" role="row">
+	<div
+		id="keyboard-bottom-row"
+		class="keyboard-row bottom-row"
+		role="row"
+		data-testid="keyboard-bottom-row"
+	>
 		{#each bottomRowKeys as key (key.key)}
 			<button
 				id="key-{key.key.toLowerCase().replace(/\s+/g, '-')}"
@@ -131,6 +176,7 @@
 				type="button"
 				aria-label={key.key === 'Space' ? 'Space bar' : key.label + ' key'}
 				aria-pressed={isKeyPressed(key.key)}
+				data-testid="keyboard-key-{key.key.toLowerCase().replace(/\s+/g, '-')}"
 			>
 				{key.label}
 			</button>

@@ -1,18 +1,34 @@
 <script lang="ts">
+	/**
+	 * Props interface for the TypingArea component.
+	 * Displays practice text with real-time typing feedback and progress tracking.
+	 */
 	interface Props {
 		text: string;
 		userInput: string;
 		currentPosition: number;
+		'data-component-id'?: string;
 	}
 
-	let { text, userInput, currentPosition }: Props = $props();
+	let { text, userInput, currentPosition, 'data-component-id': componentId }: Props = $props();
 
-	// Split text into characters for individual styling
-	// This allows us to highlight each character based on typing progress
+	/**
+	 * Split practice text into individual characters for granular styling.
+	 * This enables highlighting each character based on typing progress and accuracy.
+	 */
 	let characters = $derived(text.split(''));
 
-	// Determine character states (correct, incorrect, current, upcoming)
-	// Each character gets a state based on the user's typing progress
+	/**
+	 * Determine visual states for each character based on typing progress.
+	 *
+	 * Character states:
+	 * - 'correct': User typed the character correctly
+	 * - 'incorrect': User typed the wrong character
+	 * - 'current': Character at the current typing position
+	 * - 'upcoming': Characters not yet reached
+	 *
+	 * @returns Array of state strings corresponding to each character
+	 */
 	let characterStates = $derived(
 		characters.map((char, index) => {
 			if (index < userInput.length) {
@@ -26,10 +42,25 @@
 	);
 </script>
 
-<div id="typing-area" class="typing-area" role="region" aria-label="Typing practice area">
-	<div id="typing-header" class="mb-4 text-center">
-		<h2 id="typing-title" class="text-xl font-semibold text-gray-800">Type the text below</h2>
-		<div id="typing-progress" class="mt-1 text-sm text-gray-500" role="status" aria-live="polite">
+<div
+	id="typing-area"
+	class="typing-area"
+	role="region"
+	aria-label="Typing practice area"
+	data-component-id={componentId}
+	data-testid="typing-area"
+>
+	<div id="typing-header" class="mb-4 text-center" data-testid="typing-header">
+		<h2 id="typing-title" class="text-xl font-semibold text-gray-800" data-testid="typing-title">
+			Type the text below
+		</h2>
+		<div
+			id="typing-progress"
+			class="mt-1 text-sm text-gray-500"
+			role="status"
+			aria-live="polite"
+			data-testid="typing-progress"
+		>
 			Progress: {userInput.length}/{text.length} characters
 		</div>
 	</div>
@@ -40,6 +71,7 @@
 		role="textbox"
 		aria-readonly="true"
 		aria-label="Text to type"
+		data-testid="text-display"
 	>
 		{#each characters as char, index (index)}
 			<span
@@ -47,6 +79,7 @@
 				class="character {characterStates[index]}"
 				class:space={char === ' '}
 				aria-label="{char === ' ' ? 'space' : char} - {characterStates[index]}"
+				data-testid="character-{index}"
 			>
 				{char === ' ' ? '·' : char}
 			</span>
@@ -54,10 +87,22 @@
 	</div>
 
 	<!-- Typing stats -->
-	<div id="typing-stats" class="stats-bar" role="group" aria-label="Typing statistics">
-		<div id="accuracy-container">
+	<div
+		id="typing-stats"
+		class="stats-bar"
+		role="group"
+		aria-label="Typing statistics"
+		data-testid="typing-stats"
+	>
+		<div id="accuracy-container" data-testid="accuracy-container">
 			{#if userInput.length > 0}
-				<span id="accuracy-stat" class="accuracy" role="status" aria-live="polite">
+				<span
+					id="accuracy-stat"
+					class="accuracy"
+					role="status"
+					aria-live="polite"
+					data-testid="accuracy-stat"
+				>
 					Accuracy: {Math.round(
 						(userInput.split('').filter((char, i) => char === characters[i]).length /
 							userInput.length) *
@@ -65,10 +110,19 @@
 					)}%
 				</span>
 			{:else}
-				<span id="accuracy-placeholder">Start typing to see accuracy</span>
+				<span id="accuracy-placeholder" data-testid="accuracy-placeholder"
+					>Start typing to see accuracy</span
+				>
 			{/if}
 		</div>
-		<div id="wpm-stat" class="wpm" role="status" aria-live="polite" aria-label="Words per minute">
+		<div
+			id="wpm-stat"
+			class="wpm"
+			role="status"
+			aria-live="polite"
+			aria-label="Words per minute"
+			data-testid="wpm-stat"
+		>
 			WPM: 0
 		</div>
 	</div>
