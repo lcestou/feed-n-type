@@ -1,116 +1,117 @@
 {
-	"statusLine": {
-		"type": "command",
-		"command": "uv run .claude/status_lines/statusline.py",
-		"padding": 0
-	},
-	"permissions": {
-		"allow": [],
-		"deny": []
-	},
-	"hooks": {
-		"PreToolUse": [
-			{
-				"matcher": "",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/pre_tool_use.py"
-					}
-				]
-			}
-		],
-		"PostToolUse": [
-			{
-				"matcher": "",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/post_tool_use.py"
-					},
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/post_tool_changelog.py"
-					},
-					{
-						"type": "command",
-						"command": ".claude/hooks/smart-lint.sh"
-					}
-				]
-			}
-		],
-		"Notification": [
-			{
-				"matcher": "",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/notification.py --notify"
-					}
-				]
-			}
-		],
-		"Stop": [
-			{
-				"matcher": "",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/stop.py --chat"
-					}
-				]
-			}
-		],
-		"SubagentStop": [
-			{
-				"matcher": "",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/subagent_stop.py --notify"
-					}
-				]
-			}
-		],
-		"UserPromptSubmit": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "cat CLAUDE.md"
-					},
-					{
-						"type": "command",
-						"command": "git status --porcelain"
-					},
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/user_prompt_submit.py --log-only --store-last-prompt --name-agent"
-					}
-				]
-			}
-		],
-		"PreCompact": [
-			{
-				"matcher": "",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/pre_compact.py"
-					}
-				]
-			}
-		],
-		"SessionStart": [
-			{
-				"matcher": "",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/session_start.py"
-					}
-				]
-			}
-		]
-	}
+  "permissions": {
+    "allow": [],
+    "deny": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/pre_tool_use.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/post_tool_use.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/post_tool_changelog.py"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/smart-lint.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/notification.py --notify"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/stop.py --chat"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/subagent_stop.py --notify"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat CLAUDE.md"
+          },
+          {
+            "type": "command",
+            "command": "git status --porcelain"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/user_prompt_submit.py --log-only --store-last-prompt --name-agent"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/pre_compact.py"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/session_start.py"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "uv run .claude/status_lines/statusline.py",
+    "padding": 0
+  },
+  "outputStyle": "YAML Structured"
 }

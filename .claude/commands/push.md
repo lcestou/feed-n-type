@@ -1,11 +1,12 @@
 ---
-description: Execute the complete push workflow with quality gates
+description: Execute git push workflow with optional quick mode
 allowed-tools: Bash
 ---
 
-Execute the complete push workflow with quality gates and changelog updates.
+Execute git push workflow with two modes:
 
-This command runs the mandatory git push sequence exactly like below:
+## Standard Mode: `/push`
+Runs the complete push workflow with quality gates and changelog updates:
 
 ```bash
 # Quality gates
@@ -22,6 +23,20 @@ git commit -m "docs: Update project configuration and documentation"
 git push
 ```
 
-**Quality Gates**: Blocks push if `pnpm check` or `pnpm build` fails
-**Changelog**: Automatically analyzes changes and updates CHANGELOG.md
+**Quality Gates**: Blocks push if `pnpm check` or `pnpm build` fails  
+**Changelog**: Automatically analyzes changes and updates CHANGELOG.md  
 **Commit Message**: Intelligently crafted based on actual file changes
+
+## Quick Mode: `/push quick`
+For simple changes (new files, documentation, configs) that don't need full validation:
+
+```bash
+# Quick commit and push
+git add -A
+git commit -m "docs: Update project configuration and documentation"
+git push
+```
+
+**Use Cases**: Documentation updates, config files, new non-code files  
+**Skips**: Quality gates, formatting, linting, type checking, and build verification  
+**Warning**: Only use when confident changes don't affect code functionality
