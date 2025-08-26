@@ -17,10 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Component updates in Typingotchi**
 
 **Changed:**
-- **Documentation**: Updated project documentation
 
 - **Documentation**: Updated project documentation
-
 - **Bug fixes in +page**
 - **Bug fixes in Typingotchi**
 - **Updates in +page**

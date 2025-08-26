@@ -8,16 +8,16 @@ Check for outdated packages and update dependencies safely
 Execute this command:
 
 ```bash
-echo "Updating pnpm..." && npm install -g pnpm@latest && echo "Checking project packages..." && pnpm outdated && echo "Updating packages..." && pnpm update && pnpm install && echo "Running quality checks..." && pnpm format && pnpm lint && pnpm check && pnpm build
+echo "=== Starting Update Process ===" && echo "Updating pnpm..." && npm install -g pnpm@latest && echo "Checking project packages..." && if pnpm outdated --format=json | grep -q '"current"'; then echo "Updates found - proceeding with installation..." && pnpm update && pnpm install && echo "=== Running Quality Checks ===" && pnpm format && pnpm lint && pnpm check && pnpm build && echo "=== Update Complete ==="; else echo "All packages up to date - no quality checks needed" && echo "=== Update Complete ==="; fi
 ```
 
 ## What it does
 
 1. **Update pnpm**: Updates pnpm package manager to latest version
 2. **Check Outdated**: Shows which project packages have updates available
-3. **Update Packages**: Updates dependencies to latest compatible versions
-4. **Install**: Ensures all dependencies are properly installed
-5. **Quality Gates**: Runs format, lint, check, and build to verify everything works
+3. **Conditional Updates**: Only proceeds with updates and quality checks if packages need updating
+4. **Smart Workflow**: Skips unnecessary quality gates when no packages were updated
+5. **Quality Gates**: Runs format, lint, check, and build only when changes were made
 6. **Safety**: Only updates to compatible versions (respects semver ranges)
 
 ## When to use
