@@ -33,6 +33,10 @@ git push
 For simple changes (new files, documentation, configs) that don't need full validation:
 
 ```bash
+# Analyze changes and update changelog
+uv run ./.claude/hooks/changelog_reminder.py
+uv run ./.claude/hooks/changelog_reminder.py --auto-update
+
 # Quick commit and push
 git add -A
 git commit -m "docs: Update project configuration and documentation"
@@ -40,5 +44,6 @@ git push
 ```
 
 **Use Cases**: Documentation updates, config files, new non-code files  
-**Skips**: Quality gates, formatting, linting, type checking, and build verification  
+**Includes**: Changelog updates to maintain project history  
+**Skips**: Quality gates (formatting, linting, type checking, and build verification)  
 **Warning**: Only use when confident changes don't affect code functionality

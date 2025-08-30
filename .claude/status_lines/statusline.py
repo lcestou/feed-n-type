@@ -37,9 +37,9 @@ def get_git_branch():
 
 
 def get_project_name():
-    """Get project name from package.json or fallback to 'feed-n-type'."""
+    """Get project name from package.json, pyproject.toml, or current directory."""
+    # Try package.json first (Node.js projects)
     package_json_path = Path("package.json")
-    
     if package_json_path.exists():
         try:
             with open(package_json_path) as f:
@@ -50,7 +50,29 @@ def get_project_name():
         except (json.JSONDecodeError, FileNotFoundError):
             pass
     
-    return "feed-n-type"
+    # Try pyproject.toml (Python projects)
+    pyproject_path = Path("pyproject.toml")
+    if pyproject_path.exists():
+        try:
+            import tomllib
+        except ImportError:
+            try:
+                import tomli as tomllib
+            except ImportError:
+                tomllib = None
+        
+        if tomllib:
+            try:
+                with open(pyproject_path, "rb") as f:
+                    pyproject_data = tomllib.load(f)
+                    name = pyproject_data.get("project", {}).get("name")
+                    if name:
+                        return name
+            except Exception:
+                pass
+    
+    # Fallback to current directory name
+    return Path.cwd().name
 
 
 def create_context_bar(percent, bar_length=10):
@@ -143,7 +165,8 @@ def main():
     except Exception as e:
         # Fallback status line if something goes wrong
         print(f"[Error] Status line failed: {str(e)}", end="", file=sys.stderr)
-        print("[Claude] 📁 feed-n-type │ C: [░░░░░░░░░░] 0%", end="")
+        fallback_name = Path.cwd().name
+        print(f"[Claude] 📁 {fallback_name} │ C: [░░░░░░░░░░] 0%", end="")
 
 
 if __name__ == "__main__":
