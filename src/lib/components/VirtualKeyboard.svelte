@@ -33,7 +33,7 @@
 			{ key: '=', label: '=', span: 1 },
 			{ key: 'Backspace', label: '⌫', span: 2 }
 		],
-		// Row 2: QWERTY (15 columns total)  
+		// Row 2: QWERTY (15 columns total)
 		[
 			{ key: 'Tab', label: 'Tab', span: 2 },
 			{ key: 'q', label: 'Q', span: 1 },
@@ -52,7 +52,7 @@
 		],
 		// Row 3: ASDF (15 columns total)
 		[
-			{ key: 'CapsLock', label: 'Caps Lock', span: 2 },
+			{ key: 'CapsLock', label: 'Caps', span: 2 },
 			{ key: 'a', label: 'A', span: 1 },
 			{ key: 's', label: 'S', span: 1 },
 			{ key: 'd', label: 'D', span: 1 },
@@ -79,7 +79,7 @@
 			{ key: ',', label: ',', span: 1 },
 			{ key: '.', label: '.', span: 1 },
 			{ key: '/', label: '/', span: 1 },
-			{ key: 'RightShift', label: 'Shift', span: 3 }
+			{ key: 'RightShift', label: 'Shift', span: 2 }
 		],
 		// Row 5: Bottom row (15 columns total)
 		[
@@ -101,7 +101,14 @@
 	function handleKeyClick(key: string) {
 		if (key === 'Space') {
 			onKeyPress(' ');
-		} else if (key === 'CapsLock' || key === 'Win' || key === 'Fn' || key === 'RightFn' || key === 'Menu' || key === 'AltGr') {
+		} else if (
+			key === 'CapsLock' ||
+			key === 'Win' ||
+			key === 'Fn' ||
+			key === 'RightFn' ||
+			key === 'Menu' ||
+			key === 'AltGr'
+		) {
 			// These keys don't produce characters
 			return;
 		} else if (key === 'RightShift' || key === 'Shift') {
@@ -127,27 +134,27 @@
 
 <div
 	id="virtual-keyboard"
-	class="bg-gray-100 rounded-xl p-6 shadow-lg border border-gray-200 max-w-4xl mx-auto w-full"
+	class="mx-auto w-full max-w-4xl rounded-xl border border-gray-200 bg-gray-100 p-6 shadow-lg"
 	role="group"
 	aria-label="Virtual keyboard"
 	data-component-id={componentId}
 	data-testid="virtual-keyboard"
 >
 	<div class="flex flex-col gap-2">
-		{#each keyboardLayout as row, rowIndex}
-			<div 
-				class="grid gap-2" 
+		{#each keyboardLayout as row, rowIndex (rowIndex)}
+			<div
+				class="grid gap-2"
 				style="grid-template-columns: repeat(15, 1fr);"
 				role="row"
 				data-testid="keyboard-row-{rowIndex + 1}"
 			>
-				{#each row as keyObj}
+				{#each row as keyObj (keyObj.key)}
 					<button
-						class="h-12 bg-white border border-gray-300 rounded-lg text-gray-700 font-semibold text-sm
-							   flex items-center justify-center cursor-pointer transition-all duration-100
-							   hover:bg-gray-50 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-md
-							   active:bg-blue-500 active:text-white active:border-blue-600 active:translate-y-0 active:shadow-inner
-							   {isKeyPressed(keyObj.key) ? 'bg-blue-500 text-white border-blue-600 shadow-inner' : ''}"
+						class="flex h-12 cursor-pointer items-center justify-center rounded-lg border border-gray-300
+							   bg-white text-sm font-semibold text-gray-700 transition-all duration-100
+							   hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-md
+							   active:translate-y-0 active:border-blue-600 active:bg-blue-500 active:text-white active:shadow-inner
+							   {isKeyPressed(keyObj.key) ? 'border-blue-600 bg-blue-500 text-white shadow-inner' : ''}"
 						style="grid-column: span {keyObj.span};"
 						onclick={() => handleKeyClick(keyObj.key)}
 						type="button"
