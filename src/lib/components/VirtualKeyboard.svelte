@@ -139,7 +139,7 @@
 	data-component-id={componentId}
 	data-testid="virtual-keyboard"
 >
-	<div class="flex flex-col gap-2">
+	<div class="flex flex-col gap-1">
 		{#each keyboardLayout as row, rowIndex (rowIndex)}
 			{@const gridTemplate = rowIndex === 0 ? 'repeat(15, 1fr)' : 
 									   rowIndex === 1 ? 'repeat(15, 1fr)' :
@@ -147,7 +147,7 @@
 									   rowIndex === 3 ? '2.5fr repeat(10, 1fr) 2.5fr' :
 									   'repeat(15, 1fr)'}
 			<div
-				class="grid gap-2"
+				class="grid gap-1"
 				style="grid-template-columns: {gridTemplate};"
 				role="row"
 				data-testid="keyboard-row-{rowIndex + 1}"

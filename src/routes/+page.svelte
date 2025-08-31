@@ -155,6 +155,11 @@
 	 * @param event - The keyboard event from the browser
 	 */
 	function handleKeydown(event: KeyboardEvent) {
+		// Don't prevent default for browser shortcuts (Cmd/Ctrl combinations)
+		if (event.metaKey || event.ctrlKey) {
+			return;
+		}
+
 		event.preventDefault();
 
 		let key = event.key;
