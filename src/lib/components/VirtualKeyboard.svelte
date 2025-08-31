@@ -137,6 +137,7 @@
 	}
 </script>
 
+<!-- Outer container: keyboard frame with padding -->
 <div
 	id="virtual-keyboard"
 	class="pc-keyboard"
@@ -145,17 +146,18 @@
 	data-component-id={componentId}
 	data-testid="virtual-keyboard"
 >
-	<!-- Main keyboard rows using CSS Grid -->
-	{#each keyboardRows as row, rowIndex (rowIndex)}
+	<!-- Inner container: holds all 5 keyboard rows -->
+	<div class="keyboard-container">
+		<!-- Row 1: Number keys (14 columns total) -->
 		<div
-			id="keyboard-row-{rowIndex + 1}"
-			class="keyboard-row"
+			id="keyboard-row-1"
+			class="keyboard-row row-numbers"
 			role="row"
-			data-testid="keyboard-row-{rowIndex + 1}"
+			data-testid="keyboard-row-1"
 		>
-			{#each row as keyObj, keyIdx (keyObj.key)}
+			{#each keyboardRows[0] as keyObj, keyIdx (keyObj.key)}
 				<button
-					id="key-{keyObj.key.replace(/[^a-z0-9]/gi, '')}-{rowIndex}-{keyIdx}"
+					id="key-{keyObj.key.replace(/[^a-z0-9]/gi, '')}-0-{keyIdx}"
 					class="key {isKeyPressed(keyObj.key) ? 'pressed' : ''}"
 					onclick={() => handleKeyClick(keyObj.key)}
 					type="button"
@@ -168,33 +170,103 @@
 				</button>
 			{/each}
 		</div>
-	{/each}
 
-	<!-- Bottom row with space bar and modifiers -->
-	<div
-		id="keyboard-bottom-row"
-		class="keyboard-row"
-		role="row"
-		data-testid="keyboard-bottom-row"
-	>
-		{#each bottomRow as keyObj (keyObj.key)}
-			<button
-				id="key-{keyObj.key.toLowerCase().replace(/\s+/g, '-')}"
-				class="key {isKeyPressed(keyObj.key) ? 'pressed' : ''} {keyObj.key === 'Space' ? 'space-key' : keyObj.key.includes('Ctrl') || keyObj.key.includes('Alt') || keyObj.key === 'Menu' ? 'modifier-key' : ''}"
-				onclick={() => handleKeyClick(keyObj.key)}
-				type="button"
-				aria-label={keyObj.key === 'Space' ? 'Space bar' : keyObj.label + ' key'}
-				aria-pressed={isKeyPressed(keyObj.key)}
-				data-testid="keyboard-key-{keyObj.key.toLowerCase().replace(/\s+/g, '-')}"
-				style="grid-column: span {keyObj.span};"
-			>
-				{keyObj.label}
-			</button>
-		{/each}
+		<!-- Row 2: QWERTY row (14 columns total) -->
+		<div
+			id="keyboard-row-2"
+			class="keyboard-row row-qwerty"
+			role="row"
+			data-testid="keyboard-row-2"
+		>
+			{#each keyboardRows[1] as keyObj, keyIdx (keyObj.key)}
+				<button
+					id="key-{keyObj.key.replace(/[^a-z0-9]/gi, '')}-1-{keyIdx}"
+					class="key {isKeyPressed(keyObj.key) ? 'pressed' : ''}"
+					onclick={() => handleKeyClick(keyObj.key)}
+					type="button"
+					aria-label="{keyObj.label || keyObj.key} key"
+					aria-pressed={isKeyPressed(keyObj.key)}
+					data-testid="keyboard-key-{keyObj.key.replace(/[^a-z0-9]/gi, '').toLowerCase()}"
+					style="grid-column: span {keyObj.span};"
+				>
+					{keyObj.label}
+				</button>
+			{/each}
+		</div>
+
+		<!-- Row 3: ASDF row (14 columns total) -->
+		<div
+			id="keyboard-row-3"
+			class="keyboard-row row-asdf"
+			role="row"
+			data-testid="keyboard-row-3"
+		>
+			{#each keyboardRows[2] as keyObj, keyIdx (keyObj.key)}
+				<button
+					id="key-{keyObj.key.replace(/[^a-z0-9]/gi, '')}-2-{keyIdx}"
+					class="key {isKeyPressed(keyObj.key) ? 'pressed' : ''}"
+					onclick={() => handleKeyClick(keyObj.key)}
+					type="button"
+					aria-label="{keyObj.label || keyObj.key} key"
+					aria-pressed={isKeyPressed(keyObj.key)}
+					data-testid="keyboard-key-{keyObj.key.replace(/[^a-z0-9]/gi, '').toLowerCase()}"
+					style="grid-column: span {keyObj.span};"
+				>
+					{keyObj.label}
+				</button>
+			{/each}
+		</div>
+
+		<!-- Row 4: ZXCV row (14 columns total) -->
+		<div
+			id="keyboard-row-4"
+			class="keyboard-row row-zxcv"
+			role="row"
+			data-testid="keyboard-row-4"
+		>
+			{#each keyboardRows[3] as keyObj, keyIdx (keyObj.key)}
+				<button
+					id="key-{keyObj.key.replace(/[^a-z0-9]/gi, '')}-3-{keyIdx}"
+					class="key {isKeyPressed(keyObj.key) ? 'pressed' : ''}"
+					onclick={() => handleKeyClick(keyObj.key)}
+					type="button"
+					aria-label="{keyObj.label || keyObj.key} key"
+					aria-pressed={isKeyPressed(keyObj.key)}
+					data-testid="keyboard-key-{keyObj.key.replace(/[^a-z0-9]/gi, '').toLowerCase()}"
+					style="grid-column: span {keyObj.span};"
+				>
+					{keyObj.label}
+				</button>
+			{/each}
+		</div>
+
+		<!-- Row 5: Bottom control row (14 columns total) -->
+		<div
+			id="keyboard-bottom-row"
+			class="keyboard-row row-bottom"
+			role="row"
+			data-testid="keyboard-bottom-row"
+		>
+			{#each bottomRow as keyObj (keyObj.key)}
+				<button
+					id="key-{keyObj.key.toLowerCase().replace(/\s+/g, '-')}"
+					class="key {isKeyPressed(keyObj.key) ? 'pressed' : ''} {keyObj.key === 'Space' ? 'space-key' : keyObj.key.includes('Ctrl') || keyObj.key.includes('Alt') || keyObj.key === 'Menu' ? 'modifier-key' : ''}"
+					onclick={() => handleKeyClick(keyObj.key)}
+					type="button"
+					aria-label={keyObj.key === 'Space' ? 'Space bar' : keyObj.label + ' key'}
+					aria-pressed={isKeyPressed(keyObj.key)}
+					data-testid="keyboard-key-{keyObj.key.toLowerCase().replace(/\s+/g, '-')}"
+					style="grid-column: span {keyObj.span};"
+				>
+					{keyObj.label}
+				</button>
+			{/each}
+		</div>
 	</div>
 </div>
 
 <style>
+	/* Outer container: keyboard frame with padding */
 	.pc-keyboard {
 		background: #f5f5f7;
 		border-radius: 16px;
@@ -203,17 +275,29 @@
 		border: 1px solid #e1e1e3;
 		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 		max-width: 920px;
+		min-width: 600px;
 		margin: 0 auto;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	/* Inner container: holds all 5 keyboard rows */
+	.keyboard-container {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
+		width: 100%;
+		min-width: 0; /* Prevent flex children from overflowing */
 	}
 
+	/* Each row is a separate grid container with fixed 14-column layout */
 	.keyboard-row {
 		display: grid;
 		grid-template-columns: repeat(14, 1fr);
 		gap: 6px;
 		width: 100%;
+		min-width: 0; /* Prevent grid overflow */
+		overflow: hidden; /* Prevent any wrapping */
 	}
 
 	.key {
@@ -282,11 +366,15 @@
 		border-color: #2ca048 !important;
 	}
 
-	/* Responsive design */
+	/* Responsive design - maintain 5-row structure at all screen sizes */
 	@media (max-width: 900px) {
 		.pc-keyboard {
 			padding: 20px 16px;
 			max-width: 100%;
+			min-width: 480px; /* Prevent crushing */
+		}
+
+		.keyboard-container {
 			gap: 6px;
 		}
 
@@ -309,6 +397,10 @@
 		.pc-keyboard {
 			padding: 16px 12px;
 			max-width: 100%;
+			min-width: 400px; /* Prevent crushing on small screens */
+		}
+
+		.keyboard-container {
 			gap: 4px;
 		}
 
@@ -316,6 +408,7 @@
 			height: 38px;
 			min-height: 38px;
 			font-size: 13px;
+			min-width: 20px; /* Prevent keys from becoming too small */
 		}
 
 		.keyboard-row {
@@ -324,6 +417,33 @@
 
 		.modifier-key {
 			font-size: 11px;
+		}
+	}
+
+	/* Extra small screens - ensure keyboard remains usable */
+	@media (max-width: 420px) {
+		.pc-keyboard {
+			padding: 12px 8px;
+			min-width: 360px;
+		}
+
+		.key {
+			height: 32px;
+			min-height: 32px;
+			font-size: 12px;
+			min-width: 18px;
+		}
+
+		.keyboard-row {
+			gap: 1px;
+		}
+
+		.keyboard-container {
+			gap: 3px;
+		}
+
+		.modifier-key {
+			font-size: 10px;
 		}
 	}
 </style>
