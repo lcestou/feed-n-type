@@ -206,7 +206,7 @@
 	.keyboard-row {
 		display: flex;
 		gap: 6px;
-		justify-content: center;
+		justify-content: stretch;
 	}
 
 	.key {
@@ -251,31 +251,31 @@
 
 	/* Special key widths */
 	.key-backspace {
-		width: 96px;
+		width: 120px;
 	}
 
 	.key-tab {
-		width: 96px;
+		width: 120px;
 	}
 
 	.key-caps {
-		width: 108px;
+		width: 120px;
 	}
 
 	.key-enter {
-		width: 108px;
+		width: 120px;
 	}
 
 	.key-shift-left {
-		width: 132px;
+		width: 150px;
 	}
 
 	.key-shift-right {
-		width: 132px;
+		width: 150px;
 	}
 
 	.key-space {
-		width: 240px;
+		width: 300px;
 	}
 
 	.key-ctrl,
@@ -286,7 +286,7 @@
 	}
 
 	.key-menu {
-		width: 84px;
+		width: 90px;
 		font-size: 12px;
 	}
 
@@ -312,28 +312,28 @@
 		}
 
 		.key-backspace {
-			width: 72px;
+			width: 90px;
 		}
 
 		.key-tab {
-			width: 72px;
+			width: 90px;
 		}
 
 		.key-caps {
-			width: 80px;
+			width: 90px;
 		}
 
 		.key-enter {
-			width: 80px;
+			width: 90px;
 		}
 
 		.key-shift-left,
 		.key-shift-right {
-			width: 96px;
+			width: 112px;
 		}
 
 		.key-space {
-			width: 180px;
+			width: 225px;
 		}
 
 		.key-ctrl,
@@ -344,7 +344,7 @@
 		}
 
 		.key-menu {
-			width: 60px;
+			width: 68px;
 			font-size: 11px;
 		}
 	}
@@ -370,28 +370,28 @@
 		}
 
 		.key-backspace {
-			width: 56px;
+			width: 68px;
 		}
 
 		.key-tab {
-			width: 56px;
+			width: 68px;
 		}
 
 		.key-caps {
-			width: 60px;
+			width: 68px;
 		}
 
 		.key-enter {
-			width: 60px;
+			width: 68px;
 		}
 
 		.key-shift-left,
 		.key-shift-right {
-			width: 72px;
+			width: 85px;
 		}
 
 		.key-space {
-			width: 130px;
+			width: 170px;
 		}
 
 		.key-ctrl,
@@ -402,7 +402,7 @@
 		}
 
 		.key-menu {
-			width: 48px;
+			width: 51px;
 			font-size: 10px;
 		}
 	}
