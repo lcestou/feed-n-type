@@ -31,7 +31,6 @@
 	/** Caps Lock state tracking */
 	let capsLockOn = $state(false);
 
-
 	/**
 	 * Invisible CapsLock detection using hidden auto-focus input
 	 */

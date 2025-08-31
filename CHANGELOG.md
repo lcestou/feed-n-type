@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### 2025-08-31
 
 **Added:**
+
 - **Component updates in VirtualKeyboard**
 - **Component updates in +page**
 
