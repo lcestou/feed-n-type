@@ -12,91 +12,91 @@
 	let { onKeyPress, pressedKey, 'data-component-id': componentId }: Props = $props();
 
 	/**
-	 * PC keyboard layout with proper staggering and key arrangement.
-	 * Represents the standard QWERTY layout with modifier keys.
-	 * Each row contains regular keys and optional left/right modifiers.
+	 * CSS Grid-based keyboard layout with 14-column grid system.
+	 * Each row spans exactly 14 columns with proper key sizing.
+	 * Grid spans: Regular keys (1), Backspace (2), Tab (1.5→2), Caps (1.75→2), Enter (2.25→2), Shifts (2.25→2 and 2.75→3)
 	 */
 	const keyboardRows = [
-		// Numbers row - 15 keys total
+		// Row 1: Numbers - 14 columns total
 		[
-			{ key: '`', label: '`', class: 'regular-key' },
-			{ key: '1', label: '1', class: 'regular-key' },
-			{ key: '2', label: '2', class: 'regular-key' },
-			{ key: '3', label: '3', class: 'regular-key' },
-			{ key: '4', label: '4', class: 'regular-key' },
-			{ key: '5', label: '5', class: 'regular-key' },
-			{ key: '6', label: '6', class: 'regular-key' },
-			{ key: '7', label: '7', class: 'regular-key' },
-			{ key: '8', label: '8', class: 'regular-key' },
-			{ key: '9', label: '9', class: 'regular-key' },
-			{ key: '0', label: '0', class: 'regular-key' },
-			{ key: '-', label: '-', class: 'regular-key' },
-			{ key: '=', label: '=', class: 'regular-key' },
-			{ key: 'Backspace', label: '⌫', class: 'regular-key double-width' },
+			{ key: '`', label: '`', span: 1 },
+			{ key: '1', label: '1', span: 1 },
+			{ key: '2', label: '2', span: 1 },
+			{ key: '3', label: '3', span: 1 },
+			{ key: '4', label: '4', span: 1 },
+			{ key: '5', label: '5', span: 1 },
+			{ key: '6', label: '6', span: 1 },
+			{ key: '7', label: '7', span: 1 },
+			{ key: '8', label: '8', span: 1 },
+			{ key: '9', label: '9', span: 1 },
+			{ key: '0', label: '0', span: 1 },
+			{ key: '-', label: '-', span: 1 },
+			{ key: '=', label: '=', span: 1 },
+			{ key: 'Backspace', label: '⌫', span: 2 }
 		],
-		// QWERTY row - 15 keys total
+		// Row 2: QWERTY - 14 columns total
 		[
-			{ key: 'Tab', label: 'Tab', class: 'regular-key tab' },
-			{ key: 'q', label: 'Q', class: 'regular-key' },
-			{ key: 'w', label: 'W', class: 'regular-key' },
-			{ key: 'e', label: 'E', class: 'regular-key' },
-			{ key: 'r', label: 'R', class: 'regular-key' },
-			{ key: 't', label: 'T', class: 'regular-key' },
-			{ key: 'y', label: 'Y', class: 'regular-key' },
-			{ key: 'u', label: 'U', class: 'regular-key' },
-			{ key: 'i', label: 'I', class: 'regular-key' },
-			{ key: 'o', label: 'O', class: 'regular-key' },
-			{ key: 'p', label: 'P', class: 'regular-key' },
-			{ key: '[', label: '[', class: 'regular-key' },
-			{ key: ']', label: ']', class: 'regular-key' },
-			{ key: '\\', label: '\\', class: 'regular-key' },
+			{ key: 'Tab', label: 'Tab', span: 2 },
+			{ key: 'q', label: 'Q', span: 1 },
+			{ key: 'w', label: 'W', span: 1 },
+			{ key: 'e', label: 'E', span: 1 },
+			{ key: 'r', label: 'R', span: 1 },
+			{ key: 't', label: 'T', span: 1 },
+			{ key: 'y', label: 'Y', span: 1 },
+			{ key: 'u', label: 'U', span: 1 },
+			{ key: 'i', label: 'I', span: 1 },
+			{ key: 'o', label: 'O', span: 1 },
+			{ key: 'p', label: 'P', span: 1 },
+			{ key: '[', label: '[', span: 1 },
+			{ key: ']', label: ']', span: 1 },
+			{ key: '\\', label: '\\', span: 1 }
 		],
-		// ASDF row - 15 keys total
+		// Row 3: ASDF - 14 columns total
 		[
-			{ key: 'CapsLock', label: 'Caps', class: 'regular-key caps-lock' },
-			{ key: 'a', label: 'A', class: 'regular-key' },
-			{ key: 's', label: 'S', class: 'regular-key' },
-			{ key: 'd', label: 'D', class: 'regular-key' },
-			{ key: 'f', label: 'F', class: 'regular-key' },
-			{ key: 'g', label: 'G', class: 'regular-key' },
-			{ key: 'h', label: 'H', class: 'regular-key' },
-			{ key: 'j', label: 'J', class: 'regular-key' },
-			{ key: 'k', label: 'K', class: 'regular-key' },
-			{ key: 'l', label: 'L', class: 'regular-key' },
-			{ key: ';', label: ';', class: 'regular-key' },
-			{ key: "'", label: "'", class: 'regular-key' },
-			{ key: 'Enter', label: '↵', class: 'regular-key enter' },
+			{ key: 'CapsLock', label: 'Caps', span: 2 },
+			{ key: 'a', label: 'A', span: 1 },
+			{ key: 's', label: 'S', span: 1 },
+			{ key: 'd', label: 'D', span: 1 },
+			{ key: 'f', label: 'F', span: 1 },
+			{ key: 'g', label: 'G', span: 1 },
+			{ key: 'h', label: 'H', span: 1 },
+			{ key: 'j', label: 'J', span: 1 },
+			{ key: 'k', label: 'K', span: 1 },
+			{ key: 'l', label: 'L', span: 1 },
+			{ key: ';', label: ';', span: 1 },
+			{ key: "'", label: "'", span: 1 },
+			{ key: 'Enter', label: '↵', span: 2 }
 		],
-		// ZXCV row - 15 keys total
+		// Row 4: ZXCV - 14 columns total
 		[
-			{ key: 'Shift', label: 'Shift', class: 'regular-key left-shift' },
-			{ key: 'z', label: 'Z', class: 'regular-key' },
-			{ key: 'x', label: 'X', class: 'regular-key' },
-			{ key: 'c', label: 'C', class: 'regular-key' },
-			{ key: 'v', label: 'V', class: 'regular-key' },
-			{ key: 'b', label: 'B', class: 'regular-key' },
-			{ key: 'n', label: 'N', class: 'regular-key' },
-			{ key: 'm', label: 'M', class: 'regular-key' },
-			{ key: ',', label: ',', class: 'regular-key' },
-			{ key: '.', label: '.', class: 'regular-key' },
-			{ key: '/', label: '/', class: 'regular-key' },
-			{ key: 'RightShift', label: 'Shift', class: 'regular-key right-shift' },
+			{ key: 'Shift', label: 'Shift', span: 2 },
+			{ key: 'z', label: 'Z', span: 1 },
+			{ key: 'x', label: 'X', span: 1 },
+			{ key: 'c', label: 'C', span: 1 },
+			{ key: 'v', label: 'V', span: 1 },
+			{ key: 'b', label: 'B', span: 1 },
+			{ key: 'n', label: 'N', span: 1 },
+			{ key: 'm', label: 'M', span: 1 },
+			{ key: ',', label: ',', span: 1 },
+			{ key: '.', label: '.', span: 1 },
+			{ key: '/', label: '/', span: 1 },
+			{ key: 'RightShift', label: 'Shift', span: 3 }
 		]
 	];
 
 	/**
-	 * Bottom row with modifiers and space bar following PC layout conventions.
-	 * Contains control keys, alt keys, space bar, and menu key.
+	 * Bottom row with modifiers and space bar - 14 columns total.
+	 * Space bar spans 6 columns for proper proportions.
 	 */
 	const bottomRow = [
-		{ key: 'Ctrl', label: 'Ctrl', class: 'regular-key ctrl' },
-		{ key: 'Fn', label: 'Fn', class: 'regular-key' },
-		{ key: 'Win', label: '⊞', class: 'regular-key' },
-		{ key: 'Alt', label: 'Alt', class: 'regular-key alt' },
-		{ key: 'Space', label: '', class: 'regular-key space' },
-		{ key: 'RightAlt', label: 'Alt', class: 'regular-key alt' },
-		{ key: 'Menu', label: '☰', class: 'regular-key' },
-		{ key: 'RightCtrl', label: 'Ctrl', class: 'regular-key ctrl' }
+		{ key: 'Ctrl', label: 'Ctrl', span: 1 },
+		{ key: 'Fn', label: 'Fn', span: 1 },
+		{ key: 'Win', label: '⊞', span: 1 },
+		{ key: 'Alt', label: 'Alt', span: 1 },
+		{ key: 'Space', label: '', span: 6 },
+		{ key: 'RightAlt', label: 'Alt', span: 1 },
+		{ key: 'Menu', label: '☰', span: 1 },
+		{ key: 'RightCtrl', label: 'Ctrl', span: 2 }
 	];
 
 	/**
@@ -145,23 +145,24 @@
 	data-component-id={componentId}
 	data-testid="virtual-keyboard"
 >
-	<!-- Main keyboard rows -->
+	<!-- Main keyboard rows using CSS Grid -->
 	{#each keyboardRows as row, rowIndex (rowIndex)}
 		<div
 			id="keyboard-row-{rowIndex + 1}"
-			class="keyboard-row row-{rowIndex + 1}"
+			class="keyboard-row"
 			role="row"
 			data-testid="keyboard-row-{rowIndex + 1}"
 		>
 			{#each row as keyObj, keyIdx (keyObj.key)}
 				<button
 					id="key-{keyObj.key.replace(/[^a-z0-9]/gi, '')}-{rowIndex}-{keyIdx}"
-					class="key {keyObj.class} {isKeyPressed(keyObj.key) ? 'pressed' : ''}"
+					class="key {isKeyPressed(keyObj.key) ? 'pressed' : ''}"
 					onclick={() => handleKeyClick(keyObj.key)}
 					type="button"
 					aria-label="{keyObj.label || keyObj.key} key"
 					aria-pressed={isKeyPressed(keyObj.key)}
 					data-testid="keyboard-key-{keyObj.key.replace(/[^a-z0-9]/gi, '').toLowerCase()}"
+					style="grid-column: span {keyObj.span};"
 				>
 					{keyObj.label}
 				</button>
@@ -172,19 +173,20 @@
 	<!-- Bottom row with space bar and modifiers -->
 	<div
 		id="keyboard-bottom-row"
-		class="keyboard-row bottom-row"
+		class="keyboard-row"
 		role="row"
 		data-testid="keyboard-bottom-row"
 	>
 		{#each bottomRow as keyObj (keyObj.key)}
 			<button
 				id="key-{keyObj.key.toLowerCase().replace(/\s+/g, '-')}"
-				class="key {keyObj.class} {isKeyPressed(keyObj.key) ? 'pressed' : ''}"
+				class="key {isKeyPressed(keyObj.key) ? 'pressed' : ''} {keyObj.key === 'Space' ? 'space-key' : keyObj.key.includes('Ctrl') || keyObj.key.includes('Alt') || keyObj.key === 'Menu' ? 'modifier-key' : ''}"
 				onclick={() => handleKeyClick(keyObj.key)}
 				type="button"
 				aria-label={keyObj.key === 'Space' ? 'Space bar' : keyObj.label + ' key'}
 				aria-pressed={isKeyPressed(keyObj.key)}
 				data-testid="keyboard-key-{keyObj.key.toLowerCase().replace(/\s+/g, '-')}"
+				style="grid-column: span {keyObj.span};"
 			>
 				{keyObj.label}
 			</button>
@@ -195,61 +197,50 @@
 <style>
 	.pc-keyboard {
 		background: #f5f5f7;
-		border-radius: 12px;
+		border-radius: 16px;
 		padding: 24px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 		border: 1px solid #e1e1e3;
 		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-		max-width: 900px;
+		max-width: 920px;
 		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
 	}
 
 	.keyboard-row {
-		display: flex;
-		justify-content: center;
-		margin-bottom: 6px;
+		display: grid;
+		grid-template-columns: repeat(14, 1fr);
 		gap: 6px;
-	}
-
-	/* All rows aligned flush - no staggering for rectangular layout */
-	.row-1,
-	.row-2,
-	.row-3,
-	.row-4 {
-		margin-left: 0;
-		padding-left: 0;
-	}
-	
-	.bottom-row {
-		margin-left: 0;
-		margin-top: 6px;
-		gap: 6px;
-		justify-content: center;
+		width: 100%;
 	}
 
 	.key {
-		height: 48px;
+		height: 52px;
+		min-height: 52px;
 		background: #ffffff;
 		border: 1px solid #d1d1d6;
-		border-radius: 6px;
-		color: #333336;
-		font-weight: 500;
-		font-size: 14px;
+		border-radius: 8px;
+		color: #1d1d1f;
+		font-weight: 600;
+		font-size: 15px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		cursor: pointer;
-		transition: all 100ms ease;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+		cursor: default;
+		transition: all 120ms ease;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
 		user-select: none;
 		-webkit-user-select: none;
+		position: relative;
 	}
 
 	.key:hover {
-		background: #f8f8fa;
-		border-color: #b8b8bd;
-		transform: translateY(-1px);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+		background: #f0f0f2;
+		border-color: #a8a8ad;
+		transform: translateY(-2px);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
 	}
 
 	.key:active,
@@ -257,226 +248,82 @@
 		background: #007aff;
 		color: white;
 		border-color: #0051d5;
-		transform: translateY(0);
-		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+		transform: translateY(1px);
+		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
 	}
 
-	/* Regular character keys - more square proportions */
-	.regular-key {
-		width: 48px;
-		min-width: 48px;
-		flex: 0 0 48px;
+	/* Special key styling */
+	.space-key {
+		background: #fafafa;
+		border: 1px solid #d1d1d6;
+		font-size: 0;
 	}
 
-	/* Modifier keys with proportional sizing */
-	.double-width {
-		width: 96px;
-		flex: 0 0 96px;
-	}
-	
-	.tab {
-		width: 72px;
-		font-size: 12px;
-		flex: 0 0 72px;
+	.space-key:hover {
+		background: #f0f0f2;
 	}
 
-	.caps-lock {
-		width: 84px;
-		font-size: 12px;
-		flex: 0 0 84px;
-	}
-
-	.left-shift {
-		width: 108px;
-		font-size: 12px;
-		flex: 0 0 108px;
-	}
-
-	.right-shift {
-		width: 132px;
-		font-size: 12px;
-		flex: 0 0 132px;
-	}
-
-	.enter {
-		width: 108px;
-		font-size: 12px;
-		flex: 0 0 108px;
-	}
-
-	/* Bottom row modifiers */
-	.ctrl,
-	.alt {
-		width: 60px;
-		font-size: 12px;
+	.modifier-key {
 		background: #f8f8fa;
-		color: #666669;
-		flex: 0 0 60px;
+		color: #6c757d;
+		font-size: 13px;
+		font-weight: 500;
 	}
 
-	.menu {
-		width: 60px;
-		font-size: 12px;
-		background: #f8f8fa;
-		color: #666669;
-		flex: 0 0 60px;
+	.modifier-key:hover {
+		background: #ebebed;
+		color: #495057;
 	}
-
-	.space {
-		width: 336px;
-		background: #ffffff;
-		flex: 0 0 336px;
-	}
-
-	/* Arrow keys removed from PC layout */
 
 	/* Special visual effects for certain keys */
-	.caps-lock.pressed {
-		background: #34c759;
-		color: white;
-		border-color: #2ca048;
-	}
-
-	.ctrl,
-	.alt,
-	.menu {
-		color: #6c757d;
-	}
-
-	.ctrl:hover,
-	.alt:hover,
-	.menu:hover {
-		color: #495057;
-		background: #e9ecef;
+	button[id*="key-capslock"].pressed {
+		background: #34c759 !important;
+		color: white !important;
+		border-color: #2ca048 !important;
 	}
 
 	/* Responsive design */
 	@media (max-width: 900px) {
 		.pc-keyboard {
-			padding: 20px;
+			padding: 20px 16px;
 			max-width: 100%;
+			gap: 6px;
 		}
 
 		.key {
-			height: 40px;
-			font-size: 13px;
-		}
-
-		.regular-key {
-			width: 40px;
-			min-width: 40px;
-			flex: 0 0 40px;
-		}
-
-		.tab {
-			width: 60px;
-			flex: 0 0 60px;
-		}
-		.caps-lock {
-			width: 70px;
-			flex: 0 0 70px;
-		}
-		.left-shift,
-		.right-shift {
-			width: 90px;
-			flex: 0 0 90px;
-		}
-		.backspace {
-			width: 70px;
-			flex: 0 0 70px;
-		}
-		.enter {
-			width: 70px;
-			flex: 0 0 70px;
-		}
-		.space {
-			width: 240px;
-			flex: 0 0 240px;
-		}
-		.ctrl,
-		.alt {
-			width: 50px;
-			flex: 0 0 50px;
-		}
-		.menu {
-			width: 50px;
-			flex: 0 0 50px;
-		}
-
-		.row-1,
-		.row-2,
-		.row-3,
-		.row-4 {
-			padding-left: 0;
+			height: 44px;
+			min-height: 44px;
+			font-size: 14px;
 		}
 
 		.keyboard-row {
 			gap: 4px;
 		}
+
+		.modifier-key {
+			font-size: 12px;
+		}
 	}
 
 	@media (max-width: 640px) {
 		.pc-keyboard {
-			padding: 16px;
+			padding: 16px 12px;
 			max-width: 100%;
+			gap: 4px;
 		}
 
 		.key {
-			height: 36px;
-			font-size: 12px;
-		}
-
-		.regular-key {
-			width: 32px;
-			min-width: 32px;
-			flex: 0 0 32px;
-		}
-
-		.tab {
-			width: 48px;
-			flex: 0 0 48px;
-		}
-		.caps-lock {
-			width: 56px;
-			flex: 0 0 56px;
-		}
-		.left-shift,
-		.right-shift {
-			width: 72px;
-			flex: 0 0 72px;
-		}
-		.backspace {
-			width: 56px;
-			flex: 0 0 56px;
-		}
-		.enter {
-			width: 56px;
-			flex: 0 0 56px;
-		}
-		.space {
-			width: 180px;
-			flex: 0 0 180px;
-		}
-		.ctrl,
-		.alt {
-			width: 40px;
-			flex: 0 0 40px;
-		}
-		.menu {
-			width: 40px;
-			flex: 0 0 40px;
-		}
-
-		.row-1,
-		.row-2,
-		.row-3,
-		.row-4 {
-			padding-left: 0;
+			height: 38px;
+			min-height: 38px;
+			font-size: 13px;
 		}
 
 		.keyboard-row {
-			margin-bottom: 3px;
-			gap: 1px;
+			gap: 2px;
+		}
+
+		.modifier-key {
+			font-size: 11px;
 		}
 	}
 </style>
