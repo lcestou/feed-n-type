@@ -68,7 +68,7 @@
 		],
 		// Row 4: ZXCV (15 columns total)
 		[
-			{ key: 'Shift', label: 'shift', span: 2 },
+			{ key: 'Shift', label: 'shift', span: 2.5 },
 			{ key: 'z', label: 'Z', span: 1 },
 			{ key: 'x', label: 'X', span: 1 },
 			{ key: 'c', label: 'C', span: 1 },
@@ -78,8 +78,8 @@
 			{ key: 'm', label: 'M', span: 1 },
 			{ key: ',', label: ',', span: 1 },
 			{ key: '.', label: '.', span: 1 },
-			{ key: '/', label: '/', span: 2 },
-			{ key: 'RightShift', label: 'shift', span: 2 }
+			{ key: '/', label: '/', span: 1 },
+			{ key: 'RightShift', label: 'shift', span: 2.5 }
 		],
 		// Row 5: Bottom row (15 columns total)
 		[
@@ -105,15 +105,16 @@
 			key === 'Fn' ||
 			key === 'RightFn' ||
 			key === 'Menu' ||
-			key === 'AltGr'
+			key === 'LeftMenu' ||
+			key === 'AltGr' ||
+			key === 'Ctrl' ||
+			key === 'Alt' ||
+			key === 'RightCtrl'
 		) {
-			// These keys don't produce characters
+			// These keys don't produce characters (bottom row visual only)
 			return;
 		} else if (key === 'RightShift' || key === 'Shift') {
 			onKeyPress('Shift');
-		} else if (key === 'Ctrl' || key === 'Alt' || key === 'RightCtrl') {
-			// Modifier keys don't produce characters
-			return;
 		} else {
 			onKeyPress(key);
 		}
@@ -140,9 +141,14 @@
 >
 	<div class="flex flex-col gap-2">
 		{#each keyboardLayout as row, rowIndex (rowIndex)}
+			{@const gridTemplate = rowIndex === 0 ? 'repeat(15, 1fr)' : 
+									   rowIndex === 1 ? 'repeat(15, 1fr)' :
+									   rowIndex === 2 ? 'repeat(15, 1fr)' :
+									   rowIndex === 3 ? '2.5fr repeat(10, 1fr) 2.5fr' :
+									   'repeat(15, 1fr)'}
 			<div
 				class="grid gap-2"
-				style="grid-template-columns: repeat(15, 1fr);"
+				style="grid-template-columns: {gridTemplate};"
 				role="row"
 				data-testid="keyboard-row-{rowIndex + 1}"
 			>
