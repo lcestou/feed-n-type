@@ -31,8 +31,6 @@
 	/** Caps Lock state tracking */
 	let capsLockOn = $state(false);
 
-	/** Whether we've detected CapsLock state yet */
-	let capsLockDetected = $state(false);
 
 	/**
 	 * Invisible CapsLock detection using hidden auto-focus input
@@ -62,7 +60,6 @@
 		const detectCapsLock = (event: KeyboardEvent) => {
 			if (event.getModifierState) {
 				capsLockOn = event.getModifierState('CapsLock');
-				capsLockDetected = true;
 
 				// Remove listeners and hidden input
 				hiddenInput.removeEventListener('keydown', detectCapsLock);
@@ -83,7 +80,6 @@
 			const globalDetect = (event: KeyboardEvent | MouseEvent) => {
 				if ('getModifierState' in event) {
 					capsLockOn = event.getModifierState('CapsLock');
-					capsLockDetected = true;
 
 					// Cleanup
 					window.removeEventListener('keydown', globalDetect as EventListener);
