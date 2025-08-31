@@ -35,7 +35,7 @@
 		],
 		// Row 2: QWERTY (15 columns total)
 		[
-			{ key: 'Tab', label: 'Tab', span: 2 },
+			{ key: 'Tab', label: 'tab', span: 2 },
 			{ key: 'q', label: 'Q', span: 1 },
 			{ key: 'w', label: 'W', span: 1 },
 			{ key: 'e', label: 'E', span: 1 },
@@ -52,7 +52,7 @@
 		],
 		// Row 3: ASDF (15 columns total)
 		[
-			{ key: 'CapsLock', label: 'Caps', span: 2 },
+			{ key: 'CapsLock', label: 'caps', span: 2 },
 			{ key: 'a', label: 'A', span: 1 },
 			{ key: 's', label: 'S', span: 1 },
 			{ key: 'd', label: 'D', span: 1 },
@@ -64,11 +64,11 @@
 			{ key: 'l', label: 'L', span: 1 },
 			{ key: ';', label: ';', span: 1 },
 			{ key: "'", label: "'", span: 1 },
-			{ key: 'Enter', label: '↵', span: 2 }
+			{ key: 'Enter', label: 'enter', span: 2 }
 		],
 		// Row 4: ZXCV (15 columns total)
 		[
-			{ key: 'Shift', label: 'Shift', span: 3 },
+			{ key: 'Shift', label: 'shift', span: 2 },
 			{ key: 'z', label: 'Z', span: 1 },
 			{ key: 'x', label: 'X', span: 1 },
 			{ key: 'c', label: 'C', span: 1 },
@@ -78,20 +78,18 @@
 			{ key: 'm', label: 'M', span: 1 },
 			{ key: ',', label: ',', span: 1 },
 			{ key: '.', label: '.', span: 1 },
-			{ key: '/', label: '/', span: 1 },
-			{ key: 'RightShift', label: 'Shift', span: 2 }
+			{ key: '/', label: '/', span: 2 },
+			{ key: 'RightShift', label: 'shift', span: 2 }
 		],
 		// Row 5: Bottom row (15 columns total)
 		[
-			{ key: 'Ctrl', label: 'Ctrl', span: 1 },
-			{ key: 'Fn', label: 'Fn', span: 1 },
-			{ key: 'Win', label: '⊞', span: 1 },
-			{ key: 'Alt', label: 'Alt', span: 1 },
-			{ key: 'Space', label: '', span: 7 },
-			{ key: 'AltGr', label: 'Alt', span: 1 },
-			{ key: 'Menu', label: '☰', span: 1 },
-			{ key: 'RightFn', label: 'Fn', span: 1 },
-			{ key: 'RightCtrl', label: 'Ctrl', span: 1 }
+			{ key: 'Ctrl', label: 'ctrl', span: 1 },
+			{ key: 'Alt', label: 'alt', span: 1 },
+			{ key: 'LeftMenu', label: 'menu', span: 2 },
+			{ key: 'Space', label: 'space', span: 7 },
+			{ key: 'Menu', label: 'menu', span: 2 },
+			{ key: 'AltGr', label: 'alt', span: 1 },
+			{ key: 'RightCtrl', label: 'ctrl', span: 1 }
 		]
 	];
 
