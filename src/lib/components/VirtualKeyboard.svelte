@@ -19,7 +19,7 @@
 	const row2 = ['Tab', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'];
 	const row3 = ['CapsLock', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', "'", 'Enter'];
 	const row4 = ['Shift', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 'RightShift'];
-	const row5 = ['Ctrl', 'Fn', 'Win', 'Alt', 'Space', 'AltGr', 'Menu', 'RightCtrl'];
+	const row5 = ['Ctrl', 'Fn', 'Win', 'Alt', 'Space', 'AltGr', 'Menu', 'RightFn', 'RightCtrl'];
 
 	/**
 	 * Get display label for a key
@@ -38,6 +38,7 @@
 			AltGr: 'Alt',
 			Win: '⊞',
 			Fn: 'Fn',
+			RightFn: 'Fn',
 			Menu: '☰',
 			Space: ''
 		};
@@ -62,7 +63,8 @@
 			AltGr: 'key-alt',
 			Win: 'key-mod',
 			Fn: 'key-mod',
-			Menu: 'key-mod'
+			RightFn: 'key-mod',
+			Menu: 'key-menu'
 		};
 		return classes[key] || 'key-regular';
 	}
@@ -73,7 +75,7 @@
 	function handleKeyClick(key: string) {
 		if (key === 'Space') {
 			onKeyPress(' ');
-		} else if (key === 'CapsLock' || key === 'Win' || key === 'Fn' || key === 'Menu' || key === 'AltGr') {
+		} else if (key === 'CapsLock' || key === 'Win' || key === 'Fn' || key === 'RightFn' || key === 'Menu' || key === 'AltGr') {
 			// These keys don't produce characters
 			return;
 		} else if (key === 'RightShift' || key === 'Shift') {
@@ -253,33 +255,38 @@
 	}
 
 	.key-tab {
-		width: 72px;
+		width: 96px;
 	}
 
 	.key-caps {
-		width: 84px;
+		width: 108px;
 	}
 
 	.key-enter {
-		width: 84px;
+		width: 108px;
 	}
 
 	.key-shift-left {
-		width: 108px;
+		width: 132px;
 	}
 
 	.key-shift-right {
-		width: 108px;
+		width: 132px;
 	}
 
 	.key-space {
-		width: 280px;
+		width: 240px;
 	}
 
 	.key-ctrl,
 	.key-alt,
 	.key-mod {
 		width: 60px;
+		font-size: 12px;
+	}
+
+	.key-menu {
+		width: 84px;
 		font-size: 12px;
 	}
 
@@ -309,30 +316,35 @@
 		}
 
 		.key-tab {
-			width: 54px;
+			width: 72px;
 		}
 
 		.key-caps {
-			width: 64px;
+			width: 80px;
 		}
 
 		.key-enter {
-			width: 64px;
+			width: 80px;
 		}
 
 		.key-shift-left,
 		.key-shift-right {
-			width: 80px;
+			width: 96px;
 		}
 
 		.key-space {
-			width: 200px;
+			width: 180px;
 		}
 
 		.key-ctrl,
 		.key-alt,
 		.key-mod {
 			width: 45px;
+			font-size: 11px;
+		}
+
+		.key-menu {
+			width: 60px;
 			font-size: 11px;
 		}
 	}
@@ -362,30 +374,35 @@
 		}
 
 		.key-tab {
-			width: 42px;
+			width: 56px;
 		}
 
 		.key-caps {
-			width: 50px;
+			width: 60px;
 		}
 
 		.key-enter {
-			width: 50px;
+			width: 60px;
 		}
 
 		.key-shift-left,
 		.key-shift-right {
-			width: 64px;
+			width: 72px;
 		}
 
 		.key-space {
-			width: 150px;
+			width: 130px;
 		}
 
 		.key-ctrl,
 		.key-alt,
 		.key-mod {
-			width: 35px;
+			width: 32px;
+			font-size: 10px;
+		}
+
+		.key-menu {
+			width: 48px;
 			font-size: 10px;
 		}
 	}
