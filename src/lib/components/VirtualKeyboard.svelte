@@ -6,10 +6,18 @@
 	interface Props {
 		onKeyPress: (key: string) => void;
 		pressedKey?: string;
+		capsLockOn?: boolean;
+		onCapsLockToggle?: () => void;
 		'data-component-id'?: string;
 	}
 
-	let { onKeyPress, pressedKey, 'data-component-id': componentId }: Props = $props();
+	let {
+		onKeyPress,
+		pressedKey,
+		capsLockOn = false,
+		onCapsLockToggle,
+		'data-component-id': componentId
+	}: Props = $props();
 
 	/**
 	 * Keyboard layout with CSS Grid configuration.
@@ -18,20 +26,20 @@
 	const keyboardLayout = [
 		// Row 1: Numbers (14 columns total)
 		[
-			{ key: '`', label: '`', span: 1 },
-			{ key: '1', label: '1', span: 1 },
-			{ key: '2', label: '2', span: 1 },
-			{ key: '3', label: '3', span: 1 },
-			{ key: '4', label: '4', span: 1 },
-			{ key: '5', label: '5', span: 1 },
-			{ key: '6', label: '6', span: 1 },
-			{ key: '7', label: '7', span: 1 },
-			{ key: '8', label: '8', span: 1 },
-			{ key: '9', label: '9', span: 1 },
-			{ key: '0', label: '0', span: 1 },
-			{ key: '-', label: '-', span: 1 },
-			{ key: '=', label: '=', span: 1 },
-			{ key: 'Backspace', label: '⌫', span: 2 }
+			{ key: '`', label: '~ `', span: 1 },
+			{ key: '1', label: '! 1', span: 1 },
+			{ key: '2', label: '@ 2', span: 1 },
+			{ key: '3', label: '# 3', span: 1 },
+			{ key: '4', label: '$ 4', span: 1 },
+			{ key: '5', label: '% 5', span: 1 },
+			{ key: '6', label: '^ 6', span: 1 },
+			{ key: '7', label: '& 7', span: 1 },
+			{ key: '8', label: '* 8', span: 1 },
+			{ key: '9', label: '( 9', span: 1 },
+			{ key: '0', label: ') 0', span: 1 },
+			{ key: '-', label: '_|-', span: 1 },
+			{ key: '=', label: '+ =', span: 1 },
+			{ key: 'Backspace', label: 'delete', span: 2 }
 		],
 		// Row 2: QWERTY (15 columns total)
 		[
@@ -46,9 +54,9 @@
 			{ key: 'i', label: 'I', span: 1 },
 			{ key: 'o', label: 'O', span: 1 },
 			{ key: 'p', label: 'P', span: 1 },
-			{ key: '[', label: '[', span: 1 },
-			{ key: ']', label: ']', span: 1 },
-			{ key: '\\', label: '\\', span: 1 }
+			{ key: '[', label: '{ [', span: 1 },
+			{ key: ']', label: '} ]', span: 1 },
+			{ key: '\\', label: '| \\', span: 1 }
 		],
 		// Row 3: ASDF (15 columns total)
 		[
@@ -62,9 +70,9 @@
 			{ key: 'j', label: 'J', span: 1 },
 			{ key: 'k', label: 'K', span: 1 },
 			{ key: 'l', label: 'L', span: 1 },
-			{ key: ';', label: ';', span: 1 },
-			{ key: "'", label: "'", span: 1 },
-			{ key: 'Enter', label: 'enter', span: 2 }
+			{ key: ';', label: ': ;', span: 1 },
+			{ key: "'", label: '" \'', span: 1 },
+			{ key: 'Enter', label: 'return', span: 2 }
 		],
 		// Row 4: ZXCV (15 columns total)
 		[
@@ -76,9 +84,9 @@
 			{ key: 'b', label: 'B', span: 1 },
 			{ key: 'n', label: 'N', span: 1 },
 			{ key: 'm', label: 'M', span: 1 },
-			{ key: ',', label: ',', span: 1 },
-			{ key: '.', label: '.', span: 1 },
-			{ key: '/', label: '/', span: 1 },
+			{ key: ',', label: '< ,', span: 1 },
+			{ key: '.', label: '> .', span: 1 },
+			{ key: '/', label: '? /', span: 1 },
 			{ key: 'RightShift', label: 'shift', span: 2.5 }
 		],
 		// Row 5: Bottom row (15 columns total)
@@ -99,8 +107,11 @@
 	function handleKeyClick(key: string) {
 		if (key === 'Space') {
 			onKeyPress(' ');
+		} else if (key === 'CapsLock') {
+			// Toggle caps lock state
+			onCapsLockToggle?.();
+			return;
 		} else if (
-			key === 'CapsLock' ||
 			key === 'Win' ||
 			key === 'Fn' ||
 			key === 'RightFn' ||
@@ -141,11 +152,16 @@
 >
 	<div class="flex flex-col gap-1">
 		{#each keyboardLayout as row, rowIndex (rowIndex)}
-			{@const gridTemplate = rowIndex === 0 ? 'repeat(15, 1fr)' : 
-									   rowIndex === 1 ? 'repeat(15, 1fr)' :
-									   rowIndex === 2 ? 'repeat(15, 1fr)' :
-									   rowIndex === 3 ? '2.5fr repeat(10, 1fr) 2.5fr' :
-									   'repeat(15, 1fr)'}
+			{@const gridTemplate =
+				rowIndex === 0
+					? 'repeat(15, 1fr)'
+					: rowIndex === 1
+						? 'repeat(15, 1fr)'
+						: rowIndex === 2
+							? 'repeat(15, 1fr)'
+							: rowIndex === 3
+								? '2.5fr repeat(10, 1fr) 2.5fr'
+								: 'repeat(15, 1fr)'}
 			<div
 				class="grid gap-1"
 				style="grid-template-columns: {gridTemplate};"
@@ -154,19 +170,75 @@
 			>
 				{#each row as keyObj (keyObj.key)}
 					<button
-						class="flex h-12 cursor-pointer items-center justify-center rounded-lg border border-gray-300
-							   bg-white text-sm font-semibold text-gray-700 transition-all duration-100
+						class="relative flex h-12 cursor-pointer rounded-lg border border-gray-300 bg-white font-normal
+							   text-gray-700 transition-all duration-100
 							   hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-md
 							   active:translate-y-0 active:border-blue-600 active:bg-blue-500 active:text-white active:shadow-inner
-							   {isKeyPressed(keyObj.key) ? 'border-blue-600 bg-blue-500 text-white shadow-inner' : ''}"
-						style="grid-column: span {keyObj.span};"
+							   {isKeyPressed(keyObj.key) ? 'border-blue-600 bg-blue-500 text-white shadow-inner' : ''}
+							   {['Ctrl', 'Alt', 'LeftMenu', 'Menu', 'AltGr', 'RightCtrl', 'Space'].includes(keyObj.key)
+							? 'items-end justify-center pb-1'
+							: ['Tab', 'CapsLock', 'Shift'].includes(keyObj.key)
+								? 'items-end justify-start pb-1 pl-2'
+								: ['Backspace', 'Enter', 'RightShift'].includes(keyObj.key)
+									? 'items-end justify-end pr-2 pb-1'
+									: 'flex-col items-center justify-center gap-0.5 p-1'}"
+						class:text-xs={![
+							'Tab',
+							'CapsLock',
+							'Enter',
+							'Shift',
+							'RightShift',
+							'Backspace',
+							'Ctrl',
+							'Alt',
+							'LeftMenu',
+							'Menu',
+							'AltGr',
+							'RightCtrl',
+							'Space'
+						].includes(keyObj.key)}
+						style="grid-column: span {keyObj.span}; {[
+							'Tab',
+							'CapsLock',
+							'Enter',
+							'Shift',
+							'RightShift',
+							'Backspace',
+							'Ctrl',
+							'Alt',
+							'LeftMenu',
+							'Menu',
+							'AltGr',
+							'RightCtrl',
+							'Space'
+						].includes(keyObj.key)
+							? 'font-size: 9px !important;'
+							: 'font-size: 12px !important;'}"
 						onclick={() => handleKeyClick(keyObj.key)}
 						type="button"
 						aria-label="{keyObj.key} key"
 						aria-pressed={isKeyPressed(keyObj.key)}
 						data-testid="keyboard-key-{keyObj.key.toLowerCase()}"
 					>
-						{keyObj.label}
+						{#if keyObj.key === 'CapsLock'}
+							<!-- Caps Lock with indicator -->
+							<div
+								class="absolute top-2 left-2 h-1.5 w-1.5 rounded-full bg-gray-400 transition-colors duration-200"
+								class:bg-green-500={capsLockOn}
+								class:bg-gray-400={!capsLockOn}
+							></div>
+							<span class="mb-1 leading-none">{keyObj.label}</span>
+						{:else if keyObj.label.includes(' ')}
+							{@const parts = keyObj.label.split(' ')}
+							<span class="text-[10px] leading-none text-gray-400">{parts[0]}</span>
+							<span class="leading-none">{parts[1]}</span>
+						{:else if keyObj.label.includes('|')}
+							{@const parts = keyObj.label.split('|')}
+							<span class="-mt-1 text-[10px] leading-none text-gray-400">{parts[0]}</span>
+							<span class="leading-none">{parts[1]}</span>
+						{:else}
+							{keyObj.label}
+						{/if}
 					</button>
 				{/each}
 			</div>
