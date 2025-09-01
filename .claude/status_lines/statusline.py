@@ -250,6 +250,7 @@ def main():
         YELLOW_256 = "\033[38;5;226m"  # Bright yellow (256-color)
         BLUE_256 = "\033[38;5;27m"     # Bright blue (256-color)
         MAGENTA_256 = "\033[38;5;201m" # Bright magenta (256-color)
+        GRAY_256 = "\033[38;5;246m"    # Muted gray (256-color) for reset time
         
         # Calculate reset time using ccusage data if available
         from datetime import datetime, timedelta
@@ -274,18 +275,18 @@ def main():
         
         # Multi-line statusline
         status_line_1 = (
-            f"📁 {GREEN_256}{project_name}{RESET}{CYAN_256}{git_info}{RESET} │ "
-            f"{context_bar} │ "
-            f"⏱️ {CYAN}{duration_str}{RESET} │ "
-            f"{MAGENTA}+{lines_added}/-{lines_removed}{RESET}"
+            f"📁{GREEN_256}{project_name}{RESET}{CYAN_256}{git_info}{RESET} "
+            f"🧠{context_bar} "
+            f"⏱️ {CYAN}{duration_str}{RESET} "
+            f"📝{MAGENTA}+{lines_added}/-{lines_removed}{RESET}"
         )
         
         # Second line with model, reset time, and version info
         claude_version = "v2.11.4"  # Update as needed
         status_line_2 = (
-            f"🤖 {YELLOW}{model}{RESET} │ "
-            f"{BLUE}Reset ({reset_time_str}){RESET} │ "
-            f"{MAGENTA}{claude_version}{RESET}"
+            f"🤖{YELLOW}{model}{RESET} "
+            f"🔄{GRAY_256}Reset ({reset_time_str}){RESET} "
+            f"📦{MAGENTA}{claude_version}{RESET}"
         )
         
         print(status_line_1)
