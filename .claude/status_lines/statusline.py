@@ -172,6 +172,105 @@ def format_tokens(tokens):
         return f"{tokens // 1000000}M"
 
 
+def get_last_prompt_from_session(session_id):
+    """Get the last prompt from the session file."""
+    try:
+        # Try different session file paths
+        cwd_path = str(Path.cwd()).replace("/", "-")
+        if cwd_path.startswith("-"):
+            cwd_path = cwd_path[1:]
+        
+        project_dir = Path.home() / ".claude" / "projects" / f"-{cwd_path}"
+        
+        if project_dir.exists():
+            # Find the most recent session file in the project directory
+            session_files = list(project_dir.glob("*.jsonl"))
+            if session_files:
+                # Get the most recently modified session file
+                session_file = max(session_files, key=lambda p: p.stat().st_mtime)
+            else:
+                return "No sessions in project"
+        else:
+            # Fallback to session_id if provided
+            session_file = Path.home() / ".claude" / "projects" / f"{session_id}.jsonl"
+            if not session_file.exists():
+                return f"No project dir: {project_dir.name}"
+        
+        # Read the last line that contains a user prompt
+        last_prompt = "No prompts found"
+        with open(session_file, 'r') as f:
+            for line in f:
+                try:
+                    entry = json.loads(line.strip())
+                    if entry.get('type') == 'user' and not entry.get('isVisibleInTranscriptOnly'):
+                        # Check for different content structures
+                        content = entry.get('content') or entry.get('message', {}).get('content')
+                        if content:
+                            if isinstance(content, list) and len(content) > 0:
+                                # Get text from content array
+                                text_parts = [item.get('text', '') for item in content if item.get('type') == 'text']
+                                if text_parts:
+                                    prompt_text = ' '.join(text_parts)
+                                    # Skip hook messages and system content
+                                    if not any(skip in prompt_text.lower() for skip in [
+                                        'edit operation feedback', 
+                                        '.claude/hooks/',
+                                        'user-prompt-submit-hook',
+                                        'critical: always follow'
+                                    ]):
+                                        last_prompt = prompt_text
+                            elif isinstance(content, str):
+                                # Skip hook messages and system content
+                                if not any(skip in content.lower() for skip in [
+                                    'edit operation feedback',
+                                    '.claude/hooks/', 
+                                    'user-prompt-submit-hook',
+                                    'critical: always follow'
+                                ]):
+                                    last_prompt = content
+                except json.JSONDecodeError:
+                    continue
+        
+        return last_prompt
+    except Exception:
+        return "Session read error"
+
+
+def truncate_prompt(prompt, max_length=40):
+    """Truncate prompt to specified length."""
+    if len(prompt) <= max_length:
+        return prompt
+    return prompt[:max_length-3] + "..."
+
+
+def get_prompt_icon(prompt_text):
+    """Get an icon for the prompt based on its content."""
+    prompt_lower = prompt_text.lower()
+    
+    if any(word in prompt_lower for word in ['code', 'function', 'class', 'debug', 'implement']):
+        return "💻"
+    elif any(word in prompt_lower for word in ['file', 'read', 'write', 'create', 'delete']):
+        return "📁"
+    elif any(word in prompt_lower for word in ['analyze', 'research', 'explain', 'understand']):
+        return "🔍"
+    elif any(word in prompt_lower for word in ['document', 'comment', 'readme', 'docs']):
+        return "📝"
+    elif any(word in prompt_lower for word in ['test', 'spec', 'unit', 'integration']):
+        return "🧪"
+    elif any(word in prompt_lower for word in ['git', 'commit', 'push', 'pull', 'merge']):
+        return "🔀"
+    elif any(word in prompt_lower for word in ['fix', 'bug', 'error', 'issue']):
+        return "🔧"
+    elif any(word in prompt_lower for word in ['deploy', 'build', 'release']):
+        return "🚀"
+    elif any(word in prompt_lower for word in ['security', 'auth', 'password']):
+        return "🔒"
+    elif any(word in prompt_lower for word in ['performance', 'optimize', 'speed']):
+        return "⚡"
+    else:
+        return "💬"
+
+
 def main():
     """Generate Claude Code status line."""
     try:
@@ -182,10 +281,16 @@ def main():
         model = input_data.get("model", {}).get("display_name", "Unknown")
         transcript_path = input_data.get("transcript_path", "")
         claude_version = input_data.get("version", "Unknown")
+        session_id = input_data.get("session_id", "")
         
         # Get project info
         project_name = get_project_name()
         git_info = get_git_info()
+        
+        # Get recent prompt info
+        last_prompt = get_last_prompt_from_session(session_id)
+        prompt_icon = get_prompt_icon(last_prompt)
+        truncated_prompt = truncate_prompt(last_prompt)
         
         # Simple fallback: estimate tokens from file size
         tokens, context_percent = 0, 0
@@ -289,8 +394,12 @@ def main():
             f"📦{MAGENTA}{claude_version}{RESET}"
         )
         
+        # Third line with recent prompt
+        status_line_3 = f"{prompt_icon}{CYAN_256}{truncated_prompt}{RESET}"
+        
         print(status_line_1)
-        print(status_line_2, end="")
+        print(status_line_2)
+        print(status_line_3, end="")
         
     except Exception as e:
         # Fallback status line if something goes wrong
