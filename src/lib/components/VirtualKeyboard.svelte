@@ -6,85 +6,133 @@
 	interface Props {
 		onKeyPress: (key: string) => void;
 		pressedKey?: string;
+		capsLockOn?: boolean;
+		onCapsLockToggle?: () => void;
 		'data-component-id'?: string;
 	}
 
-	let { onKeyPress, pressedKey, 'data-component-id': componentId }: Props = $props();
+	let {
+		onKeyPress,
+		pressedKey,
+		capsLockOn = false,
+		onCapsLockToggle,
+		'data-component-id': componentId
+	}: Props = $props();
 
 	/**
-	 * PC keyboard layout with proper staggering and key arrangement.
-	 * Represents the standard QWERTY layout with modifier keys.
-	 * Each row contains regular keys and optional left/right modifiers.
+	 * Keyboard layout with CSS Grid configuration.
+	 * Each key has a span property to define how many grid columns it occupies.
 	 */
-	const keyboardRows = [
-		// Numbers row with symbols
-		{
-			keys: ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='],
-			leftModifier: null,
-			rightModifier: { key: 'Backspace', label: 'Backspace', class: 'backspace' }
-		},
-		// QWERTY row
-		{
-			keys: ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'],
-			leftModifier: { key: 'Tab', label: 'Tab', class: 'tab' },
-			rightModifier: null
-		},
-		// ASDF row (home row)
-		{
-			keys: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', "'"],
-			leftModifier: { key: 'CapsLock', label: 'Caps Lock', class: 'caps-lock' },
-			rightModifier: { key: 'Enter', label: 'Enter', class: 'enter' }
-		},
-		// ZXCV row
-		{
-			keys: ['z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/'],
-			leftModifier: { key: 'Shift', label: 'Shift', class: 'left-shift' },
-			rightModifier: { key: 'RightShift', label: 'Shift', class: 'right-shift' }
-		}
+	const keyboardLayout = [
+		// Row 1: Numbers (14 columns total)
+		[
+			{ key: '`', label: '~ `', span: 1 },
+			{ key: '1', label: '! 1', span: 1 },
+			{ key: '2', label: '@ 2', span: 1 },
+			{ key: '3', label: '# 3', span: 1 },
+			{ key: '4', label: '$ 4', span: 1 },
+			{ key: '5', label: '% 5', span: 1 },
+			{ key: '6', label: '^ 6', span: 1 },
+			{ key: '7', label: '& 7', span: 1 },
+			{ key: '8', label: '* 8', span: 1 },
+			{ key: '9', label: '( 9', span: 1 },
+			{ key: '0', label: ') 0', span: 1 },
+			{ key: '-', label: '_|-', span: 1 },
+			{ key: '=', label: '+ =', span: 1 },
+			{ key: 'Backspace', label: 'delete', span: 2 }
+		],
+		// Row 2: QWERTY (15 columns total)
+		[
+			{ key: 'Tab', label: 'tab', span: 2 },
+			{ key: 'q', label: 'Q', span: 1 },
+			{ key: 'w', label: 'W', span: 1 },
+			{ key: 'e', label: 'E', span: 1 },
+			{ key: 'r', label: 'R', span: 1 },
+			{ key: 't', label: 'T', span: 1 },
+			{ key: 'y', label: 'Y', span: 1 },
+			{ key: 'u', label: 'U', span: 1 },
+			{ key: 'i', label: 'I', span: 1 },
+			{ key: 'o', label: 'O', span: 1 },
+			{ key: 'p', label: 'P', span: 1 },
+			{ key: '[', label: '{ [', span: 1 },
+			{ key: ']', label: '} ]', span: 1 },
+			{ key: '\\', label: '| \\', span: 1 }
+		],
+		// Row 3: ASDF (15 columns total)
+		[
+			{ key: 'CapsLock', label: 'caps', span: 2 },
+			{ key: 'a', label: 'A', span: 1 },
+			{ key: 's', label: 'S', span: 1 },
+			{ key: 'd', label: 'D', span: 1 },
+			{ key: 'f', label: 'F', span: 1 },
+			{ key: 'g', label: 'G', span: 1 },
+			{ key: 'h', label: 'H', span: 1 },
+			{ key: 'j', label: 'J', span: 1 },
+			{ key: 'k', label: 'K', span: 1 },
+			{ key: 'l', label: 'L', span: 1 },
+			{ key: ';', label: ': ;', span: 1 },
+			{ key: "'", label: '" \'', span: 1 },
+			{ key: 'Enter', label: 'return', span: 2 }
+		],
+		// Row 4: ZXCV (15 columns total)
+		[
+			{ key: 'Shift', label: 'shift', span: 2.5 },
+			{ key: 'z', label: 'Z', span: 1 },
+			{ key: 'x', label: 'X', span: 1 },
+			{ key: 'c', label: 'C', span: 1 },
+			{ key: 'v', label: 'V', span: 1 },
+			{ key: 'b', label: 'B', span: 1 },
+			{ key: 'n', label: 'N', span: 1 },
+			{ key: 'm', label: 'M', span: 1 },
+			{ key: ',', label: '< ,', span: 1 },
+			{ key: '.', label: '> .', span: 1 },
+			{ key: '/', label: '? /', span: 1 },
+			{ key: 'RightShift', label: 'shift', span: 2.5 }
+		],
+		// Row 5: Bottom row (15 columns total)
+		[
+			{ key: 'Ctrl', label: 'ctrl', span: 1 },
+			{ key: 'Alt', label: 'alt', span: 1 },
+			{ key: 'LeftMenu', label: 'menu', span: 2 },
+			{ key: 'Space', label: 'space', span: 7 },
+			{ key: 'Menu', label: 'menu', span: 2 },
+			{ key: 'AltGr', label: 'alt', span: 1 },
+			{ key: 'RightCtrl', label: 'ctrl', span: 1 }
+		]
 	];
 
 	/**
-	 * Bottom row with modifiers and space bar following PC layout conventions.
-	 * Contains control keys, alt keys, space bar, and menu key.
-	 */
-	const bottomRowKeys = [
-		{ key: 'Ctrl', label: 'Ctrl', class: 'ctrl' },
-		{ key: 'Alt', label: 'Alt', class: 'alt' },
-		{ key: 'Space', label: '', class: 'space' },
-		{ key: 'RightAlt', label: 'Alt', class: 'alt' },
-		{ key: 'Menu', label: 'Menu', class: 'menu' },
-		{ key: 'RightCtrl', label: 'Ctrl', class: 'ctrl' }
-	];
-
-	/**
-	 * Handles virtual keyboard key clicks and maps them to appropriate functionality.
-	 * Processes special keys (Space, Shift, modifiers) and regular character keys.
-	 *
-	 * @param key - The key identifier that was clicked
+	 * Handles virtual keyboard key clicks.
 	 */
 	function handleKeyClick(key: string) {
-		// Map display keys to actual functionality
 		if (key === 'Space') {
 			onKeyPress(' ');
 		} else if (key === 'CapsLock') {
-			// CapsLock doesn't produce characters in our simple implementation
+			// Toggle caps lock state
+			onCapsLockToggle?.();
+			return;
+		} else if (
+			key === 'Win' ||
+			key === 'Fn' ||
+			key === 'RightFn' ||
+			key === 'Menu' ||
+			key === 'LeftMenu' ||
+			key === 'AltGr' ||
+			key === 'Ctrl' ||
+			key === 'Alt' ||
+			key === 'RightCtrl'
+		) {
+			// These keys don't produce characters (bottom row visual only)
 			return;
 		} else if (key === 'RightShift' || key === 'Shift') {
 			onKeyPress('Shift');
-		} else if (['Ctrl', 'Alt', 'RightCtrl', 'RightAlt', 'Menu'].includes(key)) {
-			// Modifier keys don't produce characters
-			return;
 		} else {
 			onKeyPress(key);
 		}
 	}
 
 	/**
-	 * Determines if a key should be visually highlighted as pressed.
-	 * Handles special case mapping for space key and case-insensitive comparison.
-	 *
-	 * @param key - The key to check for pressed state
-	 * @returns True if the key should appear pressed
+	 * Determines if a key should be highlighted as pressed.
 	 */
 	function isKeyPressed(key: string): boolean {
 		if (key === 'Space') {
@@ -96,356 +144,112 @@
 
 <div
 	id="virtual-keyboard"
-	class="pc-keyboard"
+	class="mx-auto w-full max-w-4xl rounded-xl border border-gray-200 bg-gray-100 p-6 shadow-lg"
 	role="group"
 	aria-label="Virtual keyboard"
 	data-component-id={componentId}
 	data-testid="virtual-keyboard"
 >
-	<!-- Main keyboard rows -->
-	{#each keyboardRows as row, rowIndex (rowIndex)}
-		<div
-			id="keyboard-row-{rowIndex + 1}"
-			class="keyboard-row row-{rowIndex + 1}"
-			role="row"
-			data-testid="keyboard-row-{rowIndex + 1}"
-		>
-			<!-- Left modifier key -->
-			{#if row.leftModifier}
-				<button
-					id="key-{row.leftModifier.key.toLowerCase()}"
-					class="key modifier-key {row.leftModifier.class} {isKeyPressed(row.leftModifier.key)
-						? 'pressed'
-						: ''}"
-					onclick={() => handleKeyClick(row.leftModifier.key)}
-					type="button"
-					aria-label="{row.leftModifier.label} key"
-					aria-pressed={isKeyPressed(row.leftModifier.key)}
-					data-testid="keyboard-key-{row.leftModifier.key.toLowerCase()}"
-				>
-					{row.leftModifier.label}
-				</button>
-			{/if}
-
-			<!-- Regular keys -->
-			{#each row.keys as key, keyIdx (key)}
-				<button
-					id="key-{key.replace(/[^a-z0-9]/gi, '')}-{rowIndex}-{keyIdx}"
-					class="key regular-key {isKeyPressed(key) ? 'pressed' : ''}"
-					onclick={() => handleKeyClick(key)}
-					type="button"
-					aria-label="{key.toUpperCase()} key"
-					aria-pressed={isKeyPressed(key)}
-					data-testid="keyboard-key-{key.replace(/[^a-z0-9]/gi, '').toLowerCase()}"
-				>
-					{key.toUpperCase()}
-				</button>
-			{/each}
-
-			<!-- Right modifier key -->
-			{#if row.rightModifier}
-				<button
-					id="key-{row.rightModifier.key.toLowerCase()}"
-					class="key modifier-key {row.rightModifier.class} {isKeyPressed(row.rightModifier.key)
-						? 'pressed'
-						: ''}"
-					onclick={() => handleKeyClick(row.rightModifier.key)}
-					type="button"
-					aria-label="{row.rightModifier.label} key"
-					aria-pressed={isKeyPressed(row.rightModifier.key)}
-					data-testid="keyboard-key-{row.rightModifier.key.toLowerCase()}"
-				>
-					{row.rightModifier.label}
-				</button>
-			{/if}
-		</div>
-	{/each}
-
-	<!-- Bottom row with space bar and modifiers -->
-	<div
-		id="keyboard-bottom-row"
-		class="keyboard-row bottom-row"
-		role="row"
-		data-testid="keyboard-bottom-row"
-	>
-		{#each bottomRowKeys as key (key.key)}
-			<button
-				id="key-{key.key.toLowerCase().replace(/\s+/g, '-')}"
-				class="key {key.class} {isKeyPressed(key.key) ? 'pressed' : ''}"
-				onclick={() => handleKeyClick(key.key)}
-				type="button"
-				aria-label={key.key === 'Space' ? 'Space bar' : key.label + ' key'}
-				aria-pressed={isKeyPressed(key.key)}
-				data-testid="keyboard-key-{key.key.toLowerCase().replace(/\s+/g, '-')}"
+	<div class="flex flex-col gap-1">
+		{#each keyboardLayout as row, rowIndex (rowIndex)}
+			{@const gridTemplate =
+				rowIndex === 0
+					? 'repeat(15, 1fr)'
+					: rowIndex === 1
+						? 'repeat(15, 1fr)'
+						: rowIndex === 2
+							? 'repeat(15, 1fr)'
+							: rowIndex === 3
+								? '2.5fr repeat(10, 1fr) 2.5fr'
+								: 'repeat(15, 1fr)'}
+			<div
+				class="grid gap-1"
+				style="grid-template-columns: {gridTemplate};"
+				role="row"
+				data-testid="keyboard-row-{rowIndex + 1}"
 			>
-				{key.label}
-			</button>
+				{#each row as keyObj (keyObj.key)}
+					<button
+						class="relative flex h-12 cursor-pointer rounded-lg border border-gray-300 bg-white font-normal
+							   text-gray-700 transition-all duration-100
+							   hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-md
+							   active:translate-y-0 active:border-blue-600 active:bg-blue-500 active:text-white active:shadow-inner
+							   {isKeyPressed(keyObj.key) ? 'border-blue-600 bg-blue-500 text-white shadow-inner' : ''}
+							   {['Ctrl', 'Alt', 'LeftMenu', 'Menu', 'AltGr', 'RightCtrl', 'Space'].includes(keyObj.key)
+							? 'items-end justify-center pb-1'
+							: ['Tab', 'CapsLock', 'Shift'].includes(keyObj.key)
+								? 'items-end justify-start pb-1 pl-2'
+								: ['Backspace', 'Enter', 'RightShift'].includes(keyObj.key)
+									? 'items-end justify-end pr-2 pb-1'
+									: 'flex-col items-center justify-center gap-0.5 p-1'}"
+						class:text-xs={![
+							'Tab',
+							'CapsLock',
+							'Enter',
+							'Shift',
+							'RightShift',
+							'Backspace',
+							'Ctrl',
+							'Alt',
+							'LeftMenu',
+							'Menu',
+							'AltGr',
+							'RightCtrl',
+							'Space'
+						].includes(keyObj.key)}
+						style="grid-column: span {keyObj.span}; {[
+							'Tab',
+							'CapsLock',
+							'Enter',
+							'Shift',
+							'RightShift',
+							'Backspace',
+							'Ctrl',
+							'Alt',
+							'LeftMenu',
+							'Menu',
+							'AltGr',
+							'RightCtrl',
+							'Space'
+						].includes(keyObj.key)
+							? 'font-size: 9px !important;'
+							: 'font-size: 12px !important;'}"
+						onclick={() => handleKeyClick(keyObj.key)}
+						type="button"
+						aria-label="{keyObj.key} key"
+						aria-pressed={isKeyPressed(keyObj.key)}
+						data-testid="keyboard-key-{keyObj.key.toLowerCase()}"
+					>
+						{#if keyObj.key === 'CapsLock'}
+							<!-- Caps Lock with indicator -->
+							<div
+								class="absolute top-2 left-2 h-1.5 w-1.5 rounded-full bg-gray-400 transition-colors duration-200"
+								class:bg-green-500={capsLockOn}
+								class:bg-gray-400={!capsLockOn}
+							></div>
+							<span class="mb-1 leading-none">{keyObj.label}</span>
+						{:else if keyObj.label.includes(' ')}
+							{@const parts = keyObj.label.split(' ')}
+							<span class="text-[10px] leading-none text-gray-400">{parts[0]}</span>
+							<span class="leading-none">{parts[1]}</span>
+						{:else if keyObj.label.includes('|')}
+							{@const parts = keyObj.label.split('|')}
+							<span class="-mt-1 text-[10px] leading-none text-gray-400">{parts[0]}</span>
+							<span class="leading-none">{parts[1]}</span>
+						{:else}
+							{keyObj.label}
+						{/if}
+					</button>
+				{/each}
+			</div>
 		{/each}
 	</div>
 </div>
 
 <style>
-	.pc-keyboard {
-		background: #f8f9fa;
-		border-radius: 8px;
-		padding: 16px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		border: 1px solid #dee2e6;
-		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-		max-width: 800px;
-		margin: 0 auto;
-	}
-
-	.keyboard-row {
-		display: flex;
-		justify-content: center;
-		margin-bottom: 4px;
-		gap: 2px;
-	}
-
-	/* Row staggering for standard PC keyboard layout */
-	.row-1 {
-		margin-left: 0;
-	}
-	.row-2 {
-		margin-left: 24px;
-	}
-	.row-3 {
-		margin-left: 36px;
-	}
-	.row-4 {
-		margin-left: 48px;
-	}
-	.bottom-row {
-		margin-left: 0;
-		margin-top: 8px;
-		gap: 2px;
-	}
-
-	.key {
-		height: 36px;
-		background: #ffffff;
-		border: 1px solid #ced4da;
-		border-radius: 4px;
-		color: #495057;
-		font-weight: 500;
-		font-size: 13px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: default;
-		transition: all 150ms ease;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-		user-select: none;
-		-webkit-user-select: none;
-	}
-
-	.key:hover {
-		background: #f8f9fa;
-		border-color: #adb5bd;
-		transform: translateY(-1px);
-		box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.key:active,
-	.key.pressed {
-		background: #e9ecef;
-		border-color: #6c757d;
-		transform: translateY(0);
-		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	/* Regular character keys */
-	.regular-key {
-		width: 36px;
-		min-width: 36px;
-	}
-
-	/* Modifier keys with proper PC sizing */
-	.tab {
-		width: 60px;
-		font-size: 11px;
-	}
-
-	.caps-lock {
-		width: 72px;
-		font-size: 11px;
-	}
-
-	.left-shift {
-		width: 88px;
-		font-size: 11px;
-	}
-
-	.right-shift {
-		width: 88px;
-		font-size: 11px;
-	}
-
-	.backspace {
-		width: 72px;
-		font-size: 11px;
-	}
-
-	.enter {
-		width: 72px;
-		font-size: 11px;
-	}
-
-	/* Bottom row modifiers */
-	.ctrl,
-	.alt {
-		width: 52px;
-		font-size: 11px;
-		background: #f1f3f4;
-		color: #495057;
-	}
-
-	.menu {
-		width: 44px;
-		font-size: 10px;
-		background: #f1f3f4;
-		color: #495057;
-	}
-
-	.space {
-		width: 240px;
-		background: #ffffff;
-	}
-
-	/* Arrow keys removed from PC layout */
-
-	/* Special visual effects for certain keys */
-	.caps-lock.pressed {
-		background: #0d6efd;
-		color: white;
-		border-color: #0a58ca;
-	}
-
-	.ctrl,
-	.alt,
-	.menu {
-		color: #6c757d;
-	}
-
-	.ctrl:hover,
-	.alt:hover,
-	.menu:hover {
-		color: #495057;
-		background: #e9ecef;
-	}
-
-	/* Responsive design */
-	@media (max-width: 900px) {
-		.pc-keyboard {
-			padding: 16px;
-			max-width: 700px;
-		}
-
-		.key {
-			height: 32px;
-			font-size: 12px;
-		}
-
-		.regular-key {
-			width: 32px;
-			min-width: 32px;
-		}
-
-		.tab {
-			width: 52px;
-		}
-		.caps-lock {
-			width: 64px;
-		}
-		.left-shift,
-		.right-shift {
-			width: 76px;
-		}
-		.backspace {
-			width: 64px;
-		}
-		.enter {
-			width: 64px;
-		}
-		.space {
-			width: 200px;
-		}
-		.ctrl,
-		.alt {
-			width: 44px;
-		}
-		.menu {
-			width: 36px;
-		}
-
-		.row-2 {
-			margin-left: 20px;
-		}
-		.row-3 {
-			margin-left: 32px;
-		}
-		.row-4 {
-			margin-left: 40px;
-		}
-	}
-
-	@media (max-width: 640px) {
-		.pc-keyboard {
-			padding: 12px;
-			max-width: 100%;
-		}
-
-		.key {
-			height: 28px;
-			font-size: 11px;
-		}
-
-		.regular-key {
-			width: 28px;
-			min-width: 28px;
-		}
-
-		.tab {
-			width: 44px;
-		}
-		.caps-lock {
-			width: 56px;
-		}
-		.left-shift,
-		.right-shift {
-			width: 64px;
-		}
-		.backspace {
-			width: 56px;
-		}
-		.enter {
-			width: 56px;
-		}
-		.space {
-			width: 160px;
-		}
-		.ctrl,
-		.alt {
-			width: 36px;
-		}
-		.menu {
-			width: 32px;
-		}
-
-		.row-2 {
-			margin-left: 16px;
-		}
-		.row-3 {
-			margin-left: 24px;
-		}
-		.row-4 {
-			margin-left: 32px;
-		}
-
-		.keyboard-row {
-			margin-bottom: 3px;
-			gap: 1px;
-		}
+	/* Minimal custom CSS - mostly using Tailwind */
+	.grid {
+		/* Ensures grid columns are exactly equal width */
+		width: 100%;
 	}
 </style>

@@ -28,6 +28,81 @@
 	/** Current words per minute calculation */
 	let currentWpm = $state(0);
 
+	/** Caps Lock state tracking */
+	let capsLockOn = $state(false);
+
+	/**
+	 * Invisible CapsLock detection using hidden auto-focus input
+	 */
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+
+		// Create invisible input for CapsLock detection
+		const hiddenInput = document.createElement('input');
+		hiddenInput.type = 'text';
+		hiddenInput.style.position = 'absolute';
+		hiddenInput.style.left = '-9999px';
+		hiddenInput.style.top = '-9999px';
+		hiddenInput.style.width = '1px';
+		hiddenInput.style.height = '1px';
+		hiddenInput.style.opacity = '0';
+		hiddenInput.setAttribute('tabindex', '-1');
+		hiddenInput.setAttribute('aria-hidden', 'true');
+
+		document.body.appendChild(hiddenInput);
+
+		// Auto-focus the hidden input
+		setTimeout(() => {
+			hiddenInput.focus();
+		}, 100);
+
+		const detectCapsLock = (event: KeyboardEvent) => {
+			if (event.getModifierState) {
+				capsLockOn = event.getModifierState('CapsLock');
+
+				// Remove listeners and hidden input
+				hiddenInput.removeEventListener('keydown', detectCapsLock);
+				hiddenInput.removeEventListener('keyup', detectCapsLock);
+				document.body.removeChild(hiddenInput);
+
+				// Transfer focus back to page
+				hiddenInput.blur();
+			}
+		};
+
+		// Listen on the hidden input
+		hiddenInput.addEventListener('keydown', detectCapsLock);
+		hiddenInput.addEventListener('keyup', detectCapsLock);
+
+		// Fallback: detect on any page interaction after 2 seconds
+		const fallbackTimeout = setTimeout(() => {
+			const globalDetect = (event: KeyboardEvent | MouseEvent) => {
+				if ('getModifierState' in event) {
+					capsLockOn = event.getModifierState('CapsLock');
+
+					// Cleanup
+					window.removeEventListener('keydown', globalDetect as EventListener);
+					window.removeEventListener('click', globalDetect as EventListener);
+					if (document.body.contains(hiddenInput)) {
+						document.body.removeChild(hiddenInput);
+					}
+				}
+			};
+
+			window.addEventListener('keydown', globalDetect as EventListener);
+			window.addEventListener('click', globalDetect as EventListener);
+		}, 2000);
+
+		return () => {
+			clearTimeout(fallbackTimeout);
+			if (document.body.contains(hiddenInput)) {
+				hiddenInput.removeEventListener('keydown', detectCapsLock);
+				hiddenInput.removeEventListener('keyup', detectCapsLock);
+				document.body.removeChild(hiddenInput);
+			}
+		};
+	});
+
 	/** Derived state indicating if user is actively typing */
 	let isTyping = $derived(userInput.length > 0 && currentPosition < practiceText.length);
 
@@ -155,6 +230,11 @@
 	 * @param event - The keyboard event from the browser
 	 */
 	function handleKeydown(event: KeyboardEvent) {
+		// Don't prevent default for browser shortcuts (Cmd/Ctrl combinations)
+		if (event.metaKey || event.ctrlKey) {
+			return;
+		}
+
 		event.preventDefault();
 
 		let key = event.key;
@@ -170,6 +250,10 @@
 			key = 'Tab';
 		} else if (key === 'Shift') {
 			key = 'Shift';
+		} else if (key === 'CapsLock') {
+			// Use getModifierState for accurate CapsLock detection
+			capsLockOn = event.getModifierState('CapsLock');
+			return;
 		} else if (key.length === 1) {
 			// Regular character - preserve case
 			// key stays as-is to match exact case in practice text
@@ -343,6 +427,8 @@
 						<VirtualKeyboard
 							onKeyPress={handleKeyPress}
 							{pressedKey}
+							{capsLockOn}
+							onCapsLockToggle={() => (capsLockOn = !capsLockOn)}
 							data-component-id="virtual-keyboard"
 						/>
 					</div>

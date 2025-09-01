@@ -6,11 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-#### 2025-08-30
+
+#### 2025-08-31
+
+**Added:**
+
+- **Component updates in VirtualKeyboard**
+- **Component updates in +page**
+
+- **Component updates in VirtualKeyboard**
+
 **Changed:**
-- **Bug fixes in statusline**
+
 - **Documentation**: Updated project documentation
 
+#### 2025-08-30
+
+**Changed:**
+
+- **Bug fixes in statusline**
+- **Documentation**: Updated project documentation
 
 #### 2025-08-26
 
