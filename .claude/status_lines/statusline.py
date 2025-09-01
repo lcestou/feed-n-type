@@ -181,6 +181,7 @@ def main():
         # Extract data from JSON
         model = input_data.get("model", {}).get("display_name", "Unknown")
         transcript_path = input_data.get("transcript_path", "")
+        claude_version = input_data.get("version", "Unknown")
         
         # Get project info
         project_name = get_project_name()
@@ -282,7 +283,6 @@ def main():
         )
         
         # Second line with model, reset time, and version info
-        claude_version = "v2.11.4"  # Update as needed
         status_line_2 = (
             f"🤖{YELLOW}{model}{RESET} "
             f"🔄{GRAY_256}Reset ({reset_time_str}){RESET} "
