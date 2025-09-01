@@ -44,6 +44,8 @@ def get_git_info():
             # Simplify time format
             time_str = commit_result.stdout.strip()
             time_str = time_str.replace(" ago", "")
+            time_str = time_str.replace(" seconds", "s")
+            time_str = time_str.replace(" second", "s")
             time_str = time_str.replace(" minutes", "m")
             time_str = time_str.replace(" minute", "m")
             time_str = time_str.replace(" hours", "h")
