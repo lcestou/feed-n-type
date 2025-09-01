@@ -113,7 +113,7 @@ def create_context_bar(percent, tokens, bar_length=16):
     empty_chars = bar_length - filled_chars
     
     # ANSI colors - darker, more subtle
-    BG_FILLED = "\033[48;5;28m"    # Dark green background
+    BG_FILLED = "\033[48;5;180m"   # Light muted orange background for black text
     BG_EMPTY = "\033[48;5;240m"    # Dark gray background  
     BLACK_TEXT = "\033[30m"        # Black text
     RESET = "\033[0m"
@@ -144,149 +144,6 @@ def create_context_bar(percent, tokens, bar_length=16):
     return "".join(bar_parts) + RESET
 
 
-def detect_auto_compact(transcript_path):
-    """Detect if auto-compact happened by looking for file size drop."""
-    try:
-        # Store last known file size in a temp file
-        cache_file = Path(transcript_path).parent / ".statusline_cache"
-        baseline_file = Path(transcript_path).parent / ".compact_baseline"
-        current_size = Path(transcript_path).stat().st_size
-        
-        # Read previous size
-        previous_size = 0
-        if cache_file.exists():
-            try:
-                previous_size = int(cache_file.read_text().strip())
-            except:
-                previous_size = 0
-        
-        # Force compaction detection if file is large but no baseline exists
-        # This handles the case where user reports compaction happened but we missed it
-        compacted = False
-        if current_size > 1000000 and not baseline_file.exists():
-            # Large file with no baseline = we missed a compaction, force reset
-            compacted = True
-        elif previous_size > 100000 and current_size < previous_size * 0.6:  # 40% drop from substantial size
-            compacted = True
-        
-        # Update cache file
-        cache_file.write_text(str(current_size))
-        
-        return current_size, compacted
-        
-    except Exception:
-        return Path(transcript_path).stat().st_size if Path(transcript_path).exists() else 0, False
-
-
-def estimate_context_usage_filesize(transcript_path):
-    """Estimate context usage with auto-compact detection."""
-    try:
-        if not Path(transcript_path).exists():
-            return 0, 0
-        
-        # Detect auto-compact and get current file size
-        current_size, compacted = detect_auto_compact(transcript_path)
-        
-        # Store post-compact baseline
-        baseline_file = Path(transcript_path).parent / ".compact_baseline"
-        
-        if compacted:
-            # Auto-compact detected! Reset baseline to current size
-            baseline_file.write_text(str(current_size))
-            baseline_size = current_size
-        else:
-            # Read existing baseline or use 0 if none
-            baseline_size = 0
-            if baseline_file.exists():
-                try:
-                    baseline_size = int(baseline_file.read_text().strip())
-                except:
-                    baseline_size = 0
-        
-        # Calculate size since last compact
-        size_since_compact = current_size - baseline_size
-        
-        # Convert to tokens (our proven ratio)
-        estimated_tokens = size_since_compact * 10 // 62
-        
-        # Standard Claude Code context limit (200k tokens)
-        # But after compact, available context is ~160k
-        available_tokens = 160000 if baseline_size > 0 else 200000
-        percentage = min(100, (estimated_tokens * 100) // available_tokens)
-        
-        return estimated_tokens, percentage
-    except Exception:
-        return 0, 0
-
-
-def parse_real_context_usage(transcript_path):
-    """Parse actual token usage from Claude Code transcript JSON."""
-    try:
-        if not Path(transcript_path).exists():
-            return 0, 0
-        
-        import json
-        total_tokens = 0
-        
-        # Read transcript file (JSON Lines format) - be more aggressive
-        with open(transcript_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                try:
-                    entry = json.loads(line.strip())
-                    tokens = 0
-                    
-                    # Check various possible token fields
-                    if 'usage' in entry and 'total_tokens' in entry['usage']:
-                        tokens = entry['usage']['total_tokens']
-                    elif 'tokens' in entry:
-                        tokens = entry['tokens']  
-                    elif 'input_tokens' in entry and 'output_tokens' in entry:
-                        tokens = entry['input_tokens'] + entry['output_tokens']
-                    else:
-                        # Be more aggressive - estimate tokens from ANY text content
-                        text_content = ""
-                        
-                        # Try to extract text from various fields
-                        if 'content' in entry:
-                            if isinstance(entry['content'], str):
-                                text_content += entry['content']
-                            elif isinstance(entry['content'], list):
-                                for item in entry['content']:
-                                    if isinstance(item, dict) and 'text' in item:
-                                        text_content += item['text']
-                                    elif isinstance(item, str):
-                                        text_content += item
-                        
-                        if 'message' in entry and isinstance(entry['message'], str):
-                            text_content += entry['message']
-                        
-                        if 'text' in entry and isinstance(entry['text'], str):
-                            text_content += entry['text']
-                            
-                        # Convert text to token estimate (1 token ≈ 3.5 chars for mixed content)
-                        if text_content:
-                            tokens = len(text_content) // 3
-                    
-                    total_tokens += tokens
-                except (json.JSONDecodeError, KeyError):
-                    continue
-        
-        # Context limit is 200k tokens
-        context_limit = 200000
-        percentage = min(int((total_tokens / context_limit) * 100), 100)
-        
-        return total_tokens, percentage
-        
-    except Exception:
-        # Fallback to file size method if JSON parsing fails
-        try:
-            file_size = Path(transcript_path).stat().st_size
-            estimated_tokens = file_size * 10 // 62
-            max_tokens = 200000
-            percentage = min(100, (estimated_tokens * 100) // max_tokens)
-            return estimated_tokens, percentage
-        except Exception:
-            return 0, 0
 
 
 def format_duration(duration_ms):
@@ -301,73 +158,6 @@ def format_duration(duration_ms):
         return f"{hours}h{minutes}m"
 
 
-def create_pie_chart(percentage):
-    """Create a visible block timer indicator."""
-    if percentage <= 20:
-        return "🕐"  # Clock 1 o'clock
-    elif percentage <= 40:
-        return "🕕"  # Clock 6 o'clock  
-    elif percentage <= 60:
-        return "🕘"  # Clock 9 o'clock
-    elif percentage <= 80:
-        return "🕛"  # Clock 12 o'clock
-    else:
-        return "🔴"  # Red circle (almost full - warning!)
-
-
-def calculate_block_timer(transcript_path):
-    """Calculate progress through current 5-hour Claude Code usage block."""
-    try:
-        if not Path(transcript_path).exists():
-            return "0hr 0m", 0
-        
-        import json
-        from datetime import datetime, timezone
-        
-        timestamps = []
-        
-        # Parse transcript for timestamps
-        with open(transcript_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                try:
-                    entry = json.loads(line.strip())
-                    if 'timestamp' in entry:
-                        # Parse ISO timestamp
-                        ts = datetime.fromisoformat(entry['timestamp'].replace('Z', '+00:00'))
-                        timestamps.append(ts)
-                    elif 'created_at' in entry:
-                        ts = datetime.fromisoformat(entry['created_at'].replace('Z', '+00:00'))
-                        timestamps.append(ts)
-                except (json.JSONDecodeError, ValueError):
-                    continue
-        
-        if not timestamps:
-            return "0hr 0m", 0
-        
-        # Find the start of current 5-hour block
-        now = datetime.now(timezone.utc)
-        first_timestamp = min(timestamps)
-        
-        # Calculate hours since first timestamp
-        time_diff = now - first_timestamp
-        total_hours = time_diff.total_seconds() / 3600
-        
-        # Find which 5-hour block we're in
-        block_number = int(total_hours // 5)
-        hours_in_block = total_hours - (block_number * 5)
-        
-        # Format time in current block
-        hours = int(hours_in_block)
-        minutes = int((hours_in_block - hours) * 60)
-        time_str = f"{hours}hr {minutes}m"
-        
-        # Calculate percentage (0-100%)
-        percentage = min(int((hours_in_block / 5) * 100), 100)
-        
-        return time_str, percentage
-        
-    except Exception:
-        return "0hr 0m", 0
 
 
 def format_tokens(tokens):
@@ -394,16 +184,44 @@ def main():
         project_name = get_project_name()
         git_info = get_git_info()
         
-        # Get both context methods for comparison
-        real_tokens, real_percent = parse_real_context_usage(transcript_path)
-        est_tokens, est_percent = estimate_context_usage_filesize(transcript_path)
+        # Simple fallback: estimate tokens from file size
+        tokens, context_percent = 0, 0
+        if transcript_path and Path(transcript_path).exists():
+            file_size = Path(transcript_path).stat().st_size
+            tokens = file_size * 10 // 62  # Simple ratio-based estimate
+            context_percent = min(100, (tokens * 100) // 200000)  # 200k token limit
         
-        # Get block timer info
-        block_time, block_percent = calculate_block_timer(transcript_path)
-        block_pie = create_pie_chart(block_percent)
+        # Try to get ccusage data for more accurate metrics
+        ccusage_time_left = None
+        try:
+            import subprocess
+            import re
+            ccusage_result = subprocess.run(
+                ["npx", "-y", "ccusage@latest", "statusline"], 
+                input=json.dumps(input_data),
+                capture_output=True,
+                text=True,
+                timeout=3
+            )
+            if ccusage_result.returncode == 0 and ccusage_result.stdout.strip():
+                ccusage_line = ccusage_result.stdout.strip()
+                
+                # Extract tokens and percentage from ccusage output
+                token_match = re.search(r'🧠\s*([\d,]+)\s*\((\d+)%\)', ccusage_line)
+                if token_match:
+                    ccusage_tokens_str = token_match.group(1).replace(',', '')
+                    tokens = int(ccusage_tokens_str)
+                    context_percent = int(token_match.group(2))
+                
+                # Extract time left from ccusage (e.g., "2h 9m left")
+                time_match = re.search(r'\((\d+)h\s*(\d+)m\s*left\)', ccusage_line)
+                if time_match:
+                    hours_left = int(time_match.group(1))
+                    minutes_left = int(time_match.group(2))
+                    ccusage_time_left = (hours_left, minutes_left)
+        except Exception:
+            pass  # Use fallback data
         
-        # Use file-size method for main display (proven more accurate!)
-        tokens, context_percent = est_tokens, est_percent
         context_bar = create_context_bar(context_percent, tokens)
         
         # Get additional metrics
@@ -426,38 +244,50 @@ def main():
         
         # Use 256-color ANSI codes like ccstatusline - might bypass fade bug
         GREEN_256 = "\033[38;5;46m"    # Bright green (256-color)
-        CYAN_256 = "\033[38;5;51m"     # Bright cyan (256-color)  
+        CYAN_256 = "\033[38;5;37m"     # Muted cyan (256-color)  
         YELLOW_256 = "\033[38;5;226m"  # Bright yellow (256-color)
         BLUE_256 = "\033[38;5;27m"     # Bright blue (256-color)
         MAGENTA_256 = "\033[38;5;201m" # Bright magenta (256-color)
         
-        # Create comparison bars for both methods
-        est_bar = create_context_bar(est_percent, est_tokens)
-        
-        # Calculate actual reset time
+        # Calculate reset time using ccusage data if available
         from datetime import datetime, timedelta
         now = datetime.now()
-        hours_used = int(block_time.split('hr')[0]) if 'hr' in block_time else 0
-        minutes_used = int(block_time.split('hr')[1].split('m')[0]) if 'hr' in block_time and 'm' in block_time else 0
         
-        # Calculate when the block will reset
-        time_used = timedelta(hours=hours_used, minutes=minutes_used)
-        block_duration = timedelta(hours=5)
-        reset_time = now + (block_duration - time_used)
+        if ccusage_time_left:
+            # Use ccusage's accurate time remaining
+            hours_left, minutes_left = ccusage_time_left
+            reset_time = now + timedelta(hours=hours_left, minutes=minutes_left)
+        else:
+            # Fallback: Assume 5-hour blocks starting at midnight
+            hours_since_midnight = now.hour + now.minute / 60
+            current_block = int(hours_since_midnight // 5)
+            next_reset_hour = (current_block + 1) * 5
+            if next_reset_hour >= 24:
+                next_reset_hour = 0
+                reset_time = now.replace(hour=next_reset_hour, minute=0, second=0) + timedelta(days=1)
+            else:
+                reset_time = now.replace(hour=int(next_reset_hour), minute=0, second=0)
         
-        # Format as 12-hour time
-        reset_time_str = reset_time.strftime("%-I%p").lower()  # e.g., "3pm"
+        reset_time_str = reset_time.strftime("%-I%p").lower()
         
-        # Single line statusline with reset time at the end
-        status_line = (
+        # Multi-line statusline
+        status_line_1 = (
             f"📁 {GREEN_256}{project_name}{RESET}{CYAN_256}{git_info}{RESET} │ "
             f"{context_bar} │ "
             f"⏱️ {CYAN}{duration_str}{RESET} │ "
-            f"{MAGENTA}+{lines_added}/-{lines_removed}{RESET} │ "
-            f"{BLUE}Reset ({reset_time_str}){RESET}"
+            f"{MAGENTA}+{lines_added}/-{lines_removed}{RESET}"
         )
         
-        print(status_line, end="")
+        # Second line with model, reset time, and version info
+        claude_version = "v2.11.4"  # Update as needed
+        status_line_2 = (
+            f"🤖 {YELLOW}{model}{RESET} │ "
+            f"{BLUE}Reset ({reset_time_str}){RESET} │ "
+            f"{MAGENTA}{claude_version}{RESET}"
+        )
+        
+        print(status_line_1)
+        print(status_line_2, end="")
         
     except Exception as e:
         # Fallback status line if something goes wrong
