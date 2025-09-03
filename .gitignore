@@ -174,3 +174,5 @@ Thumbs.db
 *.temp
 .tmp/
 .temp/.claude/settings.local.json
+.serena/cache/
+.playwright-mcp/

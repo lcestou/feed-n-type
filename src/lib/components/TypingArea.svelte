@@ -50,20 +50,7 @@
 	data-component-id={componentId}
 	data-testid="typing-area"
 >
-	<div id="typing-header" class="mb-4 text-center" data-testid="typing-header">
-		<h2 id="typing-title" class="text-xl font-semibold text-gray-800" data-testid="typing-title">
-			Type the text below
-		</h2>
-		<div
-			id="typing-progress"
-			class="mt-1 text-sm text-gray-500"
-			role="status"
-			aria-live="polite"
-			data-testid="typing-progress"
-		>
-			Progress: {userInput.length}/{text.length} characters
-		</div>
-	</div>
+	<!-- Removed "Type the text below" header for cleaner design -->
 
 	<div
 		id="text-display"
@@ -84,47 +71,6 @@
 				{char === ' ' ? '·' : char}
 			</span>
 		{/each}
-	</div>
-
-	<!-- Typing stats -->
-	<div
-		id="typing-stats"
-		class="stats-bar"
-		role="group"
-		aria-label="Typing statistics"
-		data-testid="typing-stats"
-	>
-		<div id="accuracy-container" data-testid="accuracy-container">
-			{#if userInput.length > 0}
-				<span
-					id="accuracy-stat"
-					class="accuracy"
-					role="status"
-					aria-live="polite"
-					data-testid="accuracy-stat"
-				>
-					Accuracy: {Math.round(
-						(userInput.split('').filter((char, i) => char === characters[i]).length /
-							userInput.length) *
-							100
-					)}%
-				</span>
-			{:else}
-				<span id="accuracy-placeholder" data-testid="accuracy-placeholder"
-					>Start typing to see accuracy</span
-				>
-			{/if}
-		</div>
-		<div
-			id="wpm-stat"
-			class="wpm"
-			role="status"
-			aria-live="polite"
-			aria-label="Words per minute"
-			data-testid="wpm-stat"
-		>
-			WPM: 0
-		</div>
 	</div>
 </div>
 
@@ -173,11 +119,6 @@
 	}
 
 	.typing-area {
-		background-color: white;
-		border-radius: 0.5rem;
-		box-shadow:
-			0 10px 15px -3px rgb(0 0 0 / 0.1),
-			0 4px 6px -4px rgb(0 0 0 / 0.1);
 		padding: 1.5rem;
 		height: 100%;
 		overflow: auto;
@@ -192,14 +133,6 @@
 		background-color: rgb(249 250 251);
 		border-radius: 0.375rem;
 		border: 1px solid rgb(229 231 235);
-	}
-
-	.stats-bar {
-		margin-top: 1rem;
-		display: flex;
-		justify-content: space-between;
-		font-size: 0.875rem;
-		color: rgb(75 85 99);
 	}
 
 	@keyframes pulse {

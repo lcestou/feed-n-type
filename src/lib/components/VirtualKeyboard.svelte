@@ -8,6 +8,7 @@
 		pressedKey?: string;
 		capsLockOn?: boolean;
 		onCapsLockToggle?: () => void;
+		nextKey?: string;
 		'data-component-id'?: string;
 	}
 
@@ -16,6 +17,7 @@
 		pressedKey,
 		capsLockOn = false,
 		onCapsLockToggle,
+		nextKey,
 		'data-component-id': componentId
 	}: Props = $props();
 
@@ -140,6 +142,22 @@
 		}
 		return pressedKey === key || pressedKey === key.toLowerCase();
 	}
+
+	/**
+	 * Determines if Shift key should be highlighted based on nextKey.
+	 */
+	function shouldHighlightShift(): boolean {
+		if (!nextKey) return false;
+
+		// Check if nextKey is uppercase letter
+		if (nextKey.length === 1 && nextKey >= 'A' && nextKey <= 'Z') {
+			return true;
+		}
+
+		// Check if nextKey is a special character that requires Shift
+		const shiftChars = '!@#$%^&*()_+{}|:"<>?~';
+		return shiftChars.includes(nextKey);
+	}
 </script>
 
 <div
@@ -175,6 +193,15 @@
 							   hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-md
 							   active:translate-y-0 active:border-blue-600 active:bg-blue-500 active:text-white active:shadow-inner
 							   {isKeyPressed(keyObj.key) ? 'border-blue-600 bg-blue-500 text-white shadow-inner' : ''}
+							   {nextKey &&
+						(keyObj.key === nextKey ||
+							(keyObj.key === 'Space' && nextKey === ' ') ||
+							(nextKey.length === 1 && keyObj.key === nextKey.toLowerCase()))
+							? 'border-yellow-300 bg-yellow-50 ring-2 ring-yellow-400'
+							: ''}
+							   {shouldHighlightShift() && (keyObj.key === 'Shift' || keyObj.key === 'RightShift')
+							? 'border-orange-300 bg-orange-50 ring-2 ring-orange-400'
+							: ''}
 							   {['Ctrl', 'Alt', 'LeftMenu', 'Menu', 'AltGr', 'RightCtrl', 'Space'].includes(keyObj.key)
 							? 'items-end justify-center pb-1'
 							: ['Tab', 'CapsLock', 'Shift'].includes(keyObj.key)
@@ -228,6 +255,18 @@
 								class:bg-gray-400={!capsLockOn}
 							></div>
 							<span class="mb-1 leading-none">{keyObj.label}</span>
+						{:else if keyObj.key === 'f' || keyObj.key === 'j'}
+							<!-- Home row keys F and J with nudge lines -->
+							<div
+								class="absolute bottom-1 left-1/2 h-0.5 w-3 -translate-x-1/2 bg-gray-400 opacity-60"
+							></div>
+							{#if keyObj.label.includes(' ')}
+								{@const parts = keyObj.label.split(' ')}
+								<span class="text-[10px] leading-none text-gray-400">{parts[0]}</span>
+								<span class="leading-none">{parts[1]}</span>
+							{:else}
+								{keyObj.label}
+							{/if}
 						{:else if keyObj.label.includes(' ')}
 							{@const parts = keyObj.label.split(' ')}
 							<span class="text-[10px] leading-none text-gray-400">{parts[0]}</span>

@@ -10,6 +10,7 @@
 **Stack**: SvelteKit (Svelte 5 runes) + TS + pnpm + Tailwind v4  
 **Commands**: `/dev` `/push` `/merge` | `pnpm build|check|test`  
 **Files**: Max 3 | **Code**: TS strict, no `any`, edit only  
+**🚨 Edit**: Always READ file before editing to verify current structure  
 **Branches**: `feat/`, `docs/`, `hotfix/` + description  
 **Quality**: check→build→verify→approval  
 **Regex**: `.claude/REGEX-ESCAPING-GUIDE.md` - MultiEdit `/\d/`, Serena `\\\\d`  

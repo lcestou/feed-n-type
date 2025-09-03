@@ -1,5 +1,19 @@
 <script lang="ts">
 	/* eslint-disable @typescript-eslint/no-unused-vars */
+	import { untrack } from 'svelte';
+
+	/**
+	 * Interface for falling word objects in the feeding system.
+	 */
+	interface FallingWord {
+		id: string;
+		word: string;
+		x: number; // horizontal position (0-100%)
+		y: number; // vertical position for animation
+		timestamp: number;
+		opacity: number; // for eating animation fade-out
+		isBeingEaten: boolean; // flag for eating state
+	}
 
 	/**
 	 * Props interface for the Typingotchi virtual pet component.
@@ -11,6 +25,9 @@
 		wpm: number;
 		streak: number;
 		fireLevel: number;
+		poopCount: number;
+		fallingWords?: FallingWord[];
+		onEatWord?: (wordId: string) => void;
 		'data-component-id'?: string;
 	}
 
@@ -20,6 +37,9 @@
 		wpm = 0,
 		streak = 0,
 		fireLevel = 0,
+		poopCount = 0,
+		fallingWords = [],
+		onEatWord,
 		'data-component-id': componentId
 	}: TypingotchiProps = $props();
 
@@ -55,8 +75,36 @@
 	/** Derived state determining if pet should be in neutral state (no errors, not typing) */
 	let isNeutralState = $derived(!hasError && !isTyping);
 
+	/** Derived heart count - starts at 5, decreases with mistakes, minimum 1 */
+	let heartCount = $derived(Math.max(1, 5 - poopCount));
+
 	/** Interval reference for managing the blinking animation timer */
 	let blinkInterval: ReturnType<typeof setInterval>;
+
+	// Character walking animation state
+	/** Character's horizontal position (0-100%) */
+	let characterX = $state(Math.random() * 80 + 10); // Start at random position (10-90%)
+
+	/** Character's vertical offset for walking bounce */
+	let characterY = $state(0);
+
+	/** Walking direction (-1 = left, 1 = right) */
+	let walkDirection = $state(Math.random() > 0.5 ? 1 : -1);
+
+	/** Target word the character is moving toward */
+	let targetWord = $state<FallingWord | null>(null);
+
+	/** Character walking speed */
+	const walkSpeed = 0.5; // slower walking speed
+
+	/** Is character currently eating */
+	let isEating = $state(false);
+
+	/** Animation frame reference for walking */
+	let animationFrame: number;
+
+	/** Walking animation timer */
+	let walkingTimer: ReturnType<typeof setInterval>;
 	$effect(() => {
 		// Only blink when in neutral mood
 		if (isNeutralState) {
@@ -76,9 +124,127 @@
 		return () => clearInterval(blinkInterval);
 	});
 
+	// Walking animation effect
+	$effect(() => {
+		// Start walking animation
+		walkingTimer = setInterval(() => {
+			// Random micro-jump movement
+			characterX += walkDirection * walkSpeed;
+
+			// Bounce character slightly for walking effect
+			characterY = Math.sin(Date.now() * 0.01) * 2;
+
+			// Change direction at boundaries or randomly
+			if (characterX <= 10 || characterX >= 90 || Math.random() < 0.02) {
+				walkDirection *= -1;
+			}
+
+			// Keep within bounds
+			characterX = Math.max(10, Math.min(90, characterX));
+		}, 100); // Update every 100ms for smooth movement
+
+		return () => {
+			clearInterval(walkingTimer);
+		};
+	});
+
+	// TEMPORARILY DISABLED - Movement and targeting effects causing infinite loop
+	// TODO: Re-implement step by step to identify the exact issue
+
+	/*
+	 * Character targeting effect - only handles word selection.
+	 */
+	/*$effect(() => {
+		if (!fallingWords || fallingWords.length === 0) {
+			targetWord = null;
+			return;
+		}
+
+		// Find closest word to character if no current target or target was eaten
+		const currentTargetExists = targetWord && fallingWords.some(w => w.id === targetWord?.id);
+		if (!currentTargetExists) {
+			let closest = fallingWords[0];
+			// Use untrack to prevent circular dependency with movement effect
+			const currentCharacterX = untrack(() => characterX);
+			let closestDistance = Math.abs(closest.x - currentCharacterX);
+
+			for (const word of fallingWords) {
+				const distance = Math.abs(word.x - currentCharacterX);
+				if (distance < closestDistance) {
+					closest = word;
+					closestDistance = distance;
+				}
+			}
+
+			targetWord = closest;
+		}
+	});*/
+
+	/*
+	 * Character movement effect - separate from targeting to prevent circular updates.
+	 */
+	/*$effect(() => {
+		if (!targetWord) return;
+
+		// Start movement animation
+		const moveTowardTarget = () => {
+			if (!targetWord) {
+				cancelAnimationFrame(animationFrame);
+				return;
+			}
+
+			const distance = targetWord.x - characterX;
+			const absDistance = Math.abs(distance);
+
+			// Check if close enough to eat (within 5% of screen width)
+			if (absDistance < 5) {
+				eatWord(targetWord);
+				return;
+			}
+
+			// Move toward target
+			if (distance > 0) {
+				characterX += Math.min(moveSpeed, absDistance);
+			} else {
+				characterX -= Math.min(moveSpeed, absDistance);
+			}
+
+			// Keep character within bounds (10% - 90%)
+			characterX = Math.max(10, Math.min(90, characterX));
+
+			animationFrame = requestAnimationFrame(moveTowardTarget);
+		};
+
+		moveTowardTarget();
+
+		return () => {
+			cancelAnimationFrame(animationFrame);
+		};
+	});*/
+
+	/**
+	 * Handles eating a word - triggers eating animation and removes word.
+	 *
+	 * @param word - The word to eat
+	 */
+	function eatWord(word: FallingWord) {
+		isEating = true;
+		targetWord = null;
+
+		// Call parent callback to start eating animation
+		if (onEatWord) {
+			onEatWord(word.id);
+		}
+
+		// Clear eating animation after eating completes
+		setTimeout(() => {
+			isEating = false;
+		}, 1200); // Time for eating animation to complete
+	}
+
 	/**
 	 * Derived character state based on typing performance, streak, and error feedback.
-	 * Returns an object containing ASCII art, status message, and mood identifier.
+	 * Returns an object containing ASCII art, heart count, and mood identifier.
 	 *
 	 * Priority order:
 	 * 1. Fire levels (3: super fire, 2: on fire, 1: heating up)
@@ -86,36 +252,47 @@
 	 * 3. Typing performance (excited > happy > focused)
 	 * 4. Neutral state (with blinking animation)
 	 *
-	 * @returns Character state object with ascii, status, and mood properties
+	 * @returns Character state object with ascii, hearts, and mood properties
 	 */
 	let character = $derived(() => {
+		// All states now use the derived heartCount based on mistakes
+		// Eating animation has highest priority
+		if (isEating) {
+			return { ascii: asciiArt.excited, hearts: heartCount, mood: 'eating' };
+		}
+
+		// TEMPORARILY DISABLED - Movement state logic
+		/*if (targetWord && !isEating) {
+			return { ascii: asciiArt.focused, hearts: heartCount, mood: 'moving' };
+		}*/
+
 		// Streak states have priority over other states
 		if (fireLevel === 3) {
 			return {
 				ascii: asciiArt.superFire,
-				status: `SUPER FIRE! ${streak} streak!`,
+				hearts: heartCount,
 				mood: 'superFire'
 			};
 		} else if (fireLevel === 2) {
-			return { ascii: asciiArt.onFire, status: `ON FIRE! ${streak} streak!`, mood: 'onFire' };
+			return { ascii: asciiArt.onFire, hearts: heartCount, mood: 'onFire' };
 		} else if (fireLevel === 1) {
 			return {
 				ascii: asciiArt.heatingUp,
-				status: `Heating up! ${streak} streak!`,
+				hearts: heartCount,
 				mood: 'heatingUp'
 			};
 		} else if (hasError) {
-			return { ascii: asciiArt.worried, status: 'Oops! Try again', mood: 'worried' };
+			return { ascii: asciiArt.worried, hearts: heartCount, mood: 'worried' };
 		} else if (isTyping && wpm > 60) {
-			return { ascii: asciiArt.excited, status: 'Amazing speed!', mood: 'excited' };
+			return { ascii: asciiArt.excited, hearts: heartCount, mood: 'excited' };
 		} else if (isTyping && wpm > 30) {
-			return { ascii: asciiArt.happy, status: 'Great job!', mood: 'happy' };
+			return { ascii: asciiArt.happy, hearts: heartCount, mood: 'happy' };
 		} else if (isTyping) {
-			return { ascii: asciiArt.focused, status: 'Keep going!', mood: 'focused' };
+			return { ascii: asciiArt.focused, hearts: heartCount, mood: 'focused' };
 		} else {
 			// Show blinking animation when neutral and idle
 			const currentAscii = isBlinking ? asciiArt.neutralBlink : asciiArt.neutral;
-			return { ascii: currentAscii, status: 'Ready to type!', mood: 'neutral' };
+			return { ascii: currentAscii, hearts: heartCount, mood: 'neutral' };
 		}
 	});
 
@@ -127,6 +304,10 @@
 	 */
 	let animationClass = $derived(() => {
 		switch (character().mood) {
+			case 'eating':
+				return 'animate-bounce scale-110';
+			case 'moving':
+				return 'animate-pulse';
 			case 'superFire':
 				return 'fire-super animate-bounce';
 			case 'onFire':
@@ -166,21 +347,32 @@
 
 <div
 	id="typingotchi-container"
-	class="flex h-full flex-col items-center justify-center space-y-4 rounded-xl border-2 border-gray-200 bg-white p-6 shadow-lg"
+	class="relative h-full min-h-[112px] w-full overflow-hidden"
 	role="region"
-	aria-label="Typingotchi pet"
+	aria-label="Typingotchi pet playground"
 	data-component-id={componentId}
 	data-testid="typingotchi"
 >
-	<!-- Pet Header -->
-	<div id="typingotchi-header" class="text-center" data-testid="typingotchi-header">
-		<h3
-			id="typingotchi-title"
-			class="mb-2 text-lg font-semibold text-gray-800"
-			data-testid="typingotchi-title"
-		>
-			Key-otchi
-		</h3>
+	<!-- Falling words -->
+	{#if fallingWords}
+		{#each fallingWords as word (word.id)}
+			<div
+				class="absolute animate-bounce text-xs font-semibold text-green-800 transition-all duration-1000 ease-out {word.isBeingEaten
+					? 'opacity-0'
+					: 'opacity-100'}"
+				style="left: {word.x}%; top: {word.y}%; transform: translateX(-50%); animation-duration: 2s;"
+				data-testid="falling-word"
+			>
+				{word.word}
+			</div>
+		{/each}
+	{/if}
+
+	<!-- Pet avatar with walking animation positioning -->
+	<div
+		class="absolute transition-all duration-100 ease-out"
+		style="left: {characterX}%; bottom: {2 + characterY}px; transform: translateX(-50%);"
+	>
 		<div class="relative">
 			<!-- Fire aura background effect -->
 			{#if fireLevel > 0}
@@ -194,121 +386,32 @@
 			<!-- Pet avatar -->
 			<div
 				id="typingotchi-avatar"
-				class="relative flex h-20 w-20 items-center justify-center rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-100 to-blue-100 {animationClass()}"
+				class="relative flex h-16 w-16 items-center justify-center rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-100 to-blue-100 {animationClass()}"
 				style="z-index: 1;"
 				data-testid="typingotchi-avatar"
 			>
 				<pre
 					id="typingotchi-ascii"
-					class="bg-transparent font-mono text-xs leading-tight text-gray-700 select-none"
+					class="bg-transparent font-mono text-xs leading-tight font-bold text-[#0f380f] select-none"
 					style="background: transparent !important; box-shadow: none !important;"
 					role="img"
 					aria-label="typing pet emotion: {character().mood}"
 					data-testid="typingotchi-ascii">{character().ascii}</pre>
 			</div>
 		</div>
-	</div>
 
-	<!-- Status Message -->
-	<div id="typingotchi-status" class="text-center" data-testid="typingotchi-status">
-		<p
-			id="typingotchi-message"
-			class="mb-1 text-sm font-medium text-gray-700"
-			role="status"
-			aria-live="polite"
-			data-testid="typingotchi-message"
-		>
-			{character().status}
-		</p>
-
-		<!-- Stats -->
-		<div
-			id="typingotchi-stats"
-			class="space-y-1 text-xs text-gray-500"
-			data-testid="typingotchi-stats"
-		>
-			{#if wpm > 0}
-				<div id="typingotchi-wpm" aria-label="Words per minute" data-testid="typingotchi-wpm">
-					Speed: {wpm} WPM
-				</div>
-			{/if}
-
-			{#if streak > 0}
-				<div
-					id="typingotchi-streak"
-					aria-label="Current streak"
-					class={fireLevel > 0 ? 'font-semibold text-orange-600' : 'text-blue-600'}
-					data-testid="typingotchi-streak"
+		<!-- Heart health system below character -->
+		<div class="mt-1 flex justify-center gap-0.5" data-testid="typingotchi-hearts">
+			{#each Array(5) as _, index (index)}
+				<span
+					class="text-sm {index < character().hearts ? 'text-gray-800' : 'text-gray-400'} 
+					       {character().mood === 'superFire' || character().mood === 'onFire' ? 'animate-pulse' : ''}"
+					aria-label={index < character().hearts ? 'full heart' : 'empty heart'}
 				>
-					🔥 Streak: {streak}
-				</div>
-			{/if}
-
-			<!-- Mood indicator -->
-			<div
-				id="typingotchi-mood"
-				class="flex items-center justify-center gap-1"
-				role="img"
-				aria-label="Mood level: {character().mood}"
-				data-testid="typingotchi-mood"
-			>
-				<span class="text-xs">Mood:</span>
-				<div class="flex gap-1">
-					{#each Array(3) as _, i (i)}
-						<div
-							id="mood-indicator-{i}"
-							class="h-2 w-2 rounded-full {i <
-							(character().mood === 'superFire'
-								? 3
-								: character().mood === 'onFire'
-									? 3
-									: character().mood === 'heatingUp'
-										? 2
-										: character().mood === 'excited'
-											? 3
-											: character().mood === 'happy'
-												? 2
-												: character().mood === 'worried'
-													? 0
-													: 1)
-								? fireLevel > 0
-									? 'bg-orange-400'
-									: 'bg-green-400'
-								: 'bg-gray-300'}"
-							data-testid="mood-indicator-{i}"
-						></div>
-					{/each}
-				</div>
-			</div>
+					{index < character().hearts ? '♥' : '♡'}
+				</span>
+			{/each}
 		</div>
-	</div>
-
-	<!-- Simple care actions -->
-	<div
-		id="typingotchi-actions"
-		class="flex gap-2"
-		role="group"
-		aria-label="Pet care actions"
-		data-testid="typingotchi-actions"
-	>
-		<button
-			id="typingotchi-feed"
-			class="cursor-default rounded-full bg-purple-100 px-3 py-1 font-mono text-xs text-purple-700 transition-colors hover:bg-purple-200"
-			type="button"
-			aria-label="Feed your Key-otchi"
-			data-testid="typingotchi-feed-button"
-		>
-			◊ Feed
-		</button>
-		<button
-			id="typingotchi-play"
-			class="cursor-default rounded-full bg-blue-100 px-3 py-1 font-mono text-xs text-blue-700 transition-colors hover:bg-blue-200"
-			type="button"
-			aria-label="Play with your Key-otchi"
-			data-testid="typingotchi-play-button"
-		>
-			♦ Play
-		</button>
 	</div>
 </div>
 
@@ -394,5 +497,10 @@
 			opacity: 1;
 			transform: scale(1.15);
 		}
+	}
+
+	/* Character movement and eating animations */
+	.scale-110 {
+		transform: scale(1.1);
 	}
 </style>
