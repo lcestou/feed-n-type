@@ -26,11 +26,13 @@ git log --oneline -5
 ## Usage Examples
 
 Standard pull:
+
 ```
 /pull
 ```
 
 This will:
+
 1. Pull latest changes from remote repository
 2. Show updated file status
 3. Display recent commit history for context
