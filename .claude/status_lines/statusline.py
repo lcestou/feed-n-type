@@ -280,7 +280,22 @@ def main():
         # Extract data from JSON
         model = input_data.get("model", {}).get("display_name", "Unknown")
         transcript_path = input_data.get("transcript_path", "")
-        claude_version = input_data.get("version", "Unknown")
+        
+        # Get version dynamically from Claude binary symlink
+        try:
+            claude_path = Path.home() / ".local/bin/claude"
+            if claude_path.exists() and claude_path.is_symlink():
+                # Extract version from symlink target path
+                target = str(claude_path.resolve())
+                if "/versions/" in target:
+                    claude_version = target.split("/versions/")[-1]
+                else:
+                    claude_version = input_data.get("version", "Unknown")
+            else:
+                claude_version = input_data.get("version", "Unknown")
+        except:
+            claude_version = input_data.get("version", "Unknown")
+        
         session_id = input_data.get("session_id", "")
         
         # Get project info
