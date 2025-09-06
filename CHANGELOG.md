@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### 2025-09-06
+
+**Added:**
+
+- **GitHub Spec Kit integration**: Added uvx-based integration with GitHub's spec-kit repository for spec-driven development workflow
+- **New commands**: Added `/specify`, `/plan`, `/tasks` commands for comprehensive specification-driven feature development
+- **Memory system**: Added `memory/` directory with `constitution.md` and `constitution_update_checklist.md` for project governance
+- **Automation scripts**: Added `scripts/` directory with workflow automation for feature development lifecycle
+- **Development templates**: Added `templates/` directory with standardized spec, plan, and task templates
+
+**Changed:**
+
+- **Enhanced /plan command**: Modified existing `/plan` command to use Spec Kit's implementation planning approach for better structured development
+- **Development workflow**: Improved feature development process with spec-first approach and automated task generation
+
 #### 2025-09-03
 
 **Added:**
@@ -14,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configuration updates**: Updated project configuration files
 
 **Changed:**
+
 - **Bug fixes in Typingotchi**
 
 - **Bug fixes in +page**
