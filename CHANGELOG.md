@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Claude Code automation workflow**: Replaced automated changelog hooks with manual review prompts to ensure accurate and contextual changelog entries
 - **Hook system optimization**: Removed redundant changelog automation scripts in favor of agent-assisted documentation workflow
 - **Development workflow**: Enhanced push commands to include manual changelog review step with Claude assistance
+- **MCP tool guidance**: Softened enforcement language from "ALWAYS/NEVER" to recommendation-based guidance for better developer flexibility
+- **Tool selection flexibility**: Updated MCP priority enforcer to allow Edit/MultiEdit tools alongside MCP alternatives for improved workflow adaptability
+- **Documentation tone**: Improved developer experience by changing strict enforcement language to helpful guidance in project documentation
+- **Serena configuration**: Updated project language configuration from Python to TypeScript for better language server support
 
 #### 2025-09-06
 

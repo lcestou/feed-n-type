@@ -121,9 +121,9 @@ Complex problem solving?
 - **ListMcpResourcesTool**: List all available MCP resources
 - **ReadMcpResourceTool**: Read specific MCP resource content
 
-## ⛔ DO NOT USE These Tools (Use MCP Instead)
+## 🎯 Recommended MCP Alternatives
 
-| ❌ NEVER USE     | ✅ ALWAYS USE INSTEAD                                              |
+| 🔧 Standard Tool | 🚀 Recommended MCP Alternative                                     |
 | ---------------- | ------------------------------------------------------------------ |
 | `Read` tool      | `mcp__serena__read_file` or `mcp__serena__search_for_pattern`      |
 | `Edit` tool      | `mcp__serena__replace_symbol_body` or `mcp__serena__replace_regex` |
@@ -161,7 +161,7 @@ Complex problem solving?
 
 ## Priority Rules
 
-**ALWAYS USE IN THIS ORDER:**
+**RECOMMENDED PRIORITY ORDER:**
 
 1. `mcp__serena__*` → For ANY file/code operation
 2. `mcp__svelte-llm__*` → For Svelte/SvelteKit questions

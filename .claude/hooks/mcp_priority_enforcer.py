@@ -6,11 +6,8 @@
 import sys
 import json
 
-# Realistic tool mappings based on ACTUAL available serena tools
+# Tool mappings for MCP server priority (search and web operations only)
 TOOL_REPLACEMENTS = {
-    # File Operations - only what actually exists
-    "Edit": "mcp__serena__replace_symbol_body",
-    "MultiEdit": "mcp__serena__replace_symbol_body (multiple calls)",
 
     # Search Operations
     "Glob": "mcp__serena__find_file",
@@ -29,7 +26,9 @@ ALWAYS_ALLOWED = {
     "BashOutput",  # Reading command output
     "KillShell",   # Managing background processes
     "Read",        # No serena equivalent available
-    "Write"        # No serena equivalent available
+    "Write",        # No serena equivalent available
+    "Edit",        # Allow for JS/TS files where serena doesn't work
+    "MultiEdit"    # Allow for JS/TS files where serena doesn't work
 }
 
 def main():

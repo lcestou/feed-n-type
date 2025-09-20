@@ -6,10 +6,10 @@
 
 ## Critical Rules & Context
 
-**🚨 PRIORITY 1 - MCP**: Always use MCP servers BEFORE default tools (see `docs/mcp-servers.md`)
+**🚨 PRIORITY 1 - MCP**: Prefer MCP servers when available (see `docs/mcp-servers.md`)
 
 - **Svelte questions**: Use `mcp__svelte-llm__list_sections` FIRST, then `get_documentation`
-- **Edit operations**: Use `mcp__serena__replace_symbol_body` for code editing (Read/Write use standard tools)
+- **Edit operations**: Consider `mcp__serena__replace_symbol_body` for symbol editing (Edit/MultiEdit available)
 - **Search operations**: Use `mcp__serena__find_file` and `mcp__serena__search_for_pattern`
 - **Web search**: Use `mcp__brave-search__*` before WebSearch
 - **See full workflows**: `docs/mcp-servers.md#common-workflows`
