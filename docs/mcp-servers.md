@@ -128,8 +128,15 @@ Complex problem solving?
 - `Bash` → Always OK for commands, git, pnpm
 - `Read` → OK for images, PDFs, screenshots
 - `Write` → OK for creating NEW files only
-- `MultiEdit` → OK when Serena regex fails
+- `MultiEdit` → OK when Serena regex fails (MUCH FASTER for multiple edits!)
 - `TodoWrite` → Always OK for task tracking
+
+## ⚠️ Important Reminders
+
+**TABS not SPACES**: This project uses TABS for indentation
+**Line numbers**: When copying from Read output, NEVER include line number prefixes (`42→`)
+**MultiEdit first**: Always prefer MultiEdit for multiple changes in same file
+**Emergency recovery**: If regex errors persist, use `/clear` to reset context
 
 ## 🎯 Regex Escaping Quick Reference
 
