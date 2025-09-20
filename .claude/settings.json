@@ -11,6 +11,10 @@
 					{
 						"type": "command",
 						"command": "uv run .claude/hooks/pre_tool_use.py"
+					},
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/mcp_priority_enforcer.py"
 					}
 				]
 			}
@@ -22,10 +26,6 @@
 					{
 						"type": "command",
 						"command": "uv run .claude/hooks/post_tool_use.py"
-					},
-					{
-						"type": "command",
-						"command": "uv run .claude/hooks/post_tool_changelog.py"
 					},
 					{
 						"type": "command",

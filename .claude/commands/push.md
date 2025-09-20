@@ -14,9 +14,10 @@ Runs the complete push workflow with quality gates and changelog updates:
 pnpm format && pnpm lint
 pnpm check && pnpm build
 
-# Analyze changes and update changelog
-uv run ./.claude/hooks/changelog_reminder.py
-uv run ./.claude/hooks/changelog_reminder.py --auto-update
+# Prompt for changelog update
+echo "📝 Please review staged changes and update CHANGELOG.md if needed:"
+echo "🤖 Use technical-documentation-writer agent to analyze changes and update changelog"
+read -p "Press Enter after updating changelog..."
 
 # Commit and push with manual message
 git add -A
@@ -24,8 +25,8 @@ git commit -m "docs: Update project configuration and documentation"
 git push
 ```
 
-**Quality Gates**: Blocks push if `pnpm check` or `pnpm build` fails  
-**Changelog**: Automatically analyzes changes and updates CHANGELOG.md  
+**Quality Gates**: Blocks push if `pnpm check` or `pnpm build` fails
+**Changelog**: Manual review with Claude assistance for accurate entries
 **Commit Message**: Intelligently crafted based on actual file changes
 
 ## Quick Mode: `/push quick`
@@ -33,9 +34,10 @@ git push
 For simple changes (new files, documentation, configs) that don't need full validation:
 
 ```bash
-# Analyze changes and update changelog
-uv run ./.claude/hooks/changelog_reminder.py
-uv run ./.claude/hooks/changelog_reminder.py --auto-update
+# Prompt for changelog update
+echo "📝 Please review staged changes and update CHANGELOG.md if needed:"
+echo "🤖 Use technical-documentation-writer agent to analyze changes and update changelog"
+read -p "Press Enter after updating changelog..."
 
 # Quick commit and push
 git add -A
@@ -43,7 +45,7 @@ git commit -m "docs: Update project configuration and documentation"
 git push
 ```
 
-**Use Cases**: Documentation updates, config files, new non-code files  
-**Includes**: Changelog updates to maintain project history  
-**Skips**: Quality gates (formatting, linting, type checking, and build verification)  
+**Use Cases**: Documentation updates, config files, new non-code files
+**Includes**: Changelog review prompt to maintain project history
+**Skips**: Quality gates (formatting, linting, type checking, and build verification)
 **Warning**: Only use when confident changes don't affect code functionality

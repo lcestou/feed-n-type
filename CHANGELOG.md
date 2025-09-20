@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### 2025-09-20
+
+**Added:**
+
+- **Svelte documentation MCP server**: Added project-scoped Svelte 5 + SvelteKit documentation access via svelte-llm MCP server for enhanced development support
+- **MCP priority enforcement**: Added intelligent hook system that encourages MCP server usage over default tools for better development workflow
+
+**Changed:**
+
+- **Claude Code automation workflow**: Replaced automated changelog hooks with manual review prompts to ensure accurate and contextual changelog entries
+- **Hook system optimization**: Removed redundant changelog automation scripts in favor of agent-assisted documentation workflow
+- **Development workflow**: Enhanced push commands to include manual changelog review step with Claude assistance
+
 #### 2025-09-06
 
 **Added:**

@@ -11,14 +11,17 @@
 ## 🎯 INSTANT ACTIONS (Copy-paste ready)
 
 **Svelte Questions:**
+
 - `mcp__svelte-llm__list_sections` → `mcp__svelte-llm__get_documentation`
 
 **Code Operations (NEVER Read/Edit):**
+
 - Read: `mcp__serena__find_symbol` or `mcp__serena__get_symbols_overview`
 - Search: `mcp__serena__search_for_pattern`
 - Edit: `mcp__serena__replace_symbol_body`
 
 **Web/Research:**
+
 - `mcp__brave-search__brave_web_search`
 - `mcp__context7__resolve-library-id` → `mcp__context7__get-library-docs`
 
@@ -103,12 +106,13 @@ Complex problem solving?
 
 ### 🔧 Advanced File Operations (Serena)
 
-- **mcp**serena**\***: Sophisticated codebase operations
-  - **Search**: `search_for_pattern`, `find_file`, `list_dir`
+- **mcp**serena**\***: Sophisticated codebase operations (REPLACES 80% OF STANDARD TOOLS)
+  - **File Operations**: `read_file`, `create_text_file`, `find_file`, `list_dir`
+  - **Search**: `search_for_pattern` (replaces Grep)
   - **Symbols**: `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`
   - **Editing**: `replace_symbol_body`, `insert_after_symbol`, `insert_before_symbol`, `replace_regex`
   - **Memory**: `write_memory`, `read_memory`, `list_memories`, `delete_memory`
-  - **System**: `restart_language_server`, `switch_modes`, `get_current_config`
+  - **System**: `execute_shell_command`, `restart_language_server`, `switch_modes`
   - **Project**: `onboarding`, `check_onboarding_performed`, `remove_project`
   - **Workflow**: `think_about_*`, `summarize_changes`, `prepare_for_new_conversation`
 
@@ -119,14 +123,16 @@ Complex problem solving?
 
 ## ⛔ DO NOT USE These Tools (Use MCP Instead)
 
-| ❌ NEVER USE       | ✅ ALWAYS USE INSTEAD                                              |
-| ------------------ | ------------------------------------------------------------------ |
-| `Read` tool        | `mcp__serena__find_symbol` or `mcp__serena__search_for_pattern`    |
-| `Edit` tool        | `mcp__serena__replace_symbol_body` or `mcp__serena__replace_regex` |
-| `Write` tool       | `mcp__serena__insert_*` methods                                    |
-| `WebSearch`        | `mcp__brave-search__brave_web_search`                              |
-| `WebFetch`         | `mcp__fetch__fetch`                                                |
-| Manual file search | `mcp__serena__find_file` or `mcp__serena__list_dir`                |
+| ❌ NEVER USE     | ✅ ALWAYS USE INSTEAD                                              |
+| ---------------- | ------------------------------------------------------------------ |
+| `Read` tool      | `mcp__serena__read_file` or `mcp__serena__search_for_pattern`      |
+| `Edit` tool      | `mcp__serena__replace_symbol_body` or `mcp__serena__replace_regex` |
+| `Write` tool     | `mcp__serena__create_text_file`                                    |
+| `MultiEdit` tool | `mcp__serena__replace_regex` (handles multiple edits)              |
+| `Glob` tool      | `mcp__serena__find_file`                                           |
+| `Grep` tool      | `mcp__serena__search_for_pattern`                                  |
+| `WebSearch`      | `mcp__brave-search__brave_web_search`                              |
+| `WebFetch`       | `mcp__fetch__fetch`                                                |
 
 ## ✅ EXCEPTIONS (When to use standard tools)
 

@@ -396,21 +396,21 @@ def main():
         
         # Multi-line statusline
         status_line_1 = (
-            f"📁{GREEN_256}{project_name}{RESET}{CYAN_256}{git_info}{RESET} "
-            f"🧠{context_bar} "
+            f"📁 {GREEN_256}{project_name}{RESET}{CYAN_256}{git_info}{RESET} "
+            f"🧠 {context_bar} "
             f"⏱️ {CYAN}{duration_str}{RESET} "
-            f"📝{MAGENTA}+{lines_added}/-{lines_removed}{RESET}"
+            f"📝 {MAGENTA}+{lines_added}/-{lines_removed}{RESET}"
         )
         
         # Second line with model, reset time, and version info
         status_line_2 = (
-            f"🤖{YELLOW}{model}{RESET} "
-            f"🔄{GRAY_256}Reset ({reset_time_str}){RESET} "
-            f"📦{MAGENTA}{claude_version}{RESET}"
+            f"🤖 {YELLOW}{model}{RESET} "
+            f"🔄 {GRAY_256}Reset ({reset_time_str}){RESET} "
+            f"📦 {MAGENTA}{claude_version}{RESET}"
         )
         
         # Third line with recent prompt
-        status_line_3 = f"{prompt_icon}{CYAN_256}{truncated_prompt}{RESET}"
+        status_line_3 = f"{prompt_icon} {CYAN_256}{truncated_prompt}{RESET}"
         
         print(status_line_1)
         print(status_line_2)
