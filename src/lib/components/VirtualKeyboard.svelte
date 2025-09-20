@@ -96,7 +96,7 @@
 			{ key: 'Ctrl', label: 'ctrl', span: 1 },
 			{ key: 'Alt', label: 'alt', span: 1 },
 			{ key: 'LeftMenu', label: 'menu', span: 2 },
-			{ key: 'Space', label: 'space', span: 7 },
+			{ key: 'Space', label: '', span: 7 },
 			{ key: 'Menu', label: 'menu', span: 2 },
 			{ key: 'AltGr', label: 'alt', span: 1 },
 			{ key: 'RightCtrl', label: 'ctrl', span: 1 }
@@ -187,6 +187,9 @@
 				data-testid="keyboard-row-{rowIndex + 1}"
 			>
 				{#each row as keyObj (keyObj.key)}
+					{@const isBottomRowKey =
+						rowIndex === 4 &&
+						['Ctrl', 'Alt', 'LeftMenu', 'Menu', 'AltGr', 'RightCtrl'].includes(keyObj.key)}
 					<button
 						class="relative flex h-12 cursor-pointer rounded-lg border border-gray-300 bg-white font-normal
 							   text-gray-700 transition-all duration-100
@@ -208,7 +211,8 @@
 								? 'items-end justify-start pb-1 pl-2'
 								: ['Backspace', 'Enter', 'RightShift'].includes(keyObj.key)
 									? 'items-end justify-end pr-2 pb-1'
-									: 'flex-col items-center justify-center gap-0.5 p-1'}"
+									: 'flex-col items-center justify-center gap-0.5 p-1'}
+							   {isBottomRowKey ? 'pointer-events-none opacity-0' : ''}"
 						class:text-xs={![
 							'Tab',
 							'CapsLock',

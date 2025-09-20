@@ -21,6 +21,9 @@
 
 - **mcp**context7**resolve-library-id**: Resolve package names to Context7 IDs
 - **mcp**context7**get-library-docs**: Get up-to-date library documentation
+- **mcp**svelte-llm\*\*: Svelte 5 and SvelteKit comprehensive documentation (HTTP transport)
+  - **list_sections**: Use FIRST to discover all available documentation sections
+  - **get_documentation**: Retrieve full content for specific sections (single or multiple)
 
 ### 🤔 Advanced Thinking
 
@@ -105,6 +108,22 @@
 2. mcp__context7__get-library-docs - Get current docs
 ```
 
+### Svelte Documentation (svelte-llm)
+
+**IMPORTANT**: When asked about Svelte or SvelteKit topics, follow this workflow:
+
+```
+1. mcp__svelte-llm__list_sections - ALWAYS call FIRST to discover available sections
+2. Analyze returned sections to identify ALL relevant documentation
+3. mcp__svelte-llm__get_documentation - Fetch ALL relevant sections (accepts multiple)
+```
+
+**Usage Guidelines**:
+
+- Always start with `list_sections` to see what's available
+- Fetch multiple relevant sections at once for comprehensive answers
+- The server provides Svelte 5 runes and SvelteKit latest documentation
+
 ### Browser Testing
 
 #### Using Playwright (Full-featured)
@@ -164,6 +183,9 @@ claude mcp add browsermcp --scope user "npx" "@browsermcp/mcp@latest"
 
 # Context7 - Library documentation (add --scope user for global)
 claude mcp add context7 --scope user -- npx -y @upstash/context7-mcp
+
+# Svelte-LLM - Svelte-specific development assistance (HTTP transport)
+claude mcp add svelte-llm --transport http --scope project https://svelte-llm.stanislav.garden/mcp/mcp
 
 # Time - Timezone operations (add --scope user for global)
 claude mcp add time --scope user -- uvx mcp-server-time
