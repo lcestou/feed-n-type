@@ -1,21 +1,26 @@
 # MCP Servers Reference
 
-## 🔥 MOST USED (90% of tasks)
+## ⚡ NEW SESSION CHECKLIST
 
-```bash
-# Svelte/SvelteKit questions
-mcp__svelte-llm__list_sections
-mcp__svelte-llm__get_documentation
+1. **Svelte question?** → `mcp__svelte-llm__list_sections` first
+2. **Need to read code?** → `mcp__serena__find_symbol` (NEVER Read tool)
+3. **Need to edit code?** → `mcp__serena__replace_symbol_body` (NEVER Edit tool)
+4. **Web search?** → `mcp__brave-search__brave_web_search` (NOT WebSearch)
+5. **If MCP fails** → See EXCEPTIONS section below
 
-# File operations (NEVER use Read/Edit)
-mcp__serena__find_symbol         # Read specific functions/classes
-mcp__serena__search_for_pattern  # Search in files
-mcp__serena__replace_symbol_body # Edit functions/classes
-mcp__serena__get_symbols_overview # Understand file structure
+## 🎯 INSTANT ACTIONS (Copy-paste ready)
 
-# Web search
-mcp__brave-search__brave_web_search
-```
+**Svelte Questions:**
+- `mcp__svelte-llm__list_sections` → `mcp__svelte-llm__get_documentation`
+
+**Code Operations (NEVER Read/Edit):**
+- Read: `mcp__serena__find_symbol` or `mcp__serena__get_symbols_overview`
+- Search: `mcp__serena__search_for_pattern`
+- Edit: `mcp__serena__replace_symbol_body`
+
+**Web/Research:**
+- `mcp__brave-search__brave_web_search`
+- `mcp__context7__resolve-library-id` → `mcp__context7__get-library-docs`
 
 ## 🚀 Quick Decision Tree
 
