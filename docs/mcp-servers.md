@@ -1,6 +1,43 @@
 # MCP Servers Reference
 
-**PRIORITY**: Always use MCP servers over standard tools when available. MCP servers provide enhanced functionality and better integration.
+## 🔥 MOST USED (90% of tasks)
+
+```bash
+# Svelte/SvelteKit questions
+mcp__svelte-llm__list_sections
+mcp__svelte-llm__get_documentation
+
+# File operations (NEVER use Read/Edit)
+mcp__serena__find_symbol         # Read specific functions/classes
+mcp__serena__search_for_pattern  # Search in files
+mcp__serena__replace_symbol_body # Edit functions/classes
+mcp__serena__get_symbols_overview # Understand file structure
+
+# Web search
+mcp__brave-search__brave_web_search
+```
+
+## 🚀 Quick Decision Tree
+
+```
+User asks about Svelte/SvelteKit?
+  → mcp__svelte-llm__list_sections → get_documentation
+
+Need to read/edit code?
+  → mcp__serena__* (NEVER use Read/Edit tools directly)
+
+Need web search?
+  → mcp__brave-search__* (NOT WebSearch)
+
+Need library docs?
+  → mcp__context7__resolve-library-id → get-library-docs
+
+Browser automation?
+  → mcp__playwright__* (full) or mcp__browsermcp__* (light)
+
+Complex problem solving?
+  → mcp__sequential-thinking__sequentialthinking
+```
 
 ## Available MCP Servers
 
@@ -75,15 +112,47 @@
 - **ListMcpResourcesTool**: List all available MCP resources
 - **ReadMcpResourceTool**: Read specific MCP resource content
 
-## Usage Priorities
+## ⛔ DO NOT USE These Tools (Use MCP Instead)
 
-1. **MCP servers FIRST** - Always check if MCP version exists
-2. **Serena for code** - Use mcp**serena** for all codebase operations
-3. **Playwright for browser** - Use mcp**playwright** over manual browser tools
-4. **Context7 for docs** - Use mcp**context7** for library documentation
-5. **Standard tools** - Only when no MCP equivalent exists
+| ❌ NEVER USE       | ✅ ALWAYS USE INSTEAD                                              |
+| ------------------ | ------------------------------------------------------------------ |
+| `Read` tool        | `mcp__serena__find_symbol` or `mcp__serena__search_for_pattern`    |
+| `Edit` tool        | `mcp__serena__replace_symbol_body` or `mcp__serena__replace_regex` |
+| `Write` tool       | `mcp__serena__insert_*` methods                                    |
+| `WebSearch`        | `mcp__brave-search__brave_web_search`                              |
+| `WebFetch`         | `mcp__fetch__fetch`                                                |
+| Manual file search | `mcp__serena__find_file` or `mcp__serena__list_dir`                |
 
-## Common Workflows
+## ✅ EXCEPTIONS (When to use standard tools)
+
+- `Bash` → Always OK for commands, git, pnpm
+- `Read` → OK for images, PDFs, screenshots
+- `Write` → OK for creating NEW files only
+- `MultiEdit` → OK when Serena regex fails
+- `TodoWrite` → Always OK for task tracking
+
+## 🎯 Regex Escaping Quick Reference
+
+| Tool           | Pattern        | Example                                  |
+| -------------- | -------------- | ---------------------------------------- |
+| **MultiEdit**  | `/\d/`         | `text.replace(/\d+/g, 'NUM')`            |
+| **Serena MCP** | `\\\\d`        | `regex: 'pattern', repl: '\\\\d+'`       |
+| **Edit**       | Avoid! Use MCP | Use `mcp__serena__replace_regex` instead |
+
+**Rule**: In Serena, always double-escape: `\\\\d`, `\\\\w`, `\\\\s`
+
+## Priority Rules
+
+**ALWAYS USE IN THIS ORDER:**
+
+1. `mcp__serena__*` → For ANY file/code operation
+2. `mcp__svelte-llm__*` → For Svelte/SvelteKit questions
+3. `mcp__brave-search__*` → For web searching
+4. `mcp__context7__*` → For library documentation
+5. `mcp__playwright__*` → For browser automation
+6. Standard tools → ONLY if no MCP equivalent
+
+## Common Workflows (Copy-Paste Ready)
 
 ### Code Analysis
 

@@ -17,8 +17,8 @@
   **Files**: Max 3 | **Code**: TS strict, no `any`, edit only  
   **🚨 Edit**: Always READ file before editing to verify current structure  
   **Branches**: `feat/`, `docs/`, `hotfix/` + description  
-  **Quality**: check→build→verify→approval  
-  **Regex**: `.claude/REGEX-ESCAPING-GUIDE.md` - MultiEdit `/\d/`, Serena `\\\\d`  
+  **Quality**: check→build→verify→approval
+  **Regex**: MultiEdit `/\d/`, Serena `\\\\d` (see `docs/mcp-servers.md#regex-escaping`)
   **🚨 Git**: `/push` = `.claude/commands/push.md` | User must request  
   **PR**: `/merge` = `.claude/commands/merge.md`
 
