@@ -1,73 +1,74 @@
-# [PROJECT_NAME] Constitution
+<!-- Sync Impact Report
+Version change: [NEW] → 1.0.0
+Added sections: All new constitution
+Modified principles: N/A (initial creation)
+Templates requiring updates: ✅ All templates to be reviewed
+Follow-up TODOs: RATIFICATION_DATE needs confirmation
+-->
 
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Feed-n-Type Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
+### I. MCP-Driven Development (NON-NEGOTIABLE)
 
-<!-- Example: I. Library-First -->
+**ALWAYS** use mcp\_\_svelte-llm MCP server for ANY Svelte 5 implementation. **NEVER** write Svelte code from memory - fetch official docs via MCP first. **ALWAYS** call list_sections then get_documentation for relevant Svelte features. **VERIFY** all rune usage ($state, $derived, $effect) against official documentation.
 
-[PRINCIPLE_1_DESCRIPTION]
+**Rationale**: The developer is a designer/vibecoder who needs production-ready, flawless code on first attempt. MCP ensures accuracy over assumptions.
 
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### II. Child Safety First
 
-### [PRINCIPLE_2_NAME]
+Age range 7-12 years with zero personal data collection. Content sources limited to Pokemon, Nintendo, Roblox official feeds only. No social features, chat, or user-generated content sharing. All data stored locally with no external transmission except content feed fetches.
 
-<!-- Example: II. CLI Interface -->
+**Rationale**: Children's privacy and safety supersede all other features. Parents must trust the platform completely.
 
-[PRINCIPLE_2_DESCRIPTION]
+### III. Positive Gamification
 
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Virtual pet companion thrives on consistent practice, not perfection. Typing accuracy weighted 3x more than speed for proper habit formation. Mistakes are learning moments with gentle corrections, never punishments. Streak system with forgiving catch-up mechanics for missed days.
 
-### [PRINCIPLE_3_NAME]
+**Rationale**: Building confidence and good habits matters more than competitive pressure. Children learn best through encouragement.
 
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+### IV. TypeScript Strict Mode
 
-[PRINCIPLE_3_DESCRIPTION]
+Zero tolerance for 'any' types in TypeScript. All variables must be explicitly typed. Svelte 5 with runes (no stores) - consult MCP docs for EVERY rune. Component-first architecture with <5 props per component.
 
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rationale**: Type safety prevents runtime errors that frustrate non-technical users. Clean component interfaces reduce complexity.
 
-### [PRINCIPLE_4_NAME]
+### V. Quality Gates (MANDATORY)
 
-<!-- Example: IV. Integration Testing -->
+Every implementation MUST pass: pnpm check → pnpm build → manual test. Components must render without errors in dev mode. No console errors or warnings in browser. Maximum 200KB JavaScript bundle (before gzip).
 
-[PRINCIPLE_4_DESCRIPTION]
+**Rationale**: The developer cannot debug complex issues. Code must work perfectly or not ship at all.
 
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+## Visual & Interaction Standards
 
-### [PRINCIPLE_5_NAME]
+### Design Language
 
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+Primary palette: bright, high-contrast colors meeting WCAG AAA standards. Typography: Inter or system fonts at 18px+ base size. Spacing: 8px grid system with generous 48px minimum touch targets. Feedback: haptic-style micro-animations on every interaction. Characters: friendly mascot with 10+ emotional states. Sound: optional 8-bit style effects with master volume control.
 
-[PRINCIPLE_5_DESCRIPTION]
+### Performance Requirements
 
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+60fps animations using CSS transforms, not JavaScript. Mobile-first responsive design with touch gesture support. ARIA labels and keyboard navigation on all interactive elements. Lighthouse score 90+ for performance and accessibility. Local storage only - no external APIs except content feeds.
 
-## [SECTION_2_NAME]
+## Development Workflow
 
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### Implementation Process
 
-[SECTION_2_CONTENT]
+1. Consult MCP documentation BEFORE writing any Svelte component
+2. Write component with TypeScript strict mode enforcement
+3. Run pnpm check to catch type errors
+4. Run pnpm build to verify production build
+5. Manual test in dev mode for visual/interaction verification
+6. Commit only after all gates pass
 
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### Code Review Standards
 
-## [SECTION_3_NAME]
-
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Every PR must demonstrate MCP documentation was consulted (reference sections used). Type safety verification required (no any types, all props typed). Quality gates must show passing status. Parent-friendly feature descriptions required (explain like they're 5).
 
 ## Governance
 
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+The Constitution supersedes all development practices and personal preferences. Amendments require documented rationale and migration plan for existing code. All implementations must verify compliance before merging.
 
-[GOVERNANCE_RULES]
+When in doubt, check the MCP documentation. Never assume, always verify. The developer needs working code on first attempt.
 
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: 2025-01-21
