@@ -4,10 +4,10 @@
 	import Typingotchi from '$lib/components/Typingotchi.svelte';
 	import { ContentService } from '$lib/services/ContentService.js';
 	import { PetStateService } from '$lib/services/PetStateService.js';
-	import { ProgressTrackingService } from '$lib/services/ProgressTrackingService.js';
+	// import { ProgressTrackingService } from '$lib/services/ProgressTrackingService.js';
 	import { AchievementService } from '$lib/services/AchievementService.js';
 	import { EvolutionForm, EmotionalState } from '$lib/types/index.js';
-	import type { CelebrationEvent, KeyAnalysis, ContentItem, SessionId } from '$lib/types/index.js';
+	import type { CelebrationEvent, KeyAnalysis, ContentItem } from '$lib/types/index.js';
 	import { ContentSource, DifficultyLevel } from '$lib/types/index.js';
 
 	/** Dynamic practice text loaded from ContentService */
@@ -23,13 +23,13 @@
 	const petStateService = new PetStateService();
 
 	/** ProgressTrackingService instance for session tracking and metrics */
-	const progressTrackingService = new ProgressTrackingService();
+	// const progressTrackingService = new ProgressTrackingService();
 
 	/** AchievementService instance for milestone detection and celebrations */
 	const achievementService = new AchievementService();
 
 	/** Current session ID for progress tracking */
-	let currentSessionId = $state<SessionId | null>(null);
+	// let currentSessionId = $state<SessionId | null>(null);
 
 	// Enhanced typing state with error tracking and performance metrics
 
@@ -105,29 +105,7 @@
 	let currentAchievement = $state<string | null>(null);
 
 	/** Challenging keys for keyboard highlighting */
-	let challengingKeys = $state<KeyAnalysis[]>([
-		{
-			key: 'q',
-			errorRate: 0.25,
-			attempts: 20,
-			improvementTrend: 'improving',
-			practiceRecommendation: 'Focus on Q key placement'
-		},
-		{
-			key: 'x',
-			errorRate: 0.35,
-			attempts: 15,
-			improvementTrend: 'declining',
-			practiceRecommendation: 'Practice X key with ring finger'
-		},
-		{
-			key: 'z',
-			errorRate: 0.15,
-			attempts: 30,
-			improvementTrend: 'stable',
-			practiceRecommendation: 'Good progress on Z key'
-		}
-	]);
+	let challengingKeys = $state<KeyAnalysis[]>([]);
 
 	/** Session tracking for progress integration */
 	let sessionActive = $state(false);
@@ -135,6 +113,10 @@
 
 	/** Derived next expected key for keyboard highlighting */
 	let nextExpectedKey = $derived(() => {
+		// Don't highlight keys while content is loading
+		if (isLoadingContent) {
+			return '';
+		}
 		if (currentPosition < practiceText.length) {
 			return practiceText[currentPosition];
 		}
@@ -246,15 +228,23 @@
 	/**
 	 * Load initial practice content when component mounts
 	 */
+	// Run once on mount
 	$effect(() => {
-		loadNewContent();
+		// Only run once
+		if (!practiceText) {
+			loadNewContent();
+		}
 	});
 
 	/**
 	 * Load initial pet state when component mounts
 	 */
+	// Run once on mount
 	$effect(() => {
-		loadPetState();
+		// Only run once - check if we haven't loaded yet
+		if (evolutionForm === 1 && totalWordsEaten === 0) {
+			loadPetState();
+		}
 	});
 
 	/**
@@ -351,11 +341,16 @@
 	 * Runs whenever typing state changes.
 	 */
 	$effect(() => {
-		if (startTime && userInput.length > 0) {
-			const timeMinutes = (Date.now() - startTime) / 1000 / 60;
-			const wordsTyped = userInput.trim().split(' ').length;
-			currentWpm = Math.round(wordsTyped / timeMinutes) || 0;
-		} else {
+		// Track dependencies explicitly to prevent infinite loops
+		const inputLength = userInput.length;
+		const currentStartTime = startTime;
+
+		if (currentStartTime && inputLength > 0) {
+			const timeMinutes = (Date.now() - currentStartTime) / 1000 / 60;
+			const wordsTyped = inputLength > 0 ? userInput.trim().split(' ').length : 0;
+			const newWpm = Math.round(wordsTyped / timeMinutes) || 0;
+			currentWpm = newWpm;
+		} else if (currentWpm !== 0) {
 			currentWpm = 0;
 		}
 	});
@@ -366,16 +361,17 @@
 	 * and sets error state with automatic timeout.
 	 */
 	$effect(() => {
-		if (userInput.length > 0) {
-			const isCurrentCharCorrect =
-				userInput[userInput.length - 1] === practiceText[userInput.length - 1];
-			hasTypingError = !isCurrentCharCorrect;
+		// Use currentPosition as primary dependency to prevent loops
+		const pos = currentPosition;
+		const inputLength = userInput.length;
 
-			// Clear error state after a short delay
-			if (hasTypingError) {
-				setTimeout(() => {
-					hasTypingError = false;
-				}, 1000);
+		if (inputLength > 0 && pos > 0) {
+			const isCurrentCharCorrect = userInput[pos - 1] === practiceText[pos - 1];
+			const newErrorState = !isCurrentCharCorrect;
+
+			hasTypingError = newErrorState;
+			if (newErrorState) {
+				setTimeout(() => (hasTypingError = false), 1000);
 			}
 		}
 	});
@@ -386,8 +382,8 @@
 	async function startSession() {
 		try {
 			// Start session with ProgressTrackingService
-			const contentId = currentContent?.id || 'default-content';
-			currentSessionId = await progressTrackingService.startSession(contentId);
+			// const contentId = currentContent?.id || 'default-content';
+			// currentSessionId = await progressTrackingService.startSession(contentId);
 
 			sessionActive = true;
 			sessionProgress = { wpm: 0, accuracy: 100 };
@@ -404,41 +400,41 @@
 	 */
 	async function endSession() {
 		try {
-			// End session with ProgressTrackingService
-			if (currentSessionId) {
-				const sessionSummary = await progressTrackingService.endSession();
+			// End session with ProgressTrackingService - TEMPORARILY DISABLED
+			// if (currentSessionId) {
+			// const sessionSummary = await progressTrackingService.endSession();
 
-				// Update local session progress with final summary
-				sessionProgress = {
-					wpm: sessionSummary.wordsPerMinute,
-					accuracy: sessionSummary.accuracyPercentage
-				};
+			// Update local session progress with final summary
+			// sessionProgress = {
+			// 	wpm: sessionSummary.wordsPerMinute,
+			// 	accuracy: sessionSummary.accuracyPercentage
+			// };
 
-				// Check for achievements and milestones with AchievementService
-				try {
-					const newAchievements = await achievementService.checkAchievements(sessionSummary);
-					if (newAchievements.length > 0) {
-						console.log('New achievements unlocked:', newAchievements);
-						// Queue celebrations for new achievements
-						for (const achievement of newAchievements) {
-							await achievementService.queueCelebration({
-								type: 'milestone',
-								title: `Achievement Unlocked: ${achievement.title}!`,
-								message: achievement.description,
-								animation: 'bounce',
-								duration: 3000,
-								soundEffect: 'achievement-unlock',
-								priority: 'high',
-								autoTrigger: true
-							});
-						}
-					}
-				} catch (achievementError) {
-					console.error('Failed to check achievements:', achievementError);
-				}
-
-				currentSessionId = null;
-			}
+			// Check for achievements and milestones with AchievementService
+			// try {
+			// const newAchievements = await achievementService.checkAchievements(sessionSummary);
+			// if (newAchievements.length > 0) {
+			// 	console.log('New achievements unlocked:', newAchievements);
+			// 	// Queue celebrations for new achievements
+			// 	for (const achievement of newAchievements) {
+			// 		await achievementService.queueCelebration({
+			// 			type: 'milestone',
+			// 			title: `Achievement Unlocked: ${achievement.title}!`,
+			// 			message: achievement.description,
+			// 			animation: 'bounce',
+			// 			duration: 3000,
+			// 			soundEffect: 'achievement-unlock',
+			// 			priority: 'high',
+			// 			autoTrigger: true
+			// 		});
+			// 	}
+			// }
+			// } catch (achievementError) {
+			// 	console.error('Failed to check achievements:', achievementError);
+			// }
+			//
+			// currentSessionId = null;
+			// }
 
 			sessionActive = false;
 			checkForAchievements();
@@ -644,10 +640,10 @@
 			const expectedChar = practiceText[currentPosition];
 			const isCorrect = key === expectedChar;
 
-			// Record keypress for progress tracking
-			if (currentSessionId) {
-				progressTrackingService.recordKeypress(key, isCorrect);
-			}
+			// Record keypress for progress tracking - TEMPORARILY DISABLED
+			// if (currentSessionId) {
+			//	progressTrackingService.recordKeypress(key, isCorrect);
+			// }
 
 			if (isCorrect) {
 				// Correct character - add to input
@@ -818,14 +814,31 @@
 		// Single state update to avoid multiple mutations
 		fallingWords = [...updatedWords, newWord];
 
-		// Auto-cleanup old words after 20 seconds to prevent memory buildup
-		// Use queueMicrotask to defer the cleanup outside reactive cycle
-		setTimeout(() => {
-			queueMicrotask(() => {
-				fallingWords = fallingWords.filter((w) => w.id !== newWord.id);
-			});
-		}, 20000);
+		// Removed setTimeout from here - cleanup will be handled by effect
 	}
+
+	/**
+	 * Cleanup effect for removing old falling words.
+	 * Prevents memory buildup by removing words older than 20 seconds.
+	 */
+	$effect(() => {
+		// Only start cleanup if we have words to clean
+		if (fallingWords.length === 0) {
+			return;
+		}
+
+		const cleanup = setInterval(() => {
+			const cutoffTime = Date.now() - 20000; // 20 seconds ago
+			const filteredWords = fallingWords.filter((w) => w.timestamp > cutoffTime);
+
+			// Only update if something actually changed
+			if (filteredWords.length !== fallingWords.length) {
+				fallingWords = filteredWords;
+			}
+		}, 5000); // Check every 5 seconds
+
+		return () => clearInterval(cleanup);
+	});
 
 	/**
 	 * Removes a word from the falling words array (when eaten by pet).

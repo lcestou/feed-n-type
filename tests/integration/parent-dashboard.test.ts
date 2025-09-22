@@ -26,12 +26,6 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 	let mockAchievementService: vi.Mocked<{
 		getUnlockedAchievements: () => Promise<unknown[]>;
 	}>;
-	let _mockLocalStorage: vi.Mocked<{
-		getStreakData: () => Promise<unknown>;
-		getAppPreferences: () => Promise<unknown>;
-		getLastSession: () => Promise<SessionSummary | null>;
-	}>;
-
 	beforeEach(() => {
 		mockProgressService = {
 			generateProgressReport: vi.fn(),
@@ -50,12 +44,6 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 		mockAchievementService = {
 			getRecentAchievements: vi.fn(),
 			getAchievementProgress: vi.fn()
-		};
-
-		mockLocalStorage = {
-			getStreakData: vi.fn(),
-			getAppPreferences: vi.fn(),
-			getLastSession: vi.fn()
 		};
 
 		vi.clearAllMocks();

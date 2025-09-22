@@ -153,7 +153,10 @@
 	 * Determines if Shift key should be highlighted based on nextKey.
 	 */
 	function shouldHighlightShift(): boolean {
-		if (!nextKey) return false;
+		// Guard against undefined, null, or empty nextKey
+		if (!nextKey || typeof nextKey !== 'string' || nextKey.length === 0) {
+			return false;
+		}
 
 		// Check if nextKey is uppercase letter
 		if (nextKey.length === 1 && nextKey >= 'A' && nextKey <= 'Z') {
@@ -163,6 +166,22 @@
 		// Check if nextKey is a special character that requires Shift
 		const shiftChars = '!@#$%^&*()_+{}|:"<>?~';
 		return shiftChars.includes(nextKey);
+	}
+
+	/**
+	 * Determines if a key should be highlighted as the next key to press.
+	 */
+	function shouldHighlightAsNext(key: string): boolean {
+		// Guard against undefined, null, or empty nextKey
+		if (!nextKey || typeof nextKey !== 'string' || nextKey.length === 0) {
+			return false;
+		}
+
+		return (
+			key === nextKey ||
+			(key === 'Space' && nextKey === ' ') ||
+			(nextKey.length === 1 && key === nextKey.toLowerCase())
+		);
 	}
 
 	/**
@@ -249,10 +268,7 @@
 							   hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-md
 							   active:translate-y-0 active:border-blue-600 active:bg-blue-500 active:text-white active:shadow-inner
 							   {isKeyPressed(keyObj.key) ? 'border-blue-600 bg-blue-500 text-white shadow-inner' : ''}
-							   {nextKey &&
-						(keyObj.key === nextKey ||
-							(keyObj.key === 'Space' && nextKey === ' ') ||
-							(nextKey.length === 1 && keyObj.key === nextKey.toLowerCase()))
+							   {shouldHighlightAsNext(keyObj.key)
 							? 'border-yellow-300 bg-yellow-50 ring-2 ring-yellow-400'
 							: ''}
 							   {shouldHighlightShift() && (keyObj.key === 'Shift' || keyObj.key === 'RightShift')

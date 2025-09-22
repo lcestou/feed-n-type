@@ -169,7 +169,7 @@
 	let heartCount = $derived(Math.max(1, 5 - poopCount));
 
 	/** Interval reference for managing the blinking animation timer */
-	let blinkInterval: ReturnType<typeof setInterval>;
+	let blinkInterval: ReturnType<typeof setInterval> | undefined;
 
 	// Character walking animation state
 	/** Character's horizontal position (0-100%) */
@@ -202,14 +202,21 @@
 	let animationFrame: number;
 
 	/** Walking animation timer */
-	let walkingTimer: ReturnType<typeof setInterval>;
+	let walkingTimer: ReturnType<typeof setInterval> | undefined;
 
 	/** Evolution animation timer */
-	let evolutionTimer: ReturnType<typeof setInterval>;
+	let evolutionTimer: ReturnType<typeof setInterval> | undefined;
 
 	/** Celebration animation timer */
-	let celebrationTimer: ReturnType<typeof setInterval>;
+	let celebrationTimer: ReturnType<typeof setInterval> | undefined;
+	// Blinking animation effect - SAFE VERSION
 	$effect(() => {
+		// Clear any existing interval first
+		if (blinkInterval) {
+			clearInterval(blinkInterval);
+			blinkInterval = undefined;
+		}
+
 		// Only blink when in neutral mood
 		if (isNeutralState) {
 			blinkInterval = setInterval(() => {
@@ -219,17 +226,32 @@
 				}, 150); // Blink duration
 			}, 3000); // Blink every 3 seconds
 		} else {
-			clearInterval(blinkInterval);
 			if (isBlinking) {
 				isBlinking = false;
 			}
 		}
 
-		return () => clearInterval(blinkInterval);
+		return () => {
+			if (blinkInterval) {
+				clearInterval(blinkInterval);
+				blinkInterval = undefined;
+			}
+		};
 	});
 
-	// Walking animation effect
+	// Walking animation effect - FIXED VERSION with proper cleanup
 	$effect(() => {
+		// Clear any existing timer first
+		if (walkingTimer) {
+			clearInterval(walkingTimer);
+			walkingTimer = undefined;
+		}
+
+		// Only start walking when not eating and not evolving
+		if (isEating || isEvolutionAnimating) {
+			return;
+		}
+
 		// Start walking animation
 		walkingTimer = setInterval(() => {
 			// Random micro-jump movement
@@ -248,12 +270,21 @@
 		}, 100); // Update every 100ms for smooth movement
 
 		return () => {
-			clearInterval(walkingTimer);
+			if (walkingTimer) {
+				clearInterval(walkingTimer);
+				walkingTimer = undefined;
+			}
 		};
 	});
 
-	// Evolution animation effect
+	// Evolution animation effect - FIXED VERSION
 	$effect(() => {
+		// Clear any existing timer first
+		if (evolutionTimer) {
+			clearInterval(evolutionTimer);
+			evolutionTimer = undefined;
+		}
+
 		if (showEvolutionAnimation && !isEvolutionAnimating) {
 			isEvolutionAnimating = true;
 			evolutionProgress = 0;
@@ -264,6 +295,7 @@
 
 				if (evolutionProgress >= 100) {
 					clearInterval(evolutionTimer);
+					evolutionTimer = undefined;
 					isEvolutionAnimating = false;
 					evolutionProgress = 0;
 
@@ -278,12 +310,19 @@
 		return () => {
 			if (evolutionTimer) {
 				clearInterval(evolutionTimer);
+				evolutionTimer = undefined;
 			}
 		};
 	});
 
-	// Celebration queue management effect
+	// Celebration queue management effect - FIXED VERSION
 	$effect(() => {
+		// Clear any existing timer first
+		if (celebrationTimer) {
+			clearInterval(celebrationTimer);
+			celebrationTimer = undefined;
+		}
+
 		if (celebrationQueue.length > 0 && !currentCelebration) {
 			// Start next celebration in queue
 			const nextCelebration = celebrationQueue[0];
@@ -296,6 +335,7 @@
 
 				if (celebrationProgress >= 100) {
 					clearInterval(celebrationTimer);
+					celebrationTimer = undefined;
 
 					// Notify parent that celebration is complete
 					if (onCelebrationComplete && currentCelebration) {
@@ -311,6 +351,7 @@
 		return () => {
 			if (celebrationTimer) {
 				clearInterval(celebrationTimer);
+				celebrationTimer = undefined;
 			}
 		};
 	});
