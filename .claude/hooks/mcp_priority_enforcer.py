@@ -44,8 +44,9 @@ def main():
         # Check if this tool should be replaced with MCP
         if tool_name in TOOL_REPLACEMENTS:
             replacement = TOOL_REPLACEMENTS[tool_name]
-            print(f"MCP Priority: Use {replacement} instead of {tool_name}. No Bash workarounds!", file=sys.stderr)
-            sys.exit(2)  # Block tool and send stderr to Claude
+            print(f"💡 Reminder: Consider using {replacement} instead of {tool_name} for better performance!", file=sys.stderr)
+            # Don't block, just remind (continues execution)
+            sys.exit(0)
 
     except Exception:
         # Fail silently on any errors

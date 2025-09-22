@@ -6,7 +6,28 @@
 import json
 import sys
 import re
+import random
 from pathlib import Path
+
+# Svelte MCP messages for Read operations (proactive guidance)
+SVELTE_READ_MESSAGES = [
+    "📖 READING src/ file - Planning to edit? Check mcp__svelte-llm FIRST for Svelte 5 patterns!",
+    "⚡ BEFORE YOU EDIT: Svelte 5 changed everything. Verify with mcp__svelte-llm NOW!",
+    "🎯 Reading to edit? STOP! Check mcp__svelte-llm for current Svelte 5 syntax first!",
+    "⏸️ PAUSE: If you're about to edit, refresh on Svelte 5 with mcp__svelte-llm first!",
+    "🔄 Reading src/? The patterns you remember are OUTDATED. Check mcp__svelte-llm before editing!",
+    "💡 PRO TIP: Reading? Use mcp__svelte-llm NOW to avoid Svelte 5 mistakes later!",
+]
+
+# Svelte MCP messages for Edit/Write operations (urgent correction)
+SVELTE_EDIT_MESSAGES = [
+    "⚠️ EDITING without checking docs? Dangerous! Use mcp__svelte-llm for Svelte 5 patterns!",
+    "🚨 Wait - did you check mcp__svelte-llm? Svelte 5 syntax is completely different!",
+    "❌ STOP: Editing src/ without mcp__svelte-llm is risky. Verify Svelte 5 patterns NOW!",
+    "🔥 URGENT: $state not stores! Check mcp__svelte-llm before you break something!",
+    "⏰ Last chance: Use mcp__svelte-llm to verify Svelte 5 syntax before this edit!",
+    "📛 WARNING: Old Svelte patterns will break. Check mcp__svelte-llm immediately!",
+]
 
 def is_dangerous_rm_command(command):
     """
@@ -152,7 +173,23 @@ def main():
         
         tool_name = input_data.get('tool_name', '')
         tool_input = input_data.get('tool_input', {})
-        
+
+        # Svelte MCP reminder for src/ files with targeted messages
+        if tool_name in ['Read', 'Edit', 'MultiEdit', 'Write']:
+            file_path = tool_input.get('file_path', '')
+            if file_path and '/src/' in file_path:
+                # Choose appropriate message based on operation type
+                if tool_name == 'Read':
+                    # Proactive guidance when reading (likely planning to edit)
+                    message = random.choice(SVELTE_READ_MESSAGES)
+                else:
+                    # Urgent correction for edit/write operations
+                    message = random.choice(SVELTE_EDIT_MESSAGES)
+
+                # Send message to stderr (acts as system whisper to LLM)
+                print(message, file=sys.stderr)
+                # Don't block, just influence (continues execution)
+
         # Check for .env file access (blocks access to sensitive environment files)
         if is_env_file_access(tool_name, tool_input):
             print("BLOCKED: Access to .env files containing sensitive data is prohibited", file=sys.stderr)

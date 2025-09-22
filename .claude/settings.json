@@ -103,6 +103,10 @@
 					{
 						"type": "command",
 						"command": "uv run .claude/hooks/session_start.py"
+					},
+					{
+						"type": "command",
+						"command": "uv run .claude/hooks/start_dev_bg.py"
 					}
 				]
 			}
