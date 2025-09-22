@@ -92,7 +92,7 @@
 	let evolutionForm = $state<EvolutionForm>(2); // Baby form for demo
 
 	/** Current emotional state of the pet */
-	let emotionalState = $state<EmotionalState>('content');
+	let emotionalState = $state<EmotionalState>(EmotionalState.CONTENT);
 
 	/** Queue of celebrations to display */
 	let celebrationQueue = $state<CelebrationEvent[]>([]);
@@ -102,7 +102,7 @@
 
 	/** Achievement celebration overlay state */
 	let showAchievementCelebration = $state(false);
-	let currentAchievement = $state<string | null>(null);
+	let currentAchievement = $state<CelebrationEvent | null>(null);
 
 	/** Challenging keys for keyboard highlighting */
 	let challengingKeys = $state<KeyAnalysis[]>([]);
@@ -473,12 +473,14 @@
 	async function checkRealtimeMilestones(wpm: number, accuracy: number) {
 		try {
 			// Check for personal best WPM achievements
-			const currentProgress = await achievementService.getProgress();
+			const personalBests = await achievementService.getPersonalBests();
+			const wpmBest = personalBests.find((best) => best.category === 'wpm');
+			const currentBestWPM = wpmBest?.value || 0;
 
 			// WPM milestone achievements (every 5 WPM improvement)
 			const wpmMilestones = [10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100];
 			for (const milestone of wpmMilestones) {
-				if (wpm >= milestone && currentProgress.personalBestWPM < milestone) {
+				if (wpm >= milestone && currentBestWPM < milestone) {
 					await achievementService.queueCelebration({
 						type: 'milestone',
 						title: `${milestone} WPM Milestone!`,
@@ -493,14 +495,17 @@
 			}
 
 			// Accuracy milestone achievements (95%, 98%, 99%, 100%)
+			const accuracyBest = personalBests.find((best) => best.category === 'accuracy');
+			const currentBestAccuracy = accuracyBest?.value || 0;
+
 			const accuracyMilestones = [95, 98, 99, 100];
 			for (const milestone of accuracyMilestones) {
-				if (accuracy >= milestone && currentProgress.personalBestAccuracy < milestone) {
+				if (accuracy >= milestone && currentBestAccuracy < milestone) {
 					await achievementService.queueCelebration({
 						type: 'milestone',
 						title: `${milestone}% Accuracy!`,
 						message: `Perfect typing performance!`,
-						animation: 'sparkle',
+						animation: 'glow',
 						duration: 2000,
 						soundEffect: 'accuracy-perfect',
 						priority: 'medium',
@@ -515,7 +520,7 @@
 					type: 'milestone',
 					title: 'Perfect Performance!',
 					message: 'Amazing typing with 100% accuracy!',
-					animation: 'rainbow',
+					animation: 'bounce',
 					duration: 1500,
 					soundEffect: 'perfect-streak',
 					priority: 'medium',
@@ -1103,12 +1108,7 @@
 	</a>
 
 	<!-- Main content area with vertical layout -->
-	<main
-		id="main-content"
-		class="mx-auto w-full max-w-6xl flex-1 p-4"
-		data-testid="main-content"
-		role="main"
-	>
+	<main id="main-content" class="mx-auto w-full max-w-6xl flex-1 p-4" data-testid="main-content">
 		<div
 			id="main-layout-container"
 			class="flex h-full flex-col gap-4"
@@ -1119,7 +1119,6 @@
 				<section
 					class="flex items-center justify-between rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 p-3 shadow-sm"
 					data-testid="content-info"
-					role="region"
 					aria-label="Current content information"
 				>
 					<div class="flex items-center space-x-3">
@@ -1160,7 +1159,6 @@
 				id="typing-area-section"
 				class="min-h-0 flex-[3] rounded-lg bg-white shadow-lg"
 				data-testid="typing-area-container"
-				role="region"
 				aria-label="Typing practice and virtual pet area"
 				tabindex="-1"
 			>
@@ -1180,7 +1178,6 @@
 					<!-- Typingotchi playground - Game Boy LCD style -->
 					<section
 						class="gameboy-lcd relative flex h-28 overflow-hidden border-t border-[#6b7b2f] bg-[#9bbc0f]"
-						role="region"
 						aria-label="Virtual pet playground - Typingotchi responds to your typing"
 					>
 						<div
@@ -1218,7 +1215,6 @@
 						<aside
 							class="relative z-10 min-w-20 border-l border-[#6b7b2f] bg-[#9bbc0f]/80"
 							data-testid="stats-box"
-							role="complementary"
 							aria-label="Real-time typing statistics"
 						>
 							<div class="flex h-full flex-col justify-center gap-0.5 px-2 py-1 text-[#0f380f]">
@@ -1280,7 +1276,6 @@
 				id="virtual-keyboard-section"
 				class="flex min-h-0 flex-[2] items-center justify-center"
 				data-testid="virtual-keyboard-container"
-				role="region"
 				aria-label="Virtual keyboard for typing practice"
 			>
 				<div
@@ -1366,7 +1361,6 @@
 						data-testid="achievement-close-button"
 						type="button"
 						aria-label="Close achievement celebration"
-						autofocus
 					>
 						Awesome!
 					</button>

@@ -13,7 +13,8 @@ import type {
 	FeedingResult,
 	EvolutionResult,
 	Accessory,
-	AccessoryCategory
+	AccessoryCategory,
+	CelebrationEvent
 } from '$lib/types/index.js';
 import { EmotionalState } from '$lib/types/index.js';
 import { PetStateModel } from '$lib/models/PetState.js';
@@ -432,7 +433,7 @@ export class PetStateService implements IPetStateService {
 	/**
 	 * Get next celebration from queue
 	 */
-	async getNextCelebration(): Promise<unknown> {
+	async getNextCelebration(): Promise<CelebrationEvent | null> {
 		if (!this.currentPet) {
 			await this.loadPetState();
 		}

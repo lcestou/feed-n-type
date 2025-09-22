@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type MockedFunction } from 'vitest';
 import type {
 	ContentItem,
 	ContentSource,
@@ -10,21 +10,34 @@ import type {
 } from '$lib/types/index.js';
 import { EmotionalState } from '$lib/types/index.js';
 
+// Extended SessionSummary for testing
+interface ExtendedSessionSummary extends SessionSummary {
+	engagementMetrics?: {
+		averageContentSwitchTime: number;
+		mostEngagingSource: ContentSource;
+		longestFocusTime: number;
+	};
+}
+
+type MockedService<T> = {
+	[K in keyof T]: T[K] extends (...args: any[]) => any ? MockedFunction<T[K]> : T[K];
+};
+
 describe('Integration Test: Content Variety & Engagement', () => {
-	let mockContentService: vi.Mocked<{
+	let mockContentService: MockedService<{
 		loadDailyContent: () => Promise<ContentItem[]>;
 		getContentBySource: (source: ContentSource) => Promise<ContentItem[]>;
 		getContentByDifficulty: (difficulty: DifficultyLevel) => Promise<ContentItem[]>;
 		getContentByTheme: (theme: ThemeCategory) => Promise<ContentItem[]>;
 	}>;
-	let mockPetStateService: vi.Mocked<{
+	let mockPetStateService: MockedService<{
 		feedWord: (isCorrect: boolean) => Promise<void>;
 		getCurrentState: () => Promise<{ emotionalState: EmotionalState }>;
 	}>;
-	let mockProgressService: vi.Mocked<{
-		endSession: () => Promise<SessionSummary>;
+	let mockProgressService: MockedService<{
+		endSession: () => Promise<ExtendedSessionSummary>;
 	}>;
-	let mockAchievementService: vi.Mocked<{
+	let mockAchievementService: MockedService<{
 		checkForNewAchievements: () => Promise<Achievement[]>;
 	}>;
 
@@ -698,9 +711,11 @@ describe('Integration Test: Content Variety & Engagement', () => {
 			expect(summary.engagementMetrics.longestFocusTime).toBe(720000);
 
 			// Verify balanced content usage
-			const totalWords = Object.values(summary.contentBreakdown).reduce(
-				(sum: number, source: { words: number; accuracy: number; timeSpent: number }) =>
-					sum + source.words,
+			const totalWords = Object.values(summary.contentBreakdown || {}).reduce(
+				(sum: number, source: unknown) => {
+					const sourceData = source as { words: number; accuracy: number; timeSpent: number };
+					return sum + sourceData.words;
+				},
 				0
 			);
 			expect(totalWords).toBe(125);

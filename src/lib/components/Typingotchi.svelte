@@ -1,7 +1,8 @@
 <script lang="ts">
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 	import { untrack } from 'svelte';
-	import type { EvolutionForm, EmotionalState, CelebrationEvent } from '$lib/types/index.js';
+	import { EvolutionForm, EmotionalState } from '$lib/types/index.js';
+	import type { CelebrationEvent } from '$lib/types/index.js';
 
 	/**
 	 * Interface for falling word objects in the feeding system.
@@ -47,7 +48,7 @@
 		fireLevel = 0,
 		poopCount = 0,
 		evolutionForm = 1, // EvolutionForm.EGG
-		emotionalState = 'content', // EmotionalState.CONTENT
+		emotionalState = EmotionalState.CONTENT,
 		totalWordsEaten = 0,
 		celebrationQueue = [],
 		showEvolutionAnimation = false,

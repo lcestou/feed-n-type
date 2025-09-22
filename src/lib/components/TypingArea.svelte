@@ -189,7 +189,6 @@
 				class:space={char === ' '}
 				aria-label="{char === ' ' ? 'space' : char} - {characterStates[index]}"
 				data-testid="character-{index}"
-				role="text"
 				aria-current={characterStates[index] === 'current' ? 'location' : undefined}
 			>
 				{char === ' ' ? '·' : char}

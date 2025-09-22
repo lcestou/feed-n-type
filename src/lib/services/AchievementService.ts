@@ -264,7 +264,6 @@ export class AchievementService implements IAchievementService {
 
 		// Queue celebration
 		await this.queueCelebration({
-			id: `achievement-${achievementId}-${Date.now()}`,
 			type: 'milestone',
 			title: `Achievement Unlocked!`,
 			message: definition.title,
@@ -298,7 +297,7 @@ export class AchievementService implements IAchievementService {
 	/**
 	 * Queue celebration event with priority ordering
 	 */
-	async queueCelebration(celebration: CelebrationEvent): Promise<void> {
+	async queueCelebration(celebration: Omit<CelebrationEvent, 'id'>): Promise<void> {
 		// Check queue size limit
 		if (this.celebrationQueue.length >= this.MAX_QUEUE_SIZE) {
 			// Remove lowest priority item to make room
@@ -306,8 +305,14 @@ export class AchievementService implements IAchievementService {
 			this.celebrationQueue.splice(lowestPriorityIndex, 1);
 		}
 
+		// Generate ID and create full celebration event
+		const fullCelebration: CelebrationEvent = {
+			id: `celebration-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+			...celebration
+		};
+
 		// Add to queue and sort by priority
-		this.celebrationQueue.push(celebration);
+		this.celebrationQueue.push(fullCelebration);
 		this.celebrationQueue.sort((a, b) => {
 			const priorityOrder = { high: 3, medium: 2, low: 1 };
 			return priorityOrder[b.priority] - priorityOrder[a.priority];
@@ -347,7 +352,6 @@ export class AchievementService implements IAchievementService {
 		if (success) {
 			// Queue accessory unlock celebration
 			await this.queueCelebration({
-				id: `accessory-${accessoryId}-${Date.now()}`,
 				type: 'accessory',
 				title: 'New Accessory!',
 				message: `${this.getAccessoryName(accessoryId)} unlocked!`,
@@ -456,7 +460,6 @@ export class AchievementService implements IAchievementService {
 		if (updated) {
 			// Queue personal best celebration
 			await this.queueCelebration({
-				id: `best-${category}-${Date.now()}`,
 				type: 'personal_best',
 				title: 'Personal Best!',
 				message: `New ${category} record: ${value}`,

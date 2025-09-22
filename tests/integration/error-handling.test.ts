@@ -1,21 +1,25 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type MockedFunction } from 'vitest';
 import { EmotionalState, EvolutionForm } from '$lib/types/index.js';
 import type { PetState, FeedingResult, SessionSummary } from '$lib/types/index.js';
 
+type MockedService<T> = {
+	[K in keyof T]: T[K] extends (...args: any[]) => any ? MockedFunction<T[K]> : T[K];
+};
+
 describe('Integration Test: Error Handling & Pet Reactions', () => {
-	let mockPetStateService: vi.Mocked<{
+	let mockPetStateService: MockedService<{
 		loadPetState: () => Promise<PetState>;
 		savePetState: (state: PetState) => Promise<void>;
 		feedWord: (isCorrect: boolean) => Promise<FeedingResult>;
 		updateHappiness: (change: number) => Promise<void>;
 		triggerEmotionalState: (state: EmotionalState) => Promise<void>;
 	}>;
-	let mockProgressService: vi.Mocked<{
+	let mockProgressService: MockedService<{
 		startSession: (contentId: string) => Promise<string>;
 		endSession: () => Promise<SessionSummary>;
 		recordKeystroke: (key: string, isCorrect: boolean) => void;
 	}>;
-	let mockAchievementService: vi.Mocked<{
+	let mockAchievementService: MockedService<{
 		checkForNewAchievements: () => Promise<unknown[]>;
 	}>;
 

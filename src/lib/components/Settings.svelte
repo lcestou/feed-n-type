@@ -235,6 +235,16 @@
 		// Save the reset preferences
 		saveAppPreferences();
 	}
+
+	/**
+	 * Handle keyboard events for accessibility
+	 */
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			onClose();
+		}
+	}
 </script>
 
 {#if visible}
@@ -244,11 +254,12 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="settings-title"
+		tabindex="0"
 		onclick={onClose}
+		onkeydown={handleKeydown}
 	>
 		<div
 			class="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-xl bg-white shadow-2xl"
-			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Header -->
 			<div class="border-b border-gray-200 px-6 py-4">

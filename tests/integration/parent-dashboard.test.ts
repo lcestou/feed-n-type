@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type MockedFunction } from 'vitest';
 import { EvolutionForm, EmotionalState } from '$lib/types/index.js';
 import type {
 	ParentSummary,
@@ -12,18 +12,22 @@ import type {
 	AchievementRarity
 } from '$lib/types/index.js';
 
+type MockedService<T> = {
+	[K in keyof T]: T[K] extends (...args: any[]) => any ? MockedFunction<T[K]> : T[K];
+};
+
 describe('Integration Test: Parent Dashboard Data Access', () => {
-	let mockProgressService: vi.Mocked<{
+	let mockProgressService: MockedService<{
 		generateProgressReport: (timeRange: TimeRange) => Promise<ProgressReport>;
 		getParentSummary: () => Promise<ParentSummary>;
 		getTypingTrends: (days: number) => Promise<TypingTrends>;
 		identifyChallengingKeys: () => Promise<KeyAnalysis[]>;
 		getImprovementSuggestions: () => Promise<ImprovementArea[]>;
 	}>;
-	let mockPetStateService: vi.Mocked<{
+	let mockPetStateService: MockedService<{
 		loadPetState: () => Promise<PetState>;
 	}>;
-	let mockAchievementService: vi.Mocked<{
+	let mockAchievementService: MockedService<{
 		getUnlockedAchievements: () => Promise<unknown[]>;
 	}>;
 	beforeEach(() => {

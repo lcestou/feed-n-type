@@ -50,7 +50,7 @@
 	let autoHideTimer: number | null = null;
 
 	// Derived achievement data
-	let displayData = $derived(() => {
+	let displayData = $derived.by(() => {
 		if (achievement) {
 			return {
 				title: achievement.title,
@@ -74,7 +74,7 @@
 	});
 
 	// Rarity-based styling
-	let rarityStyles = $derived(() => {
+	let rarityStyles = $derived.by(() => {
 		if (!displayData) return '';
 
 		const styles = {

@@ -173,6 +173,16 @@
 				return 'text-gray-600 bg-gray-100';
 		}
 	}
+
+	/**
+	 * Handle keyboard events for accessibility
+	 */
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			onClose();
+		}
+	}
 </script>
 
 {#if visible}
@@ -182,12 +192,14 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="dashboard-title"
+		tabindex="0"
 		onclick={onClose}
+		onkeydown={handleKeydown}
 	>
 		<!-- Dashboard content -->
 		<div
 			class="relative max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-xl bg-white shadow-2xl"
-			onclick={(e) => e.stopPropagation()}
+			role="document"
 		>
 			<!-- Header -->
 			<div class="sticky top-0 z-10 border-b border-gray-200 bg-white px-6 py-4">

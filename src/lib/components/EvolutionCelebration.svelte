@@ -79,8 +79,8 @@
 	};
 
 	// Derived data for current forms
-	let fromData = $derived(() => evolutionData[fromForm] || evolutionData[EvolutionForm.EGG]);
-	let toData = $derived(() => evolutionData[toForm] || evolutionData[EvolutionForm.BABY]);
+	let fromData = $derived(evolutionData[fromForm] || evolutionData[EvolutionForm.EGG]);
+	let toData = $derived(evolutionData[toForm] || evolutionData[EvolutionForm.BABY]);
 
 	/**
 	 * Start evolution animation sequence when component becomes visible
@@ -202,6 +202,16 @@
 		} else {
 			// Skip to completion
 			onComplete();
+		}
+	}
+
+	/**
+	 * Handle keyboard events for accessibility
+	 */
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			handleSkip();
 		}
 	}
 </script>
@@ -342,13 +352,14 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="evolution-title"
+		tabindex="0"
 		onclick={handleSkip}
+		onkeydown={handleKeydown}
 	>
 		<!-- Main celebration container -->
 		<div
 			class="relative mx-4 max-w-lg rounded-2xl bg-gradient-to-br {toData.color} p-1 shadow-2xl"
 			class:evolution-glow={animationPhase === 'transformation'}
-			onclick={(e) => e.stopPropagation()}
 		>
 			<div class="rounded-xl bg-white p-8 text-center">
 				<!-- Evolution Progress Bar (during transformation) -->

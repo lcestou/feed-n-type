@@ -9,8 +9,9 @@ import { PetStateModel } from '$lib/models/PetState.js';
 import { UserProgressModel } from '$lib/models/UserProgress.js';
 import { StreakDataModel } from '$lib/models/StreakData.js';
 import { AchievementProgressModel } from '$lib/models/AchievementProgress.js';
-import { dbManager } from '$lib/storage/db.js';
+import { dbManager, type DatabaseSchema } from '$lib/storage/db.js';
 import { localStorageManager } from '$lib/storage/local-storage.js';
+import type { PetState, UserProgress } from '$lib/types/index.js';
 
 // Version constants
 const CURRENT_DATA_VERSION = '1.0.0';
@@ -43,17 +44,17 @@ export class DataMigrationService {
 	private achievementProgressModel: AchievementProgressModel;
 
 	constructor() {
-		this.petStateModel = new PetStateModel();
-		this.userProgressModel = new UserProgressModel();
-		this.streakDataModel = new StreakDataModel();
-		this.achievementProgressModel = new AchievementProgressModel();
+		this.petStateModel = new PetStateModel({});
+		this.userProgressModel = new UserProgressModel({});
+		this.streakDataModel = new StreakDataModel({});
+		this.achievementProgressModel = new AchievementProgressModel({});
 	}
 
 	/**
 	 * Check if migration is needed and execute if required
 	 */
 	async checkAndMigrate(): Promise<MigrationResult> {
-		const currentVersion = localStorageManager.get(VERSION_KEY) ?? null;
+		const currentVersion = localStorageManager.get<string>(VERSION_KEY) ?? null;
 
 		const result: MigrationResult = {
 			success: true,
@@ -87,7 +88,7 @@ export class DataMigrationService {
 
 		try {
 			// Execute version-specific migrations
-			await this.executeMigrations(currentVersion, CURRENT_DATA_VERSION, result);
+			await this.executeMigrations(currentVersion || '0.0.0', CURRENT_DATA_VERSION, result);
 
 			// Update version after successful migration
 			localStorageManager.set(VERSION_KEY, CURRENT_DATA_VERSION);
@@ -180,7 +181,7 @@ export class DataMigrationService {
 		for (const record of records) {
 			const migrated = this.migratePetStateRecord(record);
 			if (migrated !== record) {
-				await dbManager.put('pet_states', migrated as unknown);
+				await dbManager.put('pet_states', migrated as PetState);
 			}
 		}
 	}
@@ -189,7 +190,8 @@ export class DataMigrationService {
 	 * Migrate individual PetState record
 	 */
 	private migratePetStateRecord(record: unknown): unknown {
-		const migrated = { ...record };
+		if (!record || typeof record !== 'object') return record;
+		const migrated = { ...(record as Record<string, unknown>) };
 
 		// Example migrations:
 
@@ -226,7 +228,7 @@ export class DataMigrationService {
 		for (const record of records) {
 			const migrated = this.migrateUserProgressRecord(record);
 			if (migrated !== record) {
-				await dbManager.put('user_progress', migrated as unknown);
+				await dbManager.put('user_progress', migrated as UserProgress);
 			}
 		}
 	}
@@ -235,7 +237,8 @@ export class DataMigrationService {
 	 * Migrate individual UserProgress record
 	 */
 	private migrateUserProgressRecord(record: unknown): unknown {
-		const migrated = { ...record };
+		if (!record || typeof record !== 'object') return record;
+		const migrated = { ...(record as Record<string, unknown>) };
 
 		// Add missing fields
 		if (!migrated.sessionHistory) {
@@ -278,7 +281,8 @@ export class DataMigrationService {
 	 * Migrate StreakData record
 	 */
 	private migrateStreakRecord(record: unknown): unknown {
-		const migrated = { ...record };
+		if (!record || typeof record !== 'object') return record;
+		const migrated = { ...(record as Record<string, unknown>) };
 
 		// Add missing fields
 		if (!migrated.forgiveness) {
@@ -323,7 +327,8 @@ export class DataMigrationService {
 	 * Migrate AchievementProgress record
 	 */
 	private migrateAchievementRecord(record: unknown): unknown {
-		const migrated = { ...record };
+		if (!record || typeof record !== 'object') return record;
+		const migrated = { ...(record as Record<string, unknown>) };
 
 		// Add missing fields
 		if (!migrated.unlockedAchievements) {
@@ -416,13 +421,16 @@ export class DataMigrationService {
 				// Clear and restore using DatabaseManager methods
 				await dbManager.clear(storeName as keyof DatabaseSchema);
 				for (const record of records as unknown[]) {
-					await dbManager.put(storeName as keyof DatabaseSchema, record);
+					await dbManager.put(storeName as keyof DatabaseSchema, record as any);
 				}
 			}
 
 			// Restore localStorage data
-			if (backup.localStorage) {
-				for (const [key, value] of Object.entries(backup.localStorage as Record<string, unknown>)) {
+			const backupObj = backup as Record<string, unknown>;
+			if ('localStorage' in backupObj && backupObj.localStorage) {
+				for (const [key, value] of Object.entries(
+					backupObj.localStorage as Record<string, unknown>
+				)) {
 					localStorageManager.set(key, value);
 				}
 			}
@@ -485,7 +493,7 @@ export class DataMigrationService {
 			adult: 'ADULT'
 		};
 
-		return mapping[stage] || 'EGG';
+		return mapping[stage as string] || 'EGG';
 	}
 }
 

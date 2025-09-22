@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type MockedFunction } from 'vitest';
 import { EvolutionForm, EmotionalState } from '$lib/types/index.js';
 import type {
 	PetState,
@@ -9,8 +9,12 @@ import type {
 	AchievementRarity
 } from '$lib/types/index.js';
 
+type MockedService<T> = {
+	[K in keyof T]: T[K] extends (...args: any[]) => any ? MockedFunction<T[K]> : T[K];
+};
+
 describe('Integration Test: Daily Practice & Evolution Flow', () => {
-	let mockPetStateService: vi.Mocked<{
+	let mockPetStateService: MockedService<{
 		loadPetState: () => Promise<PetState>;
 		savePetState: (state: PetState) => Promise<void>;
 		feedWord: (isCorrect: boolean) => Promise<unknown>;
@@ -18,16 +22,16 @@ describe('Integration Test: Daily Practice & Evolution Flow', () => {
 		getEvolutionProgress: () => Promise<EvolutionResult>;
 		triggerEvolution: () => Promise<void>;
 	}>;
-	let mockProgressService: vi.Mocked<{
+	let mockProgressService: MockedService<{
 		startSession: (contentId: string) => Promise<string>;
 		endSession: () => Promise<SessionSummary>;
 		getStreakData: () => Promise<StreakData>;
 	}>;
-	let mockAchievementService: vi.Mocked<{
+	let mockAchievementService: MockedService<{
 		checkForNewAchievements: () => Promise<Achievement[]>;
 		unlockAccessory: (accessoryId: string) => Promise<void>;
 	}>;
-	let mockLocalStorage: vi.Mocked<{
+	let mockLocalStorage: MockedService<{
 		getStreakData: () => Promise<StreakData>;
 		setStreakData: (data: StreakData) => Promise<void>;
 		getLastSession: () => Promise<SessionSummary | null>;

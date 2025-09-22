@@ -218,6 +218,7 @@ export interface SessionSummary {
 	errorsCount: number;
 	improvementFromLastSession: number;
 	milestonesAchieved: MilestoneData[];
+	contentBreakdown?: Record<string, { words: number; accuracy: number; timeSpent: number }>;
 }
 
 export interface TrendData {
