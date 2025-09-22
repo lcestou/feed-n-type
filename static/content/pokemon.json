@@ -1,0 +1,15 @@
+[
+  {
+    "id": "pokemon-001",
+    "title": "Pikachu and Friends",
+    "text": "Pikachu is yellow and loves to play with friends. The cute Pokémon enjoys running and jumping in the park.",
+    "source": "pokemon",
+    "difficulty": "beginner",
+    "theme": "characters",
+    "wordCount": 18,
+    "estimatedWPM": 15,
+    "dateAdded": "2025-01-21T00:00:00.000Z",
+    "ageAppropriate": true,
+    "specialChallenge": false
+  }
+]

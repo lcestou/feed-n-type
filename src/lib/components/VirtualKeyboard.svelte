@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { KeyAnalysis } from '$lib/types/index.js';
+
 	/**
 	 * Props interface for the VirtualKeyboard component.
 	 * Provides an interactive virtual keyboard with visual feedback.
@@ -9,6 +11,8 @@
 		capsLockOn?: boolean;
 		onCapsLockToggle?: () => void;
 		nextKey?: string;
+		challengingKeys?: KeyAnalysis[];
+		showChallengingKeys?: boolean;
 		'data-component-id'?: string;
 	}
 
@@ -18,6 +22,8 @@
 		capsLockOn = false,
 		onCapsLockToggle,
 		nextKey,
+		challengingKeys = [],
+		showChallengingKeys = false,
 		'data-component-id': componentId
 	}: Props = $props();
 
@@ -147,7 +153,10 @@
 	 * Determines if Shift key should be highlighted based on nextKey.
 	 */
 	function shouldHighlightShift(): boolean {
-		if (!nextKey) return false;
+		// Guard against undefined, null, or empty nextKey
+		if (!nextKey || typeof nextKey !== 'string' || nextKey.length === 0) {
+			return false;
+		}
 
 		// Check if nextKey is uppercase letter
 		if (nextKey.length === 1 && nextKey >= 'A' && nextKey <= 'Z') {
@@ -157,6 +166,69 @@
 		// Check if nextKey is a special character that requires Shift
 		const shiftChars = '!@#$%^&*()_+{}|:"<>?~';
 		return shiftChars.includes(nextKey);
+	}
+
+	/**
+	 * Determines if a key should be highlighted as the next key to press.
+	 */
+	function shouldHighlightAsNext(key: string): boolean {
+		// Guard against undefined, null, or empty nextKey
+		if (!nextKey || typeof nextKey !== 'string' || nextKey.length === 0) {
+			return false;
+		}
+
+		return (
+			key === nextKey ||
+			(key === 'Space' && nextKey === ' ') ||
+			(nextKey.length === 1 && key === nextKey.toLowerCase())
+		);
+	}
+
+	/**
+	 * Get challenging key analysis for a specific key
+	 */
+	function getKeyAnalysis(key: string): KeyAnalysis | undefined {
+		if (!showChallengingKeys || !challengingKeys.length) return undefined;
+
+		// Normalize key for comparison (handle both upper and lower case)
+		const normalizedKey = key.toLowerCase();
+		return challengingKeys.find((analysis) => analysis.key.toLowerCase() === normalizedKey);
+	}
+
+	/**
+	 * Determine challenge level styling for a key
+	 */
+	function getChallengeLevelClass(key: string): string {
+		const analysis = getKeyAnalysis(key);
+		if (!analysis) return '';
+
+		// High error rate (>30%) = red
+		if (analysis.errorRate > 0.3) {
+			return 'challenging-high';
+		}
+		// Medium error rate (15-30%) = orange
+		if (analysis.errorRate > 0.15) {
+			return 'challenging-medium';
+		}
+		// Low error rate (5-15%) = yellow
+		if (analysis.errorRate > 0.05) {
+			return 'challenging-low';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Get accessibility label for challenging keys
+	 */
+	function getChallengingKeyLabel(key: string): string {
+		const analysis = getKeyAnalysis(key);
+		if (!analysis) return `${key} key`;
+
+		const errorPercent = Math.round(analysis.errorRate * 100);
+		const level = analysis.errorRate > 0.3 ? 'high' : analysis.errorRate > 0.15 ? 'medium' : 'low';
+
+		return `${key} key - ${level} challenge (${errorPercent}% error rate)`;
 	}
 </script>
 
@@ -196,15 +268,13 @@
 							   hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-md
 							   active:translate-y-0 active:border-blue-600 active:bg-blue-500 active:text-white active:shadow-inner
 							   {isKeyPressed(keyObj.key) ? 'border-blue-600 bg-blue-500 text-white shadow-inner' : ''}
-							   {nextKey &&
-						(keyObj.key === nextKey ||
-							(keyObj.key === 'Space' && nextKey === ' ') ||
-							(nextKey.length === 1 && keyObj.key === nextKey.toLowerCase()))
+							   {shouldHighlightAsNext(keyObj.key)
 							? 'border-yellow-300 bg-yellow-50 ring-2 ring-yellow-400'
 							: ''}
 							   {shouldHighlightShift() && (keyObj.key === 'Shift' || keyObj.key === 'RightShift')
 							? 'border-orange-300 bg-orange-50 ring-2 ring-orange-400'
 							: ''}
+							   {getChallengeLevelClass(keyObj.key)}
 							   {['Ctrl', 'Alt', 'LeftMenu', 'Menu', 'AltGr', 'RightCtrl', 'Space'].includes(keyObj.key)
 							? 'items-end justify-center pb-1'
 							: ['Tab', 'CapsLock', 'Shift'].includes(keyObj.key)
@@ -247,7 +317,7 @@
 							: 'font-size: 12px !important;'}"
 						onclick={() => handleKeyClick(keyObj.key)}
 						type="button"
-						aria-label="{keyObj.key} key"
+						aria-label={getChallengingKeyLabel(keyObj.key)}
 						aria-pressed={isKeyPressed(keyObj.key)}
 						data-testid="keyboard-key-{keyObj.key.toLowerCase()}"
 					>
@@ -294,5 +364,54 @@
 	.grid {
 		/* Ensures grid columns are exactly equal width */
 		width: 100%;
+	}
+
+	/* Challenging keys highlighting styles */
+	.challenging-low {
+		background-color: rgb(254 249 195) !important;
+		border-color: rgb(251 191 36) !important;
+		box-shadow: 0 0 0 1px rgb(251 191 36);
+	}
+
+	.challenging-low:hover {
+		background-color: rgb(254 240 138) !important;
+		border-color: rgb(245 158 11) !important;
+	}
+
+	.challenging-medium {
+		background-color: rgb(255 237 213) !important;
+		border-color: rgb(249 115 22) !important;
+		box-shadow: 0 0 0 1px rgb(249 115 22);
+	}
+
+	.challenging-medium:hover {
+		background-color: rgb(254 215 170) !important;
+		border-color: rgb(234 88 12) !important;
+	}
+
+	.challenging-high {
+		background-color: rgb(254 226 226) !important;
+		border-color: rgb(239 68 68) !important;
+		box-shadow: 0 0 0 1px rgb(239 68 68);
+	}
+
+	.challenging-high:hover {
+		background-color: rgb(252 165 165) !important;
+		border-color: rgb(220 38 38) !important;
+	}
+
+	/* Add subtle pulse animation for high challenge keys */
+	.challenging-high {
+		animation: subtle-pulse 3s ease-in-out infinite;
+	}
+
+	@keyframes subtle-pulse {
+		0%,
+		100% {
+			box-shadow: 0 0 0 1px rgb(239 68 68);
+		}
+		50% {
+			box-shadow: 0 0 0 2px rgb(239 68 68);
+		}
 	}
 </style>
