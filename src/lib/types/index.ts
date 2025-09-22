@@ -34,7 +34,7 @@ export enum ThemeCategory {
 	EVENTS = 'events'
 }
 
-export type AccessoryCategory = 'hat' | 'collar' | 'toy' | 'background';
+export type AccessoryCategory = 'hat' | 'collar' | 'toy' | 'background' | 'glasses' | 'bow';
 export type AnimationType = 'bounce' | 'spin' | 'glow' | 'shake' | 'float';
 export type CelebrationType = 'evolution' | 'streak' | 'milestone' | 'accessory' | 'personal_best';
 export type SessionId = string;
@@ -181,6 +181,8 @@ export interface ContentCriteria {
 	difficulty?: DifficultyLevel;
 	theme?: ThemeCategory;
 	maxWords?: number;
+	minWords?: number;
+	specialChallenge?: boolean;
 	excludeUsed?: boolean;
 }
 

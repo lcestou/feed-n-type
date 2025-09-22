@@ -9,8 +9,8 @@ import { PetStateModel } from '$lib/models/PetState.js';
 import { UserProgressModel } from '$lib/models/UserProgress.js';
 import { StreakDataModel } from '$lib/models/StreakData.js';
 import { AchievementProgressModel } from '$lib/models/AchievementProgress.js';
-import { getDB } from '$lib/storage/db.js';
-import { getFromLocalStorage, setToLocalStorage } from '$lib/storage/local-storage.js';
+import { dbManager } from '$lib/storage/db.js';
+import { localStorageManager } from '$lib/storage/local-storage.js';
 
 // Version constants
 const CURRENT_DATA_VERSION = '1.0.0';
@@ -53,7 +53,7 @@ export class DataMigrationService {
 	 * Check if migration is needed and execute if required
 	 */
 	async checkAndMigrate(): Promise<MigrationResult> {
-		const currentVersion = getFromLocalStorage(VERSION_KEY, null);
+		const currentVersion = localStorageManager.get(VERSION_KEY) ?? null;
 
 		const result: MigrationResult = {
 			success: true,
@@ -66,7 +66,7 @@ export class DataMigrationService {
 
 		// If no version found, this is a new installation
 		if (!currentVersion) {
-			setToLocalStorage(VERSION_KEY, CURRENT_DATA_VERSION);
+			localStorageManager.set(VERSION_KEY, CURRENT_DATA_VERSION);
 			result.warnings.push('New installation detected - no migration needed');
 			return result;
 		}
@@ -90,7 +90,7 @@ export class DataMigrationService {
 			await this.executeMigrations(currentVersion, CURRENT_DATA_VERSION, result);
 
 			// Update version after successful migration
-			setToLocalStorage(VERSION_KEY, CURRENT_DATA_VERSION);
+			localStorageManager.set(VERSION_KEY, CURRENT_DATA_VERSION);
 		} catch (error) {
 			result.success = false;
 			result.errors.push(
@@ -174,17 +174,13 @@ export class DataMigrationService {
 	 * Migrate PetState data structure
 	 */
 	private async migratePetStateData(): Promise<void> {
-		const db = await getDB();
-		const transaction = db.transaction(['pet_state'], 'readwrite');
-		const store = transaction.objectStore('pet_state');
-
-		// Get all existing pet state records
-		const records = await store.getAll();
+		// Get all existing pet state records using DatabaseManager
+		const records = await dbManager.getAll('pet_states');
 
 		for (const record of records) {
 			const migrated = this.migratePetStateRecord(record);
 			if (migrated !== record) {
-				await store.put(migrated);
+				await dbManager.put('pet_states', migrated as unknown);
 			}
 		}
 	}
@@ -224,16 +220,13 @@ export class DataMigrationService {
 	 * Migrate UserProgress data structure
 	 */
 	private async migrateUserProgressData(): Promise<void> {
-		const db = await getDB();
-		const transaction = db.transaction(['user_progress'], 'readwrite');
-		const store = transaction.objectStore('user_progress');
-
-		const records = await store.getAll();
+		// Get all existing user progress records using DatabaseManager
+		const records = await dbManager.getAll('user_progress');
 
 		for (const record of records) {
 			const migrated = this.migrateUserProgressRecord(record);
 			if (migrated !== record) {
-				await store.put(migrated);
+				await dbManager.put('user_progress', migrated as unknown);
 			}
 		}
 	}
@@ -271,12 +264,12 @@ export class DataMigrationService {
 	 */
 	private async migrateStreakData(): Promise<void> {
 		const streakKey = 'streak_data';
-		const existingData = getFromLocalStorage(streakKey, null);
+		const existingData = localStorageManager.get(streakKey) ?? null;
 
 		if (existingData) {
 			const migrated = this.migrateStreakRecord(existingData);
 			if (migrated !== existingData) {
-				setToLocalStorage(streakKey, migrated);
+				localStorageManager.set(streakKey, migrated);
 			}
 		}
 	}
@@ -316,12 +309,12 @@ export class DataMigrationService {
 	 */
 	private async migrateAchievementData(): Promise<void> {
 		const achievementKey = 'achievement_progress';
-		const existingData = getFromLocalStorage(achievementKey, null);
+		const existingData = localStorageManager.get(achievementKey) ?? null;
 
 		if (existingData) {
 			const migrated = this.migrateAchievementRecord(existingData);
 			if (migrated !== existingData) {
-				setToLocalStorage(achievementKey, migrated);
+				localStorageManager.set(achievementKey, migrated);
 			}
 		}
 	}
@@ -343,11 +336,19 @@ export class DataMigrationService {
 
 		// Migrate achievement format
 		if (migrated.achievements && Array.isArray(migrated.achievements)) {
-			migrated.unlockedAchievements = migrated.achievements.map((ach: unknown) => ({
-				id: ach.id || ach.name,
-				unlockedAt: ach.date || new Date(),
-				...ach
-			}));
+			migrated.unlockedAchievements = migrated.achievements.map((ach: unknown) => {
+				const achievement = ach as {
+					id?: string;
+					name?: string;
+					date?: Date;
+					[key: string]: unknown;
+				};
+				return {
+					id: achievement.id || achievement.name || 'unknown',
+					unlockedAt: achievement.date || new Date(),
+					...achievement
+				};
+			});
 			delete migrated.achievements;
 		}
 
@@ -371,15 +372,12 @@ export class DataMigrationService {
 		try {
 			const backup: Record<string, unknown> = {};
 
-			// Backup IndexedDB data
-			const db = await getDB();
-			const stores = ['pet_state', 'user_progress'];
+			// Backup IndexedDB data using DatabaseManager
+			const stores: (keyof typeof backup)[] = ['pet_states', 'user_progress'];
 
 			for (const storeName of stores) {
-				const transaction = db.transaction([storeName], 'readonly');
-				const store = transaction.objectStore(storeName);
-				backup[storeName] = await store.getAll();
-				result.entities.push(storeName);
+				backup[storeName] = await dbManager.getAll(storeName as keyof DatabaseSchema);
+				result.entities.push(storeName as string);
 			}
 
 			// Backup localStorage data
@@ -387,15 +385,15 @@ export class DataMigrationService {
 			backup.localStorage = {};
 
 			for (const key of localStorageKeys) {
-				const value = getFromLocalStorage(key, null);
+				const value = localStorageManager.get(key) ?? null;
 				if (value !== null) {
-					backup.localStorage[key] = value;
+					(backup.localStorage as Record<string, unknown>)[key] = value;
 					result.entities.push(`localStorage:${key}`);
 				}
 			}
 
 			// Store backup
-			setToLocalStorage(backupKey, backup);
+			localStorageManager.set(backupKey, backup);
 		} catch {
 			result.success = false;
 		}
@@ -408,29 +406,24 @@ export class DataMigrationService {
 	 */
 	async restoreFromBackup(backupKey: string): Promise<boolean> {
 		try {
-			const backup = getFromLocalStorage(backupKey, null);
+			const backup = localStorageManager.get(backupKey) ?? null;
 			if (!backup) return false;
 
-			// Restore IndexedDB data
-			const db = await getDB();
-
-			for (const [storeName, records] of Object.entries(backup)) {
+			// Restore IndexedDB data using DatabaseManager
+			for (const [storeName, records] of Object.entries(backup as Record<string, unknown>)) {
 				if (storeName === 'localStorage') continue;
 
-				const transaction = db.transaction([storeName], 'readwrite');
-				const store = transaction.objectStore(storeName);
-
-				// Clear and restore
-				await store.clear();
+				// Clear and restore using DatabaseManager methods
+				await dbManager.clear(storeName as keyof DatabaseSchema);
 				for (const record of records as unknown[]) {
-					await store.put(record);
+					await dbManager.put(storeName as keyof DatabaseSchema, record);
 				}
 			}
 
 			// Restore localStorage data
 			if (backup.localStorage) {
-				for (const [key, value] of Object.entries(backup.localStorage)) {
-					setToLocalStorage(key, value);
+				for (const [key, value] of Object.entries(backup.localStorage as Record<string, unknown>)) {
+					localStorageManager.set(key, value);
 				}
 			}
 

@@ -4,11 +4,11 @@ import type {
 	ContentSource,
 	DifficultyLevel,
 	ThemeCategory,
-	EmotionalState,
 	SessionSummary,
 	Achievement,
 	AchievementRarity
 } from '$lib/types/index.js';
+import { EmotionalState } from '$lib/types/index.js';
 
 describe('Integration Test: Content Variety & Engagement', () => {
 	let mockContentService: vi.Mocked<{
@@ -243,7 +243,7 @@ describe('Integration Test: Content Variety & Engagement', () => {
 
 			expect(loadedThemes).toHaveLength(6);
 			expect(new Set(loadedThemes.map((c) => c.theme)).size).toBe(6); // All unique themes
-			expect(loadedThemes.every((c) => c.ageAppropriate)).toBe(true);
+			expect(loadedThemes.every((c: ContentItem) => c.ageAppropriate)).toBe(true);
 			expect(new Set(loadedThemes.map((c) => c.source)).size).toBe(3); // Multiple sources represented
 		});
 
@@ -519,8 +519,8 @@ describe('Integration Test: Content Variety & Engagement', () => {
 			const challenges = await mockContentService.getRandomContent({ specialChallenge: true });
 
 			expect(challenges).toHaveLength(3);
-			expect(challenges.every((c) => c.specialChallenge)).toBe(true);
-			expect(challenges.every((c) => c.estimatedWPM >= 30)).toBe(true);
+			expect(challenges.every((c: ContentItem) => c.specialChallenge)).toBe(true);
+			expect(challenges.every((c: ContentItem) => c.estimatedWPM >= 30)).toBe(true);
 			expect(challenges.map((c) => c.theme)).toEqual([
 				'speed-challenge',
 				'accuracy-challenge',
@@ -528,7 +528,7 @@ describe('Integration Test: Content Variety & Engagement', () => {
 			]);
 
 			// Verify escalating difficulty
-			const wpmRequirements = challenges.map((c) => c.estimatedWPM);
+			const wpmRequirements = challenges.map((c: ContentItem) => c.estimatedWPM);
 			expect(Math.max(...wpmRequirements)).toBe(40);
 			expect(Math.min(...wpmRequirements)).toBe(30);
 		});
@@ -607,7 +607,7 @@ describe('Integration Test: Content Variety & Engagement', () => {
 			expect(filteredContent).toHaveLength(1);
 			expect(filteredContent[0].ageAppropriate).toBe(true);
 			expect(filteredContent[0].id).toBe('appropriate-001');
-			expect(filteredContent.every((c) => c.ageAppropriate)).toBe(true);
+			expect(filteredContent.every((c: ContentItem) => c.ageAppropriate)).toBe(true);
 		});
 	});
 
@@ -660,7 +660,20 @@ describe('Integration Test: Content Variety & Engagement', () => {
 				totalCharacters: 330,
 				errorsCount: 46,
 				improvementFromLastSession: 3,
-				milestonesAchieved: ['Content Explorer', 'Multi-Source Mastery'],
+				milestonesAchieved: [
+					{
+						type: 'words',
+						value: 125,
+						timestamp: new Date(),
+						celebrated: false
+					},
+					{
+						type: 'accuracy',
+						value: 86,
+						timestamp: new Date(),
+						celebrated: false
+					}
+				],
 				contentBreakdown: {
 					pokemon: { words: 45, accuracy: 88, timeSpent: 600000 },
 					nintendo: { words: 38, accuracy: 85, timeSpent: 480000 },
@@ -677,7 +690,7 @@ describe('Integration Test: Content Variety & Engagement', () => {
 
 			const summary = await mockProgressService.endSession();
 
-			expect(summary.milestonesAchieved).toContain('Content Explorer');
+			expect(summary.milestonesAchieved).toHaveLength(2);
 			expect(summary.contentBreakdown).toHaveProperty('pokemon');
 			expect(summary.contentBreakdown).toHaveProperty('nintendo');
 			expect(summary.contentBreakdown).toHaveProperty('roblox');
@@ -686,7 +699,8 @@ describe('Integration Test: Content Variety & Engagement', () => {
 
 			// Verify balanced content usage
 			const totalWords = Object.values(summary.contentBreakdown).reduce(
-				(sum, source) => sum + source.words,
+				(sum: number, source: { words: number; accuracy: number; timeSpent: number }) =>
+					sum + source.words,
 				0
 			);
 			expect(totalWords).toBe(125);

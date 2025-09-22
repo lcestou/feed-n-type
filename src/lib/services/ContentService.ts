@@ -9,12 +9,10 @@
 import type {
 	ContentService as IContentService,
 	ContentItem,
-	ContentSource,
-	DifficultyLevel,
-	ThemeCategory,
 	ContentCriteria,
 	CacheStatus
 } from '$lib/types/index.js';
+import { ContentSource, DifficultyLevel, ThemeCategory } from '$lib/types/index.js';
 import { ContentItemModel } from '$lib/models/ContentItem.js';
 import { dbManager } from '$lib/storage/db.js';
 
@@ -45,7 +43,7 @@ export class ContentService implements IContentService {
 			// Process through ContentItemModel for validation and filtering
 			const processedContent: ContentItem[] = [];
 			for (const rawItem of allContent) {
-				const model = new ContentItemModel(rawItem);
+				const model = new ContentItemModel(rawItem as Partial<ContentItem>);
 				if (model.validateState().isValid) {
 					processedContent.push(model.toJSON());
 				}
@@ -78,11 +76,11 @@ export class ContentService implements IContentService {
 
 			// Validate word count matches difficulty expectations
 			switch (difficulty) {
-				case 'beginner':
+				case DifficultyLevel.BEGINNER:
 					return item.wordCount < 50;
-				case 'intermediate':
+				case DifficultyLevel.INTERMEDIATE:
 					return item.wordCount >= 50 && item.wordCount <= 100;
-				case 'advanced':
+				case DifficultyLevel.ADVANCED:
 					return item.wordCount > 100;
 				default:
 					return true;
@@ -97,7 +95,9 @@ export class ContentService implements IContentService {
 		const allContent = await this.loadDailyContent();
 
 		return allContent.filter(
-			(item) => item.specialChallenge || (item.difficulty === 'advanced' && item.wordCount > 150)
+			(item) =>
+				item.specialChallenge ||
+				(item.difficulty === DifficultyLevel.ADVANCED && item.wordCount > 150)
 		);
 	}
 
@@ -172,7 +172,11 @@ export class ContentService implements IContentService {
 			this.cache.clear();
 
 			// Load fresh content for all sources
-			const sources: ContentSource[] = ['pokemon', 'nintendo', 'roblox'];
+			const sources: ContentSource[] = [
+				ContentSource.POKEMON,
+				ContentSource.NINTENDO,
+				ContentSource.ROBLOX
+			];
 
 			for (const source of sources) {
 				await this.loadDailyContent(source);
@@ -195,9 +199,9 @@ export class ContentService implements IContentService {
 
 			// Count by source
 			const sourceCounts = {
-				pokemon: 0,
-				nintendo: 0,
-				roblox: 0
+				[ContentSource.POKEMON]: 0,
+				[ContentSource.NINTENDO]: 0,
+				[ContentSource.ROBLOX]: 0
 			};
 
 			let expiredItems = 0;
@@ -226,7 +230,11 @@ export class ContentService implements IContentService {
 			return {
 				lastUpdate: new Date(0),
 				totalItems: 0,
-				sources: { pokemon: 0, nintendo: 0, roblox: 0 },
+				sources: {
+					[ContentSource.POKEMON]: 0,
+					[ContentSource.NINTENDO]: 0,
+					[ContentSource.ROBLOX]: 0
+				},
 				expiredItems: 0
 			};
 		}
@@ -254,7 +262,9 @@ export class ContentService implements IContentService {
 	 * Load content from static JSON files
 	 */
 	private async loadFromStaticFiles(source?: ContentSource): Promise<unknown[]> {
-		const sources = source ? [source] : ['pokemon', 'nintendo', 'roblox'];
+		const sources = source
+			? [source]
+			: [ContentSource.POKEMON, ContentSource.NINTENDO, ContentSource.ROBLOX];
 		const allContent: unknown[] = [];
 
 		for (const src of sources) {
@@ -319,8 +329,8 @@ export class ContentService implements IContentService {
 	 * Get fallback content item when no matches found
 	 */
 	private getFallbackContentItem(criteria: ContentCriteria): ContentItem {
-		const fallbackSource = criteria.source || 'pokemon';
-		const fallbackDifficulty = criteria.difficulty || 'beginner';
+		const fallbackSource = criteria.source || ContentSource.POKEMON;
+		const fallbackDifficulty = criteria.difficulty || DifficultyLevel.BEGINNER;
 
 		return {
 			id: 'fallback-001',
@@ -328,7 +338,7 @@ export class ContentService implements IContentService {
 			text: 'Default practice text when no matches found.',
 			source: fallbackSource,
 			difficulty: fallbackDifficulty,
-			theme: 'news',
+			theme: ThemeCategory.NEWS,
 			wordCount: 8,
 			estimatedWPM: 15,
 			dateAdded: new Date(),
@@ -341,7 +351,7 @@ export class ContentService implements IContentService {
 	 * Get hardcoded minimal fallback content
 	 */
 	private getHardcodedFallback(source?: ContentSource): ContentItem[] {
-		const defaultSource = source || 'pokemon';
+		const defaultSource = source || ContentSource.POKEMON;
 
 		return [
 			{
@@ -349,8 +359,8 @@ export class ContentService implements IContentService {
 				title: 'Basic Practice',
 				text: 'The quick brown fox jumps over the lazy dog.',
 				source: defaultSource,
-				difficulty: 'beginner',
-				theme: 'news',
+				difficulty: DifficultyLevel.BEGINNER,
+				theme: ThemeCategory.NEWS,
 				wordCount: 9,
 				estimatedWPM: 15,
 				dateAdded: new Date(),
@@ -362,8 +372,8 @@ export class ContentService implements IContentService {
 				title: 'Simple Words',
 				text: 'Cat dog bird fish sun moon star tree flower water.',
 				source: defaultSource,
-				difficulty: 'beginner',
-				theme: 'news',
+				difficulty: DifficultyLevel.BEGINNER,
+				theme: ThemeCategory.NEWS,
 				wordCount: 10,
 				estimatedWPM: 12,
 				dateAdded: new Date(),

@@ -7,6 +7,7 @@ import type {
 	Accessory,
 	AccessoryCategory
 } from '$lib/types/index.js';
+import { EmotionalState } from '$lib/types/index.js';
 
 describe('PetStateService Contract Tests', () => {
 	let petStateService: PetStateService;

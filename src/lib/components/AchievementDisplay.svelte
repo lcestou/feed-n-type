@@ -47,7 +47,7 @@
 	>([]);
 
 	// Auto-hide timer
-	let autoHideTimer: NodeJS.Timeout | null = null;
+	let autoHideTimer: number | null = null;
 
 	// Derived achievement data
 	let displayData = $derived(() => {

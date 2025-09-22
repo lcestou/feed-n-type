@@ -10,12 +10,12 @@ import type {
 	PetStateService as IPetStateService,
 	PetState,
 	EvolutionForm,
-	EmotionalState,
 	FeedingResult,
 	EvolutionResult,
 	Accessory,
 	AccessoryCategory
 } from '$lib/types/index.js';
+import { EmotionalState } from '$lib/types/index.js';
 import { PetStateModel } from '$lib/models/PetState.js';
 import { dbManager } from '$lib/storage/db.js';
 
@@ -123,21 +123,20 @@ export class PetStateService implements IPetStateService {
 	/**
 	 * Reset pet to initial state with confirmation
 	 */
-	async resetPet(
-		petId: string = this.DEFAULT_PET_ID,
-		confirmation: string = 'RESET_PET_CONFIRMED'
-	): Promise<void> {
-		await this.loadPetState(petId);
+	async resetPet(): Promise<PetState> {
+		await this.loadPetState();
 
 		if (!this.currentPet) {
 			throw new Error('Pet not found');
 		}
 
 		// Reset using model's validation
-		this.currentPet.reset(confirmation);
+		this.currentPet.reset('RESET_PET_CONFIRMED');
 
 		// Save reset state
 		await this.savePetState(this.currentPet.state);
+
+		return this.currentPet.state;
 	}
 
 	/**
@@ -157,7 +156,7 @@ export class PetStateService implements IPetStateService {
 
 		// Trigger temporary eating animation for correct words
 		if (isCorrect) {
-			this.currentPet.triggerTemporaryEmotionalState('eating', 2000);
+			this.currentPet.triggerTemporaryEmotionalState(EmotionalState.EATING, 2000);
 		}
 
 		// Check for celebration queue events

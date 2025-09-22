@@ -971,12 +971,7 @@
 	</div>
 
 	<!-- Header with navigation icons, title and reset button -->
-	<header
-		id="main-header"
-		class="border-b border-[#4f43ae] bg-[#4f43ae]"
-		data-testid="main-header"
-		role="banner"
-	>
+	<header id="main-header" class="border-b border-[#4f43ae] bg-[#4f43ae]" data-testid="main-header">
 		<div id="header-wrapper" class="mx-auto max-w-6xl px-6" data-testid="header-wrapper">
 			<div
 				id="header-content"

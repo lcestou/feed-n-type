@@ -518,7 +518,9 @@ export class AchievementProgressModel {
 			hat: null,
 			collar: null,
 			toy: null,
-			background: null
+			background: null,
+			glasses: null,
+			bow: null
 		};
 
 		this._progress.unlockedAccessories.forEach((accessory) => {
