@@ -1,0 +1,54 @@
+[
+  {
+    "id": "nintendo-001",
+    "title": "Mario's New Adventure",
+    "text": "Super Mario explores colorful kingdoms in his latest game. Princess Peach needs rescuing once again. Players collect power stars and defeat Bowser's minions.",
+    "source": "nintendo",
+    "difficulty": "beginner",
+    "theme": "games",
+    "wordCount": 28,
+    "estimatedWPM": 16,
+    "dateAdded": "2025-01-21T00:00:00.000Z",
+    "ageAppropriate": true,
+    "specialChallenge": false
+  },
+  {
+    "id": "nintendo-002",
+    "title": "Link's Hero Journey",
+    "text": "In The Legend of Zelda, Link must gather courage, wisdom, and power. He explores vast dungeons filled with puzzles and monsters. The Master Sword awaits brave heroes.",
+    "source": "nintendo",
+    "difficulty": "intermediate",
+    "theme": "characters",
+    "wordCount": 34,
+    "estimatedWPM": 21,
+    "dateAdded": "2025-01-21T00:00:00.000Z",
+    "ageAppropriate": true,
+    "specialChallenge": false
+  },
+  {
+    "id": "nintendo-003",
+    "title": "Nintendo Switch Updates",
+    "text": "The Nintendo Switch console received significant firmware improvements this month. Enhanced performance optimization ensures smoother gameplay experiences. Developers appreciate the expanded development toolkit capabilities.",
+    "source": "nintendo",
+    "difficulty": "advanced",
+    "theme": "news",
+    "wordCount": 29,
+    "estimatedWPM": 24,
+    "dateAdded": "2025-01-21T00:00:00.000Z",
+    "ageAppropriate": true,
+    "specialChallenge": false
+  },
+  {
+    "id": "nintendo-004",
+    "title": "Special Nintendo Event",
+    "text": "Join the weekend Nintendo Direct presentation featuring upcoming game announcements. Fans will discover new characters, exciting gameplay mechanics, and release dates for anticipated titles.",
+    "source": "nintendo",
+    "difficulty": "intermediate",
+    "theme": "events",
+    "wordCount": 31,
+    "estimatedWPM": 23,
+    "dateAdded": "2025-01-21T00:00:00.000Z",
+    "ageAppropriate": true,
+    "specialChallenge": true
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "roblox-001",
+    "title": "Building in Roblox",
+    "text": "Players create amazing worlds using simple blocks and tools. Friends can visit your creations and play together. Building games helps develop creativity and problem solving skills.",
+    "source": "roblox",
+    "difficulty": "beginner",
+    "theme": "games",
+    "wordCount": 30,
+    "estimatedWPM": 17,
+    "dateAdded": "2025-01-21T00:00:00.000Z",
+    "ageAppropriate": true,
+    "specialChallenge": false
+  },
+  {
+    "id": "roblox-002",
+    "title": "Popular Roblox Characters",
+    "text": "Noob is the classic starter character that everyone recognizes. Players customize their avatars with clothing, accessories, and animations. Character design reflects personal style and creativity.",
+    "source": "roblox",
+    "difficulty": "intermediate",
+    "theme": "characters",
+    "wordCount": 33,
+    "estimatedWPM": 20,
+    "dateAdded": "2025-01-21T00:00:00.000Z",
+    "ageAppropriate": true,
+    "specialChallenge": false
+  },
+  {
+    "id": "roblox-003",
+    "title": "Roblox Development News",
+    "text": "The platform introduced advanced scripting capabilities for experienced developers. New physics engines enable more realistic interactions and improved performance optimization. Educational programming courses help young creators learn coding fundamentals.",
+    "source": "roblox",
+    "difficulty": "advanced",
+    "theme": "news",
+    "wordCount": 36,
+    "estimatedWPM": 26,
+    "dateAdded": "2025-01-21T00:00:00.000Z",
+    "ageAppropriate": true,
+    "specialChallenge": false
+  },
+  {
+    "id": "roblox-004",
+    "title": "Weekend Building Contest",
+    "text": "This weekend features a special building competition with amazing prizes. Participants create themed worlds using specific building challenges. Winners receive exclusive avatar items and recognition.",
+    "source": "roblox",
+    "difficulty": "intermediate",
+    "theme": "events",
+    "wordCount": 32,
+    "estimatedWPM": 22,
+    "dateAdded": "2025-01-21T00:00:00.000Z",
+    "ageAppropriate": true,
+    "specialChallenge": true
+  }
+]
