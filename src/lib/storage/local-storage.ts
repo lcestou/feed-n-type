@@ -255,7 +255,7 @@ export class LocalStorageManager {
 	import(data: Record<string, unknown>): boolean {
 		try {
 			Object.entries(data).forEach(([key, value]) => {
-				if (Object.values(STORAGE_KEYS).includes(key as any)) {
+				if (Object.values(STORAGE_KEYS).includes(key as string)) {
 					this.set(key, value);
 				}
 			});

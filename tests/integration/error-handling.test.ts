@@ -1,16 +1,22 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type {
-	PetState,
-	EvolutionForm,
-	EmotionalState,
-	FeedingResult,
-	SessionSummary
-} from '$lib/types/index.js';
+import type { PetState, FeedingResult, SessionSummary } from '$lib/types/index.js';
 
 describe('Integration Test: Error Handling & Pet Reactions', () => {
-	let mockPetStateService: any;
-	let mockProgressService: any;
-	let mockAchievementService: any;
+	let mockPetStateService: vi.Mocked<{
+		loadPetState: () => Promise<PetState>;
+		savePetState: (state: PetState) => Promise<void>;
+		feedWord: (isCorrect: boolean) => Promise<FeedingResult>;
+		updateHappiness: (change: number) => Promise<void>;
+		triggerEmotionalState: (state: EmotionalState) => Promise<void>;
+	}>;
+	let mockProgressService: vi.Mocked<{
+		startSession: (contentId: string) => Promise<string>;
+		endSession: () => Promise<SessionSummary>;
+		recordKeystroke: (key: string, isCorrect: boolean) => void;
+	}>;
+	let mockAchievementService: vi.Mocked<{
+		checkForNewAchievements: () => Promise<unknown[]>;
+	}>;
 
 	beforeEach(() => {
 		mockPetStateService = {

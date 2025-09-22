@@ -1,23 +1,38 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { EvolutionForm, EmotionalState } from '$lib/types/index.js';
 import type {
 	PetState,
-	EvolutionForm,
-	EmotionalState,
-	FeedingResult,
 	EvolutionResult,
 	StreakData,
-	Accessory,
-	AccessoryCategory,
 	SessionSummary,
 	Achievement,
 	AchievementRarity
 } from '$lib/types/index.js';
 
 describe('Integration Test: Daily Practice & Evolution Flow', () => {
-	let mockPetStateService: any;
-	let mockProgressService: any;
-	let mockAchievementService: any;
-	let mockLocalStorage: any;
+	let mockPetStateService: vi.Mocked<{
+		loadPetState: () => Promise<PetState>;
+		savePetState: (state: PetState) => Promise<void>;
+		feedWord: (isCorrect: boolean) => Promise<unknown>;
+		updateHappiness: (change: number) => Promise<void>;
+		getEvolutionProgress: () => Promise<EvolutionResult>;
+		triggerEvolution: () => Promise<void>;
+	}>;
+	let mockProgressService: vi.Mocked<{
+		startSession: (contentId: string) => Promise<string>;
+		endSession: () => Promise<SessionSummary>;
+		getStreakData: () => Promise<StreakData>;
+	}>;
+	let mockAchievementService: vi.Mocked<{
+		checkForNewAchievements: () => Promise<Achievement[]>;
+		unlockAccessory: (accessoryId: string) => Promise<void>;
+	}>;
+	let mockLocalStorage: vi.Mocked<{
+		getStreakData: () => Promise<StreakData>;
+		setStreakData: (data: StreakData) => Promise<void>;
+		getLastSession: () => Promise<SessionSummary | null>;
+		setLastSession: (session: SessionSummary) => Promise<void>;
+	}>;
 
 	beforeEach(() => {
 		mockPetStateService = {
@@ -68,15 +83,10 @@ describe('Integration Test: Daily Practice & Evolution Flow', () => {
 				longestStreak: 0,
 				lastPracticeDate: new Date('2025-01-20'),
 				streakStartDate: new Date('2025-01-20'),
-				totalPracticeDays: 0
-			};
-
-			const expectedStreakData: StreakData = {
-				currentStreak: 7,
-				longestStreak: 7,
-				lastPracticeDate: new Date('2025-01-27'),
-				streakStartDate: new Date('2025-01-20'),
-				totalPracticeDays: 7
+				totalPracticeDays: 0,
+				forgivenessCredits: 1,
+				weekendBonusUsed: false,
+				catchUpDeadline: null
 			};
 
 			mockLocalStorage.getStreakData.mockResolvedValue(initialStreakData);
@@ -141,7 +151,19 @@ describe('Integration Test: Daily Practice & Evolution Flow', () => {
 				...initialPetState,
 				evolutionForm: EvolutionForm.BABY,
 				totalWordsEaten: 100,
-				celebrationQueue: ['evolution-celebration']
+				celebrationQueue: [
+					{
+						id: 'evo-1',
+						type: 'evolution',
+						title: 'Evolution!',
+						message: 'Your pet evolved!',
+						animation: 'glow',
+						duration: 3000,
+						soundEffect: 'evolve',
+						priority: 'high',
+						autoTrigger: true
+					}
+				]
 			};
 
 			mockPetStateService.loadPetState.mockResolvedValue(initialPetState);
@@ -154,8 +176,6 @@ describe('Integration Test: Daily Practice & Evolution Flow', () => {
 			});
 			mockPetStateService.checkEvolutionTrigger.mockResolvedValue(evolutionResult);
 			mockPetStateService.evolveToNextForm.mockResolvedValue(evolvedPetState);
-
-			const petState = await mockPetStateService.loadPetState();
 
 			for (let i = 0; i < 5; i++) {
 				await mockPetStateService.feedWord('pokemon', true);
@@ -215,15 +235,6 @@ describe('Integration Test: Daily Practice & Evolution Flow', () => {
 		});
 
 		it('should unlock first accessory at Baby evolution', async () => {
-			const starterHat: Accessory = {
-				id: 'starter-hat',
-				name: 'Practice Hat',
-				category: 'hat' as AccessoryCategory,
-				unlockCondition: 'Evolve to Baby form',
-				dateUnlocked: new Date(),
-				equipped: false
-			};
-
 			mockPetStateService.unlockAccessory.mockResolvedValue(true);
 			mockPetStateService.equipAccessory.mockResolvedValue();
 
@@ -235,8 +246,6 @@ describe('Integration Test: Daily Practice & Evolution Flow', () => {
 		});
 
 		it('should maintain happiness levels during consistent practice', async () => {
-			const dailyHappinessLevels = [50, 58, 65, 72, 78, 84, 89];
-
 			mockPetStateService.updateHappiness
 				.mockResolvedValueOnce(58)
 				.mockResolvedValueOnce(65)
@@ -297,7 +306,6 @@ describe('Integration Test: Daily Practice & Evolution Flow', () => {
 
 		it('should improve typing speed over the week', async () => {
 			const dailyWPMReadings = [12, 14, 16, 18, 20, 22, 25];
-			const dailyAccuracyReadings = [78, 81, 84, 86, 88, 90, 92];
 
 			mockProgressService.calculateWPM
 				.mockResolvedValueOnce(12)

@@ -1,6 +1,7 @@
 <script lang="ts">
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 	import { untrack } from 'svelte';
+	import type { EvolutionForm, EmotionalState, CelebrationEvent } from '$lib/types/index.js';
 
 	/**
 	 * Interface for falling word objects in the feeding system.
@@ -26,6 +27,13 @@
 		streak: number;
 		fireLevel: number;
 		poopCount: number;
+		evolutionForm?: EvolutionForm;
+		emotionalState?: EmotionalState;
+		totalWordsEaten?: number;
+		celebrationQueue?: CelebrationEvent[];
+		showEvolutionAnimation?: boolean;
+		onEvolutionComplete?: () => void;
+		onCelebrationComplete?: (eventId: string) => void;
 		fallingWords?: FallingWord[];
 		onEatWord?: (wordId: string) => void;
 		'data-component-id'?: string;
@@ -38,6 +46,13 @@
 		streak = 0,
 		fireLevel = 0,
 		poopCount = 0,
+		evolutionForm = 1, // EvolutionForm.EGG
+		emotionalState = 'content', // EmotionalState.CONTENT
+		totalWordsEaten = 0,
+		celebrationQueue = [],
+		showEvolutionAnimation = false,
+		onEvolutionComplete,
+		onCelebrationComplete,
 		fallingWords = [],
 		onEatWord,
 		'data-component-id': componentId
@@ -47,20 +62,95 @@
 	 * ASCII art faces for different moods and emotional states.
 	 * Each mood represents a different typing performance or error state.
 	 * Contains just the face expressions without frames for clean display.
+	 * Evolution forms have different base appearances.
 	 */
 	const asciiArt = {
-		neutral: `◕ ◕
+		// EGG form (EvolutionForm.EGG = 1)
+		egg: {
+			neutral: `◦ ◦
  ─ `,
-		neutralBlink: `─ ─
+			neutralBlink: `─ ─
  ─ `,
-		focused: `◔ ◔
+			focused: `◔ ◔
  ○ `,
-		happy: `◕ ◕
+			happy: `◦ ◦
 ◡_◡`,
-		excited: `★ ★
+			excited: `★ ★
 ◡_◡`,
-		worried: `× ×
+			worried: `× ×
 ∪_∪`,
+			eating: `◉ ◉
+ ○ `
+		},
+		// BABY form (EvolutionForm.BABY = 2)
+		baby: {
+			neutral: `◕ ◕
+ ─ `,
+			neutralBlink: `─ ─
+ ─ `,
+			focused: `◔ ◔
+ ○ `,
+			happy: `◕ ◕
+◡_◡`,
+			excited: `★ ★
+◡_◡`,
+			worried: `× ×
+∪_∪`,
+			eating: `◉ ◉
+ ◡ `
+		},
+		// CHILD form (EvolutionForm.CHILD = 3)
+		child: {
+			neutral: `● ●
+ ─ `,
+			neutralBlink: `─ ─
+ ─ `,
+			focused: `◐ ◑
+ ○ `,
+			happy: `● ●
+◡_◡`,
+			excited: `★ ★
+◡▽◡`,
+			worried: `× ×
+∩_∩`,
+			eating: `◉ ◉
+ ◡ `
+		},
+		// TEEN form (EvolutionForm.TEEN = 4)
+		teen: {
+			neutral: `◆ ◆
+ ─ `,
+			neutralBlink: `─ ─
+ ─ `,
+			focused: `◇ ◇
+ ○ `,
+			happy: `◆ ◆
+◡_◡`,
+			excited: `✦ ✦
+◡▽◡`,
+			worried: `× ×
+∩_∩`,
+			eating: `◉ ◉
+ ◡ `
+		},
+		// ADULT form (EvolutionForm.ADULT = 5)
+		adult: {
+			neutral: `◈ ◈
+ ─ `,
+			neutralBlink: `─ ─
+ ─ `,
+			focused: `◇ ◇
+ ○ `,
+			happy: `◈ ◈
+◡_◡`,
+			excited: `✺ ✺
+◡▽◡`,
+			worried: `× ×
+∩_∩`,
+			eating: `◉ ◉
+ ◡ `
+		},
+		// Fire states (maintain existing for compatibility)
 		heatingUp: `◉ ◉
  ◡ `,
 		onFire: `✦ ✦
@@ -100,11 +190,25 @@
 	/** Is character currently eating */
 	let isEating = $state(false);
 
+	/** Evolution animation state */
+	let isEvolutionAnimating = $state(false);
+	let evolutionProgress = $state(0);
+
+	/** Current celebration being displayed */
+	let currentCelebration = $state<CelebrationEvent | null>(null);
+	let celebrationProgress = $state(0);
+
 	/** Animation frame reference for walking */
 	let animationFrame: number;
 
 	/** Walking animation timer */
 	let walkingTimer: ReturnType<typeof setInterval>;
+
+	/** Evolution animation timer */
+	let evolutionTimer: ReturnType<typeof setInterval>;
+
+	/** Celebration animation timer */
+	let celebrationTimer: ReturnType<typeof setInterval>;
 	$effect(() => {
 		// Only blink when in neutral mood
 		if (isNeutralState) {
@@ -145,6 +249,69 @@
 
 		return () => {
 			clearInterval(walkingTimer);
+		};
+	});
+
+	// Evolution animation effect
+	$effect(() => {
+		if (showEvolutionAnimation && !isEvolutionAnimating) {
+			isEvolutionAnimating = true;
+			evolutionProgress = 0;
+
+			// Start evolution animation sequence
+			evolutionTimer = setInterval(() => {
+				evolutionProgress += 2;
+
+				if (evolutionProgress >= 100) {
+					clearInterval(evolutionTimer);
+					isEvolutionAnimating = false;
+					evolutionProgress = 0;
+
+					// Notify parent that evolution animation is complete
+					if (onEvolutionComplete) {
+						onEvolutionComplete();
+					}
+				}
+			}, 50); // Update every 50ms for smooth progress
+		}
+
+		return () => {
+			if (evolutionTimer) {
+				clearInterval(evolutionTimer);
+			}
+		};
+	});
+
+	// Celebration queue management effect
+	$effect(() => {
+		if (celebrationQueue.length > 0 && !currentCelebration) {
+			// Start next celebration in queue
+			const nextCelebration = celebrationQueue[0];
+			currentCelebration = nextCelebration;
+			celebrationProgress = 0;
+
+			// Start celebration animation
+			celebrationTimer = setInterval(() => {
+				celebrationProgress += 5;
+
+				if (celebrationProgress >= 100) {
+					clearInterval(celebrationTimer);
+
+					// Notify parent that celebration is complete
+					if (onCelebrationComplete && currentCelebration) {
+						onCelebrationComplete(currentCelebration.id);
+					}
+
+					currentCelebration = null;
+					celebrationProgress = 0;
+				}
+			}, nextCelebration.duration / 20); // Divide duration by 20 for smooth progress
+		}
+
+		return () => {
+			if (celebrationTimer) {
+				clearInterval(celebrationTimer);
+			}
 		};
 	});
 
@@ -243,30 +410,87 @@
 	}
 
 	/**
-	 * Derived character state based on typing performance, streak, and error feedback.
+	 * Get the evolution form name for ASCII art lookup
+	 */
+	function getEvolutionFormName(form: EvolutionForm): keyof typeof asciiArt {
+		switch (form) {
+			case 1:
+				return 'egg';
+			case 2:
+				return 'baby';
+			case 3:
+				return 'child';
+			case 4:
+				return 'teen';
+			case 5:
+				return 'adult';
+			default:
+				return 'egg';
+		}
+	}
+
+	/**
+	 * Derived character state based on evolution form, emotional state, and performance.
 	 * Returns an object containing ASCII art, heart count, and mood identifier.
 	 *
 	 * Priority order:
-	 * 1. Fire levels (3: super fire, 2: on fire, 1: heating up)
-	 * 2. Error state (worried mood)
-	 * 3. Typing performance (excited > happy > focused)
-	 * 4. Neutral state (with blinking animation)
+	 * 1. Evolution animation (special sparkle effect)
+	 * 2. Celebration animations
+	 * 3. Fire levels (3: super fire, 2: on fire, 1: heating up)
+	 * 4. Emotional state override
+	 * 5. Error state (worried mood)
+	 * 6. Typing performance (excited > happy > focused)
+	 * 7. Neutral state (with blinking animation)
 	 *
 	 * @returns Character state object with ascii, hearts, and mood properties
 	 */
 	let character = $derived(() => {
-		// All states now use the derived heartCount based on mistakes
-		// Eating animation has highest priority
-		if (isEating) {
-			return { ascii: asciiArt.excited, hearts: heartCount, mood: 'eating' };
+		const formName = getEvolutionFormName(evolutionForm);
+		const formArt = asciiArt[formName] as Record<string, string>;
+
+		// Evolution animation has highest priority
+		if (isEvolutionAnimating) {
+			return {
+				ascii: evolutionProgress < 50 ? formArt.excited : formArt.happy,
+				hearts: heartCount,
+				mood: 'evolving',
+				evolutionProgress
+			};
 		}
 
-		// TEMPORARILY DISABLED - Movement state logic
-		/*if (targetWord && !isEating) {
-			return { ascii: asciiArt.focused, hearts: heartCount, mood: 'moving' };
-		}*/
+		// Current celebration animation
+		if (currentCelebration) {
+			const celebrationMood = currentCelebration.type === 'evolution' ? 'excited' : 'happy';
+			return {
+				ascii: formArt[celebrationMood] || formArt.excited,
+				hearts: heartCount,
+				mood: 'celebrating',
+				celebration: currentCelebration
+			};
+		}
 
-		// Streak states have priority over other states
+		// Eating animation has high priority
+		if (isEating) {
+			return { ascii: formArt.eating || formArt.excited, hearts: heartCount, mood: 'eating' };
+		}
+
+		// Emotional state override (from PetStateService)
+		if (emotionalState !== 'content') {
+			switch (emotionalState) {
+				case 'happy':
+					return { ascii: formArt.happy, hearts: heartCount, mood: 'happy' };
+				case 'excited':
+					return { ascii: formArt.excited, hearts: heartCount, mood: 'excited' };
+				case 'sad':
+					return { ascii: formArt.worried, hearts: heartCount, mood: 'worried' };
+				case 'hungry':
+					return { ascii: formArt.focused, hearts: heartCount, mood: 'focused' };
+				case 'eating':
+					return { ascii: formArt.eating || formArt.excited, hearts: heartCount, mood: 'eating' };
+			}
+		}
+
+		// Fire streak states have priority over other states
 		if (fireLevel === 3) {
 			return {
 				ascii: asciiArt.superFire,
@@ -282,16 +506,16 @@
 				mood: 'heatingUp'
 			};
 		} else if (hasError) {
-			return { ascii: asciiArt.worried, hearts: heartCount, mood: 'worried' };
+			return { ascii: formArt.worried, hearts: heartCount, mood: 'worried' };
 		} else if (isTyping && wpm > 60) {
-			return { ascii: asciiArt.excited, hearts: heartCount, mood: 'excited' };
+			return { ascii: formArt.excited, hearts: heartCount, mood: 'excited' };
 		} else if (isTyping && wpm > 30) {
-			return { ascii: asciiArt.happy, hearts: heartCount, mood: 'happy' };
+			return { ascii: formArt.happy, hearts: heartCount, mood: 'happy' };
 		} else if (isTyping) {
-			return { ascii: asciiArt.focused, hearts: heartCount, mood: 'focused' };
+			return { ascii: formArt.focused, hearts: heartCount, mood: 'focused' };
 		} else {
 			// Show blinking animation when neutral and idle
-			const currentAscii = isBlinking ? asciiArt.neutralBlink : asciiArt.neutral;
+			const currentAscii = isBlinking ? formArt.neutralBlink : formArt.neutral;
 			return { ascii: currentAscii, hearts: heartCount, mood: 'neutral' };
 		}
 	});
@@ -304,6 +528,10 @@
 	 */
 	let animationClass = $derived(() => {
 		switch (character().mood) {
+			case 'evolving':
+				return 'evolution-sparkle animate-bounce scale-110';
+			case 'celebrating':
+				return 'celebration-glow animate-bounce';
 			case 'eating':
 				return 'animate-bounce scale-110';
 			case 'moving':
@@ -366,6 +594,39 @@
 				{word.word}
 			</div>
 		{/each}
+	{/if}
+
+	<!-- Evolution progress overlay -->
+	{#if isEvolutionAnimating}
+		<div
+			class="absolute inset-0 z-50 flex items-center justify-center"
+			data-testid="evolution-overlay"
+		>
+			<div class="evolution-sparkle-bg rounded-xl p-4 text-center">
+				<div class="mb-2 text-lg font-bold text-white">EVOLUTION!</div>
+				<div class="h-2 w-24 overflow-hidden rounded-full bg-white/30">
+					<div
+						class="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 transition-all duration-100"
+						style="width: {evolutionProgress}%"
+					></div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Celebration overlay -->
+	{#if currentCelebration}
+		<div
+			class="absolute inset-0 z-40 flex items-center justify-center"
+			data-testid="celebration-overlay"
+		>
+			<div class="celebration-popup rounded-lg bg-white/90 p-3 text-center shadow-lg">
+				<div class="text-sm font-bold text-gray-800">{currentCelebration.title}</div>
+				{#if currentCelebration.message}
+					<div class="text-xs text-gray-600">{currentCelebration.message}</div>
+				{/if}
+			</div>
+		</div>
 	{/if}
 
 	<!-- Pet avatar with walking animation positioning -->
@@ -502,5 +763,104 @@
 	/* Character movement and eating animations */
 	.scale-110 {
 		transform: scale(1.1);
+	}
+
+	/* Evolution animation styles */
+	.evolution-sparkle {
+		filter: brightness(1.5) saturate(1.8);
+		text-shadow:
+			0 0 8px rgba(255, 215, 0, 0.8),
+			0 0 16px rgba(255, 215, 0, 0.6);
+		animation: evolutionSparkle 0.5s ease-in-out infinite alternate;
+	}
+
+	.evolution-sparkle-bg {
+		background: radial-gradient(
+			circle,
+			rgba(255, 215, 0, 0.9) 0%,
+			rgba(255, 165, 0, 0.7) 50%,
+			rgba(255, 215, 0, 0.5) 100%
+		);
+		animation: evolutionBg 1s ease-in-out infinite alternate;
+	}
+
+	@keyframes evolutionSparkle {
+		0% {
+			filter: brightness(1.3) saturate(1.6);
+			transform: scale(1.05);
+		}
+		100% {
+			filter: brightness(1.8) saturate(2);
+			transform: scale(1.15);
+		}
+	}
+
+	@keyframes evolutionBg {
+		0% {
+			opacity: 0.8;
+			transform: scale(1);
+		}
+		100% {
+			opacity: 1;
+			transform: scale(1.05);
+		}
+	}
+
+	/* Celebration animation styles */
+	.celebration-glow {
+		filter: brightness(1.3) saturate(1.4);
+		text-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+		animation: celebrationGlow 0.8s ease-in-out infinite alternate;
+	}
+
+	.celebration-popup {
+		animation: celebrationPopup 0.6s ease-out;
+	}
+
+	@keyframes celebrationGlow {
+		0% {
+			filter: brightness(1.2) saturate(1.2);
+			transform: scale(1.02);
+		}
+		100% {
+			filter: brightness(1.5) saturate(1.6);
+			transform: scale(1.08);
+		}
+	}
+
+	@keyframes celebrationPopup {
+		0% {
+			opacity: 0;
+			transform: scale(0.8) translateY(10px);
+		}
+		50% {
+			transform: scale(1.1) translateY(-5px);
+		}
+		100% {
+			opacity: 1;
+			transform: scale(1) translateY(0);
+		}
+	}
+
+	/* Evolution form specific enhancements */
+	.form-egg {
+		filter: brightness(0.9);
+	}
+
+	.form-baby {
+		filter: brightness(1);
+	}
+
+	.form-child {
+		filter: brightness(1.1) saturate(1.1);
+	}
+
+	.form-teen {
+		filter: brightness(1.2) saturate(1.2);
+	}
+
+	.form-adult {
+		filter: brightness(1.3) saturate(1.3) contrast(1.1);
+		text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 	}
 </style>

@@ -433,7 +433,7 @@ export class PetStateService implements IPetStateService {
 	/**
 	 * Get next celebration from queue
 	 */
-	async getNextCelebration(): Promise<any> {
+	async getNextCelebration(): Promise<unknown> {
 		if (!this.currentPet) {
 			await this.loadPetState();
 		}

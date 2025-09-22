@@ -5,12 +5,8 @@
  * Includes validation rules and state management logic.
  */
 
-import type {
-	PetState,
-	EvolutionForm,
-	EmotionalState,
-	CelebrationEvent
-} from '$lib/types/index.js';
+import { EvolutionForm, EmotionalState } from '$lib/types/index.js';
+import type { PetState, CelebrationEvent } from '$lib/types/index.js';
 
 export const EVOLUTION_THRESHOLDS = {
 	[1]: { wordsRequired: 100, name: 'EGG' }, // EGG -> BABY
@@ -32,7 +28,7 @@ export const DEFAULT_PET_STATE: Omit<PetState, 'id'> = {
 	name: 'Typingotchi',
 	evolutionForm: 1, // EvolutionForm.EGG
 	happinessLevel: 50,
-	emotionalState: 'content',
+	emotionalState: EmotionalState.CONTENT,
 	accessories: [],
 	totalWordsEaten: 0,
 	accuracyAverage: 0,
@@ -125,16 +121,16 @@ export class PetStateModel {
 
 		// Validate emotional state
 		const validEmotionalStates: EmotionalState[] = [
-			'happy',
-			'content',
-			'hungry',
-			'sad',
-			'excited',
-			'eating'
+			EmotionalState.HAPPY,
+			EmotionalState.CONTENT,
+			EmotionalState.HUNGRY,
+			EmotionalState.SAD,
+			EmotionalState.EXCITED,
+			EmotionalState.EATING
 		];
 		const emotionalState = validEmotionalStates.includes(state.emotionalState)
 			? state.emotionalState
-			: 'content';
+			: EmotionalState.CONTENT;
 
 		return {
 			id: state.id,
@@ -222,18 +218,17 @@ export class PetStateModel {
 	private calculateEmotionalState(): EmotionalState {
 		const happiness = this._state.happinessLevel;
 
-		if (happiness >= HAPPINESS_THRESHOLDS.EXCITED) return 'excited';
-		if (happiness >= HAPPINESS_THRESHOLDS.HAPPY) return 'happy';
-		if (happiness >= HAPPINESS_THRESHOLDS.CONTENT) return 'content';
-		if (happiness >= HAPPINESS_THRESHOLDS.HUNGRY) return 'hungry';
-		return 'sad';
+		if (happiness >= HAPPINESS_THRESHOLDS.EXCITED) return EmotionalState.EXCITED;
+		if (happiness >= HAPPINESS_THRESHOLDS.HAPPY) return EmotionalState.HAPPY;
+		if (happiness >= HAPPINESS_THRESHOLDS.CONTENT) return EmotionalState.CONTENT;
+		if (happiness >= HAPPINESS_THRESHOLDS.HUNGRY) return EmotionalState.HUNGRY;
+		return EmotionalState.SAD;
 	}
 
 	/**
 	 * Trigger temporary emotional state (for animations)
 	 */
 	triggerTemporaryEmotionalState(state: EmotionalState, duration: number = 2000): void {
-		const originalState = this._state.emotionalState;
 		this._state.emotionalState = state;
 
 		// Revert to calculated state after duration
@@ -266,14 +261,13 @@ export class PetStateModel {
 		const currentForm = this._state.evolutionForm;
 		const currentThreshold = EVOLUTION_THRESHOLDS[currentForm];
 		const nextForm = (currentForm + 1) as EvolutionForm;
-		const nextThreshold = EVOLUTION_THRESHOLDS[nextForm];
 
 		const canEvolve = this.checkEvolutionTrigger();
 		const wordsToGo = Math.max(0, currentThreshold.wordsRequired - this._state.totalWordsEaten);
 
 		// Calculate progress percentage for current evolution stage
 		const previousThreshold =
-			currentForm > 1 ? EVOLUTION_THRESHOLDS[currentForm - 1].wordsRequired : 0;
+			currentForm > 1 ? EVOLUTION_THRESHOLDS[(currentForm - 1) as EvolutionForm].wordsRequired : 0;
 		const progressRange = currentThreshold.wordsRequired - previousThreshold;
 		const currentProgress = this._state.totalWordsEaten - previousThreshold;
 		const progressPercentage = Math.min(100, Math.max(0, (currentProgress / progressRange) * 100));
@@ -307,9 +301,11 @@ export class PetStateModel {
 		this.queueCelebration({
 			type: 'evolution',
 			title: `Evolution Complete!`,
+			message: `Your Typingotchi has evolved to ${EVOLUTION_THRESHOLDS[newForm].name} form!`,
 			animation: 'glow',
 			duration: 3000,
 			soundEffect: 'evolution-fanfare',
+			priority: 'high',
 			autoTrigger: true
 		});
 
@@ -405,9 +401,11 @@ export class PetStateModel {
 			this.queueCelebration({
 				type: 'streak',
 				title: `${days} Day Streak!`,
+				message: `Amazing! You've maintained a ${days} day typing streak!`,
 				animation: 'bounce',
 				duration: 2000,
 				soundEffect: 'streak-celebration',
+				priority: 'high',
 				autoTrigger: true
 			});
 		}
@@ -423,17 +421,19 @@ export class PetStateModel {
 	/**
 	 * Create instance from persisted data
 	 */
-	static fromJSON(data: any): PetStateModel {
+	static fromJSON(data: unknown): PetStateModel {
 		if (!data || typeof data !== 'object') {
 			throw new Error('Invalid pet state data');
 		}
 
+		const dataObj = data as Record<string, unknown>;
+
 		// Convert date strings back to Date objects if needed
-		if (data.lastFeedTime && typeof data.lastFeedTime === 'string') {
-			data.lastFeedTime = new Date(data.lastFeedTime);
+		if (dataObj.lastFeedTime && typeof dataObj.lastFeedTime === 'string') {
+			dataObj.lastFeedTime = new Date(dataObj.lastFeedTime);
 		}
 
-		return new PetStateModel(data);
+		return new PetStateModel(dataObj as unknown as PetState);
 	}
 
 	/**

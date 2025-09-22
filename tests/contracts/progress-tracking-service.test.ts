@@ -7,7 +7,6 @@ import type {
 	TypingTrends,
 	KeyAnalysis,
 	ImprovementArea,
-	Milestone,
 	TimeRange,
 	ProgressReport,
 	ParentSummary
@@ -426,7 +425,7 @@ describe('ProgressTrackingService Contract Tests', () => {
 
 			vi.mocked(progressService.getTypingTrends).mockResolvedValue(mockTrends);
 
-			const result = await progressService.getTypingTrends(180);
+			await progressService.getTypingTrends(180);
 
 			expect(progressService.getTypingTrends).toHaveBeenCalledWith(180);
 		});

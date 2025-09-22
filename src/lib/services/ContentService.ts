@@ -27,8 +27,6 @@ export class ContentService implements IContentService {
 	 * Load daily content with optional source filtering
 	 */
 	async loadDailyContent(source?: ContentSource): Promise<ContentItem[]> {
-		const startTime = performance.now();
-
 		try {
 			// Check cache first for performance
 			const cacheKey = source ? `daily-${source}` : 'daily-all';
@@ -119,7 +117,7 @@ export class ContentService implements IContentService {
 		const allContent = await this.loadDailyContent(criteria.source);
 
 		// Filter based on criteria
-		let filteredContent = allContent.filter((item) => {
+		const filteredContent = allContent.filter((item) => {
 			// Source filter
 			if (criteria.source && item.source !== criteria.source) return false;
 
@@ -255,9 +253,9 @@ export class ContentService implements IContentService {
 	/**
 	 * Load content from static JSON files
 	 */
-	private async loadFromStaticFiles(source?: ContentSource): Promise<any[]> {
+	private async loadFromStaticFiles(source?: ContentSource): Promise<unknown[]> {
 		const sources = source ? [source] : ['pokemon', 'nintendo', 'roblox'];
-		const allContent: any[] = [];
+		const allContent: unknown[] = [];
 
 		for (const src of sources) {
 			try {
@@ -309,7 +307,7 @@ export class ContentService implements IContentService {
 			}
 
 			return cachedContent;
-		} catch (error) {
+		} catch {
 			console.warn('Failed to get fallback content from cache');
 
 			// Return minimal hardcoded fallback

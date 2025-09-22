@@ -5,13 +5,8 @@
  * filtering, difficulty assessment, and content categorization logic.
  */
 
-import type {
-	ContentItem,
-	ContentSource,
-	DifficultyLevel,
-	ThemeCategory,
-	ContentCriteria
-} from '$lib/types/index.js';
+import { ContentSource, DifficultyLevel, ThemeCategory } from '$lib/types/index.js';
+import type { ContentItem, ContentCriteria } from '$lib/types/index.js';
 
 export const CONTENT_SETTINGS = {
 	maxContentAge: 90, // Days before content is considered stale
@@ -241,22 +236,31 @@ export class ContentItemModel {
 	 * Validate content source
 	 */
 	private validateSource(source?: ContentSource): ContentSource {
-		const validSources: ContentSource[] = ['pokemon', 'nintendo', 'roblox'];
+		const validSources: ContentSource[] = [
+			ContentSource.POKEMON,
+			ContentSource.NINTENDO,
+			ContentSource.ROBLOX
+		];
 		if (source && validSources.includes(source)) {
 			return source;
 		}
-		return 'pokemon'; // Default fallback
+		return ContentSource.POKEMON; // Default fallback
 	}
 
 	/**
 	 * Validate theme category
 	 */
 	private validateTheme(theme?: ThemeCategory): ThemeCategory {
-		const validThemes: ThemeCategory[] = ['news', 'characters', 'games', 'events'];
+		const validThemes: ThemeCategory[] = [
+			ThemeCategory.NEWS,
+			ThemeCategory.CHARACTERS,
+			ThemeCategory.GAMES,
+			ThemeCategory.EVENTS
+		];
 		if (theme && validThemes.includes(theme)) {
 			return theme;
 		}
-		return 'news'; // Default fallback
+		return ThemeCategory.NEWS; // Default fallback
 	}
 
 	/**
@@ -269,11 +273,11 @@ export class ContentItemModel {
 		let difficulty: DifficultyLevel;
 
 		if (wordCount <= DIFFICULTY_WORD_RANGES.beginner.max && complexityScore < 0.3) {
-			difficulty = 'beginner';
+			difficulty = DifficultyLevel.BEGINNER;
 		} else if (wordCount <= DIFFICULTY_WORD_RANGES.intermediate.max && complexityScore < 0.7) {
-			difficulty = 'intermediate';
+			difficulty = DifficultyLevel.INTERMEDIATE;
 		} else {
-			difficulty = 'advanced';
+			difficulty = DifficultyLevel.ADVANCED;
 		}
 
 		return difficulty;
@@ -591,17 +595,19 @@ export class ContentItemModel {
 	/**
 	 * Create instance from persisted data
 	 */
-	static fromJSON(data: any): ContentItemModel {
+	static fromJSON(data: unknown): ContentItemModel {
 		if (!data || typeof data !== 'object') {
 			throw new Error('Invalid content item data');
 		}
 
+		const dataObj = data as Record<string, unknown>;
+
 		// Convert date strings back to Date objects if needed
-		if (data.dateAdded && typeof data.dateAdded === 'string') {
-			data.dateAdded = new Date(data.dateAdded);
+		if (dataObj.dateAdded && typeof dataObj.dateAdded === 'string') {
+			dataObj.dateAdded = new Date(dataObj.dateAdded);
 		}
 
-		return new ContentItemModel(data);
+		return new ContentItemModel(dataObj as unknown as ContentItem);
 	}
 
 	/**
@@ -647,17 +653,30 @@ export class ContentItemModel {
 			errors.push('Content must be age appropriate');
 		}
 
-		const validSources: ContentSource[] = ['pokemon', 'nintendo', 'roblox'];
+		const validSources: ContentSource[] = [
+			ContentSource.POKEMON,
+			ContentSource.NINTENDO,
+			ContentSource.ROBLOX
+		];
 		if (!validSources.includes(this._content.source)) {
 			errors.push('Content source must be pokemon, nintendo, or roblox');
 		}
 
-		const validDifficulties: DifficultyLevel[] = ['beginner', 'intermediate', 'advanced'];
+		const validDifficulties: DifficultyLevel[] = [
+			DifficultyLevel.BEGINNER,
+			DifficultyLevel.INTERMEDIATE,
+			DifficultyLevel.ADVANCED
+		];
 		if (!validDifficulties.includes(this._content.difficulty)) {
 			errors.push('Content difficulty must be beginner, intermediate, or advanced');
 		}
 
-		const validThemes: ThemeCategory[] = ['news', 'characters', 'games', 'events'];
+		const validThemes: ThemeCategory[] = [
+			ThemeCategory.NEWS,
+			ThemeCategory.CHARACTERS,
+			ThemeCategory.GAMES,
+			ThemeCategory.EVENTS
+		];
 		if (!validThemes.includes(this._content.theme)) {
 			errors.push('Content theme must be news, characters, games, or events');
 		}

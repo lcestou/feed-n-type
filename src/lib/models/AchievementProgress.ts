@@ -432,9 +432,11 @@ export class AchievementProgressModel {
 		this.queueCelebration({
 			type: 'milestone',
 			title: `Achievement Unlocked: ${achievement.title}!`,
+			message: `You've unlocked the ${achievement.title} achievement! +${achievement.points} points`,
 			animation: 'bounce',
 			duration: 3000,
 			soundEffect: 'achievement-unlock',
+			priority: 'high',
 			autoTrigger: true
 		});
 
@@ -476,9 +478,11 @@ export class AchievementProgressModel {
 		this.queueCelebration({
 			type: 'accessory',
 			title: `New Accessory: ${accessory.name}!`,
+			message: `Your Typingotchi can now wear the ${accessory.name}!`,
 			animation: 'glow',
 			duration: 2500,
 			soundEffect: 'accessory-unlock',
+			priority: 'medium',
 			autoTrigger: true
 		});
 
@@ -568,7 +572,10 @@ export class AchievementProgressModel {
 	/**
 	 * Update personal best record
 	 */
-	updatePersonalBest(category: string, value: number): boolean {
+	updatePersonalBest(
+		category: 'wpm' | 'accuracy' | 'streak' | 'session_time' | 'words_total',
+		value: number
+	): boolean {
 		const existingBest = this._progress.personalBests.find((pb) => pb.category === category);
 
 		if (existingBest) {
@@ -597,9 +604,11 @@ export class AchievementProgressModel {
 			this.queueCelebration({
 				type: 'personal_best',
 				title: `New Personal Best: ${category}!`,
+				message: `Amazing improvement! You've beaten your previous best by ${existingBest.improvementPercentage.toFixed(1)}%`,
 				animation: 'spin',
 				duration: 2000,
 				soundEffect: 'personal-best',
+				priority: 'medium',
 				autoTrigger: true
 			});
 		}
@@ -657,9 +666,11 @@ export class AchievementProgressModel {
 			this.queueCelebration({
 				type: 'milestone',
 				title: `Weekly Goal Complete: ${goal.title}!`,
+				message: `Congratulations! You've completed your weekly goal: ${goal.description}`,
 				animation: 'bounce',
 				duration: 2500,
 				soundEffect: 'goal-complete',
+				priority: 'high',
 				autoTrigger: true
 			});
 		}
@@ -734,13 +745,15 @@ export class AchievementProgressModel {
 	/**
 	 * Create instance from persisted data
 	 */
-	static fromJSON(data: any): AchievementProgressModel {
+	static fromJSON(data: unknown): AchievementProgressModel {
 		if (!data || typeof data !== 'object') {
 			throw new Error('Invalid achievement progress data');
 		}
 
+		const dataObj = data as Record<string, unknown>;
+
 		// Convert date strings back to Date objects
-		const convertDates = (items: any[]) => {
+		const convertDates = (items: Record<string, unknown>[]) => {
 			items.forEach((item) => {
 				if (item.dateEarned && typeof item.dateEarned === 'string') {
 					item.dateEarned = new Date(item.dateEarned);
@@ -757,12 +770,20 @@ export class AchievementProgressModel {
 			});
 		};
 
-		if (data.milestonesReached) convertDates(data.milestonesReached);
-		if (data.unlockedAccessories) convertDates(data.unlockedAccessories);
-		if (data.personalBests) convertDates(data.personalBests);
-		if (data.weeklyGoals) convertDates(data.weeklyGoals);
+		if (dataObj.milestonesReached && Array.isArray(dataObj.milestonesReached)) {
+			convertDates(dataObj.milestonesReached as Record<string, unknown>[]);
+		}
+		if (dataObj.unlockedAccessories && Array.isArray(dataObj.unlockedAccessories)) {
+			convertDates(dataObj.unlockedAccessories as Record<string, unknown>[]);
+		}
+		if (dataObj.personalBests && Array.isArray(dataObj.personalBests)) {
+			convertDates(dataObj.personalBests as Record<string, unknown>[]);
+		}
+		if (dataObj.weeklyGoals && Array.isArray(dataObj.weeklyGoals)) {
+			convertDates(dataObj.weeklyGoals as Record<string, unknown>[]);
+		}
 
-		return new AchievementProgressModel(data);
+		return new AchievementProgressModel(dataObj as unknown as AchievementProgress);
 	}
 
 	/**

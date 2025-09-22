@@ -2,10 +2,34 @@
 	import TypingArea from '$lib/components/TypingArea.svelte';
 	import VirtualKeyboard from '$lib/components/VirtualKeyboard.svelte';
 	import Typingotchi from '$lib/components/Typingotchi.svelte';
+	import { ContentService } from '$lib/services/ContentService.js';
+	import { PetStateService } from '$lib/services/PetStateService.js';
+	import { ProgressTrackingService } from '$lib/services/ProgressTrackingService.js';
+	import { AchievementService } from '$lib/services/AchievementService.js';
+	import { EvolutionForm, EmotionalState } from '$lib/types/index.js';
+	import type { CelebrationEvent, KeyAnalysis, ContentItem, SessionId } from '$lib/types/index.js';
+	import { ContentSource, DifficultyLevel } from '$lib/types/index.js';
 
-	/** Sample pangram text for comprehensive typing practice covering all alphabet letters */
-	let practiceText =
-		"The quick brown fox jumps over the lazy dog. This pangram contains every letter of the alphabet at least once. It's perfect for typing practice because it helps you work on all the keys on your keyboard.";
+	/** Dynamic practice text loaded from ContentService */
+	let practiceText = $state('Loading practice content...');
+
+	/** Current content item being practiced */
+	let currentContent = $state<ContentItem | null>(null);
+
+	/** ContentService instance for loading practice content */
+	const contentService = new ContentService();
+
+	/** PetStateService instance for managing pet state and feeding */
+	const petStateService = new PetStateService();
+
+	/** ProgressTrackingService instance for session tracking and metrics */
+	const progressTrackingService = new ProgressTrackingService();
+
+	/** AchievementService instance for milestone detection and celebrations */
+	const achievementService = new AchievementService();
+
+	/** Current session ID for progress tracking */
+	let currentSessionId = $state<SessionId | null>(null);
 
 	// Enhanced typing state with error tracking and performance metrics
 
@@ -53,6 +77,61 @@
 
 	/** Dynamic offset for centering Typingotchi based on stats box width */
 	let typingotchiOffset = $state(0);
+
+	/** Content loading state */
+	let isLoadingContent = $state(false);
+
+	// Gamification state
+	/** Current streak count (consecutive days of practice) */
+	let currentStreak = $state(3); // Demo value
+
+	/** Total words eaten by the pet */
+	let totalWordsEaten = $state(25); // Demo value
+
+	/** Current evolution form of the pet */
+	let evolutionForm = $state<EvolutionForm>(2); // Baby form for demo
+
+	/** Current emotional state of the pet */
+	let emotionalState = $state<EmotionalState>('content');
+
+	/** Queue of celebrations to display */
+	let celebrationQueue = $state<CelebrationEvent[]>([]);
+
+	/** Show evolution animation flag */
+	let showEvolutionAnimation = $state(false);
+
+	/** Achievement celebration overlay state */
+	let showAchievementCelebration = $state(false);
+	let currentAchievement = $state<string | null>(null);
+
+	/** Challenging keys for keyboard highlighting */
+	let challengingKeys = $state<KeyAnalysis[]>([
+		{
+			key: 'q',
+			errorRate: 0.25,
+			attempts: 20,
+			improvementTrend: 'improving',
+			practiceRecommendation: 'Focus on Q key placement'
+		},
+		{
+			key: 'x',
+			errorRate: 0.35,
+			attempts: 15,
+			improvementTrend: 'declining',
+			practiceRecommendation: 'Practice X key with ring finger'
+		},
+		{
+			key: 'z',
+			errorRate: 0.15,
+			attempts: 30,
+			improvementTrend: 'stable',
+			practiceRecommendation: 'Good progress on Z key'
+		}
+	]);
+
+	/** Session tracking for progress integration */
+	let sessionActive = $state(false);
+	let sessionProgress = $state({ wpm: 0, accuracy: 100 });
 
 	/** Derived next expected key for keyboard highlighting */
 	let nextExpectedKey = $derived(() => {
@@ -164,6 +243,105 @@
 		};
 	});
 
+	/**
+	 * Load initial practice content when component mounts
+	 */
+	$effect(() => {
+		loadNewContent();
+	});
+
+	/**
+	 * Load initial pet state when component mounts
+	 */
+	$effect(() => {
+		loadPetState();
+	});
+
+	/**
+	 * Load pet state from PetStateService
+	 */
+	async function loadPetState() {
+		try {
+			const petState = await petStateService.loadPetState();
+
+			// Update local state with loaded pet data
+			evolutionForm = petState.evolutionForm;
+			emotionalState = petState.emotionalState;
+			totalWordsEaten = petState.totalWordsEaten;
+			currentStreak = petState.streakDays;
+
+			// Load any pending celebrations
+			const celebration = await petStateService.getNextCelebration();
+			if (celebration) {
+				celebrationQueue = [celebration];
+			}
+		} catch (error) {
+			console.error('Failed to load pet state:', error);
+			// Use default values already set in state
+		}
+	}
+
+	/**
+	 * Load new practice content from ContentService
+	 */
+	async function loadNewContent() {
+		if (isLoadingContent) return;
+
+		isLoadingContent = true;
+
+		try {
+			// Get random content appropriate for the user's level
+			const content = await contentService.getRandomContent({
+				difficulty: DifficultyLevel.BEGINNER, // TODO: Base this on user progress
+				maxWords: 50, // Keep sessions manageable for kids
+				excludeUsed: true
+			});
+
+			currentContent = content;
+			practiceText = content.text;
+
+			// Reset typing state for new content
+			resetExercise();
+		} catch (error) {
+			console.error('Failed to load new content:', error);
+
+			// Fallback to default text if content loading fails
+			practiceText =
+				'The quick brown fox jumps over the lazy dog. This pangram contains every letter of the alphabet at least once.';
+			currentContent = null;
+		} finally {
+			isLoadingContent = false;
+		}
+	}
+
+	/**
+	 * Load content from specific source (Pokemon, Nintendo, Roblox)
+	 */
+	async function loadContentFromSource(source: ContentSource) {
+		if (isLoadingContent) return;
+
+		isLoadingContent = true;
+
+		try {
+			const content = await contentService.getRandomContent({
+				source,
+				difficulty: DifficultyLevel.BEGINNER, // TODO: Base this on user progress
+				maxWords: 50,
+				excludeUsed: true
+			});
+
+			currentContent = content;
+			practiceText = content.text;
+
+			// Reset typing state for new content
+			resetExercise();
+		} catch (error) {
+			console.error(`Failed to load ${source} content:`, error);
+		} finally {
+			isLoadingContent = false;
+		}
+	}
+
 	/** Derived state indicating if user is actively typing */
 	let isTyping = $derived(userInput.length > 0 && currentPosition < practiceText.length);
 
@@ -203,6 +381,227 @@
 	});
 
 	/**
+	 * Start a typing session with progress tracking
+	 */
+	async function startSession() {
+		try {
+			// Start session with ProgressTrackingService
+			const contentId = currentContent?.id || 'default-content';
+			currentSessionId = await progressTrackingService.startSession(contentId);
+
+			sessionActive = true;
+			sessionProgress = { wpm: 0, accuracy: 100 };
+		} catch (error) {
+			console.error('Failed to start progress tracking session:', error);
+			// Fall back to basic session tracking
+			sessionActive = true;
+			sessionProgress = { wpm: 0, accuracy: 100 };
+		}
+	}
+
+	/**
+	 * End typing session and check for achievements
+	 */
+	async function endSession() {
+		try {
+			// End session with ProgressTrackingService
+			if (currentSessionId) {
+				const sessionSummary = await progressTrackingService.endSession();
+
+				// Update local session progress with final summary
+				sessionProgress = {
+					wpm: sessionSummary.wordsPerMinute,
+					accuracy: sessionSummary.accuracyPercentage
+				};
+
+				// Check for achievements and milestones with AchievementService
+				try {
+					const newAchievements = await achievementService.checkAchievements(sessionSummary);
+					if (newAchievements.length > 0) {
+						console.log('New achievements unlocked:', newAchievements);
+						// Queue celebrations for new achievements
+						for (const achievement of newAchievements) {
+							await achievementService.queueCelebration({
+								type: 'milestone',
+								title: `Achievement Unlocked: ${achievement.title}!`,
+								message: achievement.description,
+								animation: 'bounce',
+								duration: 3000,
+								soundEffect: 'achievement-unlock',
+								priority: 'high',
+								autoTrigger: true
+							});
+						}
+					}
+				} catch (achievementError) {
+					console.error('Failed to check achievements:', achievementError);
+				}
+
+				currentSessionId = null;
+			}
+
+			sessionActive = false;
+			checkForAchievements();
+		} catch (error) {
+			console.error('Failed to end progress tracking session:', error);
+			// Fall back to basic session ending
+			sessionActive = false;
+			checkForAchievements();
+		}
+	}
+
+	/**
+	 * Handle progress updates from TypingArea component
+	 */
+	function handleProgressUpdate(wpm: number, accuracy: number) {
+		sessionProgress = { wpm, accuracy };
+
+		// Update emotional state based on performance
+		if (accuracy >= 95) {
+			emotionalState = EmotionalState.HAPPY;
+		} else if (accuracy >= 80) {
+			emotionalState = EmotionalState.CONTENT;
+		} else if (accuracy >= 60) {
+			emotionalState = EmotionalState.HUNGRY;
+		} else {
+			emotionalState = EmotionalState.SAD;
+		}
+
+		// Check for real-time milestone achievements and personal bests
+		checkRealtimeMilestones(wpm, accuracy);
+	}
+
+	/**
+	 * Check for real-time milestone achievements during active typing
+	 */
+	async function checkRealtimeMilestones(wpm: number, accuracy: number) {
+		try {
+			// Check for personal best WPM achievements
+			const currentProgress = await achievementService.getProgress();
+
+			// WPM milestone achievements (every 5 WPM improvement)
+			const wpmMilestones = [10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100];
+			for (const milestone of wpmMilestones) {
+				if (wpm >= milestone && currentProgress.personalBestWPM < milestone) {
+					await achievementService.queueCelebration({
+						type: 'milestone',
+						title: `${milestone} WPM Milestone!`,
+						message: `You're typing at ${milestone} words per minute!`,
+						animation: 'glow',
+						duration: 2000,
+						soundEffect: 'milestone-achieved',
+						priority: 'medium',
+						autoTrigger: true
+					});
+				}
+			}
+
+			// Accuracy milestone achievements (95%, 98%, 99%, 100%)
+			const accuracyMilestones = [95, 98, 99, 100];
+			for (const milestone of accuracyMilestones) {
+				if (accuracy >= milestone && currentProgress.personalBestAccuracy < milestone) {
+					await achievementService.queueCelebration({
+						type: 'milestone',
+						title: `${milestone}% Accuracy!`,
+						message: `Perfect typing performance!`,
+						animation: 'sparkle',
+						duration: 2000,
+						soundEffect: 'accuracy-perfect',
+						priority: 'medium',
+						autoTrigger: true
+					});
+				}
+			}
+
+			// Perfect streak achievements (during session)
+			if (accuracy === 100 && wpm >= 20) {
+				await achievementService.queueCelebration({
+					type: 'milestone',
+					title: 'Perfect Performance!',
+					message: 'Amazing typing with 100% accuracy!',
+					animation: 'rainbow',
+					duration: 1500,
+					soundEffect: 'perfect-streak',
+					priority: 'medium',
+					autoTrigger: true
+				});
+			}
+		} catch (error) {
+			console.error('Failed to check real-time milestones:', error);
+		}
+	}
+
+	/**
+	 * Check for achievements and trigger celebrations
+	 */
+	async function checkForAchievements() {
+		try {
+			// Check for pending celebrations from AchievementService
+			const nextCelebration = await achievementService.getNextCelebration();
+			if (nextCelebration) {
+				// Show the celebration
+				currentAchievement = nextCelebration;
+				showAchievementCelebration = true;
+
+				// Mark celebration as shown
+				setTimeout(async () => {
+					await achievementService.markCelebrationShown(nextCelebration.id);
+					// Check for more celebrations
+					checkForAchievements();
+				}, nextCelebration.duration);
+			}
+
+			// Check for evolution milestones (legacy logic)
+			if (totalWordsEaten >= 100 && evolutionForm === 2) {
+				triggerEvolution();
+			}
+		} catch (error) {
+			console.error('Failed to check for achievements:', error);
+		}
+	}
+
+	/**
+	 * Trigger pet evolution
+	 */
+	function triggerEvolution() {
+		showEvolutionAnimation = true;
+
+		// Complete evolution after animation
+		setTimeout(() => {
+			evolutionForm = Math.min(5, evolutionForm + 1) as EvolutionForm;
+			showEvolutionAnimation = false;
+		}, 2500);
+	}
+
+	/**
+	 * Handle evolution completion callback
+	 */
+	function handleEvolutionComplete() {
+		showEvolutionAnimation = false;
+		emotionalState = EmotionalState.EXCITED;
+
+		// Reset emotional state after celebration
+		setTimeout(() => {
+			emotionalState = EmotionalState.CONTENT;
+		}, 3000);
+	}
+
+	/**
+	 * Handle celebration completion callback
+	 */
+	async function handleCelebrationComplete(eventId: string) {
+		// Remove from local queue
+		celebrationQueue = celebrationQueue.filter((event) => event.id !== eventId);
+
+		// Remove from PetStateService queue
+		try {
+			await petStateService.removeCelebration(eventId);
+		} catch (error) {
+			console.error('Failed to remove celebration from service:', error);
+		}
+	}
+
+	/**
 	 * Handles key press events from both virtual and physical keyboards.
 	 * Processes special keys (Backspace, Enter, Tab, Shift) and regular characters.
 	 * Manages typing state, position tracking, and exercise completion.
@@ -234,26 +633,34 @@
 			return;
 		}
 
-		// Start timer on first keystroke
+		// Start timer and session on first keystroke
 		if (startTime === null) {
 			startTime = Date.now();
+			startSession();
 		}
 
 		// Check if character is correct and add to input or send poop emoji
 		if (currentPosition < practiceText.length) {
 			const expectedChar = practiceText[currentPosition];
+			const isCorrect = key === expectedChar;
 
-			if (key === expectedChar) {
+			// Record keypress for progress tracking
+			if (currentSessionId) {
+				progressTrackingService.recordKeypress(key, isCorrect);
+			}
+
+			if (isCorrect) {
 				// Correct character - add to input
 				userInput += key;
 				currentPosition++;
 
 				// Build current word for feeding system
 				if (key === ' ') {
-					// Word completed - add to falling words
+					// Word completed - add to falling words and feed pet
 					const trimmedWord = currentWord.trim();
 					if (trimmedWord.length > 0) {
 						addFallingWord(trimmedWord);
+						feedWordToPet(trimmedWord, true); // Correct word
 					}
 					currentWord = '';
 				} else {
@@ -263,6 +670,7 @@
 				// Wrong character - add poop emoji to playground and increment counter!
 				addFallingWord('💩');
 				poopCount++;
+				feedWordToPet('error', false); // Incorrect keystroke
 			}
 		}
 
@@ -276,13 +684,31 @@
 	 * Handles completion of the typing exercise.
 	 * Calculates final WPM, shows completion alert, and resets for next practice.
 	 */
-	function handleExerciseComplete() {
+	async function handleExerciseComplete() {
 		const endTime = Date.now();
 		const timeMinutes = (endTime - (startTime || endTime)) / 1000 / 60;
 		const wordsTyped = practiceText.split(' ').length;
 		const wpm = Math.round(wordsTyped / timeMinutes);
 
-		alert(`Exercise complete! Your typing speed: ${wpm} WPM`);
+		// Calculate session accuracy
+		const accuracy = sessionProgress.accuracy;
+
+		// End session and trigger achievement checks
+		endSession();
+
+		// Update pet state with session results
+		try {
+			await petStateService.updateAccuracy(accuracy);
+			// Note: Streak updates would typically happen daily, not per session
+		} catch (error) {
+			console.error('Failed to update pet state after session:', error);
+		}
+
+		// Update total words eaten count
+		totalWordsEaten += wordsTyped;
+
+		// Show completion message
+		alert(`Exercise complete! Your typing speed: ${wpm} WPM, Accuracy: ${accuracy}%`);
 
 		// Reset for next practice
 		resetExercise();
@@ -301,6 +727,60 @@
 		currentWpm = 0;
 		fallingWords = [];
 		currentWord = '';
+
+		// Reset session state
+		sessionActive = false;
+		sessionProgress = { wpm: 0, accuracy: 100 };
+
+		// Reset emotional state to content
+		emotionalState = EmotionalState.CONTENT;
+	}
+
+	/**
+	 * Reset exercise and load new content
+	 */
+	function resetAndLoadNewContent() {
+		resetExercise();
+		loadNewContent();
+	}
+
+	/**
+	 * Feed word to pet using PetStateService
+	 */
+	async function feedWordToPet(word: string, isCorrect: boolean) {
+		try {
+			const feedingResult = await petStateService.feedWord(word, isCorrect);
+
+			// Update local state based on feeding result
+			if (feedingResult.happinessChange !== 0) {
+				// Happiness changed, emotional state might have changed too
+				emotionalState = feedingResult.newEmotionalState;
+			}
+
+			// Check for evolution
+			if (feedingResult.evolutionTriggered) {
+				const evolutionResult = await petStateService.checkEvolutionTrigger();
+				if (evolutionResult.canEvolve) {
+					showEvolutionAnimation = true;
+					evolutionForm = await petStateService.evolveToNextForm();
+				}
+			}
+
+			// Check for celebrations
+			if (feedingResult.celebrationQueued) {
+				const celebration = await petStateService.getNextCelebration();
+				if (celebration) {
+					celebrationQueue = [...celebrationQueue, celebration];
+				}
+			}
+
+			// Update word count
+			if (isCorrect) {
+				totalWordsEaten++;
+			}
+		} catch (error) {
+			console.error('Failed to feed word to pet:', error);
+		}
 	}
 
 	/**
@@ -495,12 +975,41 @@
 							</svg>
 						</button>
 					</nav>
+					<!-- Content Source Selection -->
+					<div class="flex items-center space-x-2">
+						<button
+							onclick={() => loadContentFromSource(ContentSource.POKEMON)}
+							class="rounded-lg bg-yellow-400 px-2 py-1 text-xs font-medium text-yellow-900 transition-colors hover:bg-yellow-300"
+							disabled={isLoadingContent}
+							aria-label="Load Pokemon content"
+						>
+							⚡
+						</button>
+						<button
+							onclick={() => loadContentFromSource(ContentSource.NINTENDO)}
+							class="rounded-lg bg-red-400 px-2 py-1 text-xs font-medium text-red-900 transition-colors hover:bg-red-300"
+							disabled={isLoadingContent}
+							aria-label="Load Nintendo content"
+						>
+							🍄
+						</button>
+						<button
+							onclick={() => loadContentFromSource(ContentSource.ROBLOX)}
+							class="rounded-lg bg-blue-400 px-2 py-1 text-xs font-medium text-blue-900 transition-colors hover:bg-blue-300"
+							disabled={isLoadingContent}
+							aria-label="Load Roblox content"
+						>
+							🎮
+						</button>
+					</div>
+
 					<button
-						id="reset-exercise-button"
-						onclick={resetExercise}
+						id="new-content-button"
+						onclick={resetAndLoadNewContent}
 						class="flex items-center space-x-2 rounded-lg bg-[#b5b6e4] px-3 py-2 text-[#4f43ae] transition-colors hover:bg-white"
 						type="button"
-						data-testid="reset-exercise-button"
+						disabled={isLoadingContent}
+						data-testid="new-content-button"
 					>
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -510,7 +1019,7 @@
 								d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
 							/>
 						</svg>
-						<span class="text-sm">Reset</span>
+						<span class="text-sm">{isLoadingContent ? 'Loading...' : 'New Content'}</span>
 					</button>
 				</div>
 			</div>
@@ -524,6 +1033,43 @@
 			class="flex h-full flex-col gap-4"
 			data-testid="main-layout-container"
 		>
+			<!-- Content source indicator -->
+			{#if currentContent}
+				<div
+					class="flex items-center justify-between rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 p-3 shadow-sm"
+					data-testid="content-info"
+				>
+					<div class="flex items-center space-x-3">
+						<div
+							class="flex h-8 w-8 items-center justify-center rounded-full"
+							class:bg-yellow-200={currentContent.source === ContentSource.POKEMON}
+							class:bg-red-200={currentContent.source === ContentSource.NINTENDO}
+							class:bg-blue-200={currentContent.source === ContentSource.ROBLOX}
+						>
+							{#if currentContent.source === ContentSource.POKEMON}⚡
+							{:else if currentContent.source === ContentSource.NINTENDO}🍄
+							{:else if currentContent.source === ContentSource.ROBLOX}🎮
+							{/if}
+						</div>
+						<div>
+							<h2 class="text-sm font-semibold text-gray-800">{currentContent.title}</h2>
+							<p class="text-xs text-gray-600">
+								{currentContent.source.charAt(0).toUpperCase() + currentContent.source.slice(1)} •
+								{currentContent.difficulty} •
+								{currentContent.wordCount} words
+							</p>
+						</div>
+					</div>
+					<button
+						onclick={resetAndLoadNewContent}
+						class="rounded-md bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+						disabled={isLoadingContent}
+					>
+						{isLoadingContent ? 'Loading...' : 'Next'}
+					</button>
+				</div>
+			{/if}
+
 			<!-- Combined typing area with Typingotchi -->
 			<div
 				id="typing-area-section"
@@ -537,6 +1083,8 @@
 							text={practiceText}
 							{userInput}
 							{currentPosition}
+							{sessionActive}
+							onProgressUpdate={handleProgressUpdate}
 							data-component-id="typing-area"
 						/>
 					</div>
@@ -560,11 +1108,17 @@
 									{isTyping}
 									hasError={hasTypingError}
 									wpm={currentWpm}
-									streak={0}
-									fireLevel={0}
+									streak={currentStreak}
+									fireLevel={Math.min(5, Math.floor(currentWpm / 10))}
 									{poopCount}
 									{fallingWords}
 									onEatWord={removeWord}
+									{evolutionForm}
+									{emotionalState}
+									{celebrationQueue}
+									{showEvolutionAnimation}
+									onEvolutionComplete={handleEvolutionComplete}
+									onCelebrationComplete={handleCelebrationComplete}
 									data-component-id="typingotchi"
 								/>
 							</div>
@@ -623,10 +1177,76 @@
 						{capsLockOn}
 						onCapsLockToggle={() => (capsLockOn = !capsLockOn)}
 						nextKey={nextExpectedKey()}
+						{challengingKeys}
+						showChallengingKeys={true}
 						data-component-id="virtual-keyboard"
 					/>
 				</div>
 			</div>
 		</div>
 	</main>
+
+	<!-- Achievement Celebration Overlay -->
+	{#if showAchievementCelebration && currentAchievement}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="achievement-title"
+			data-testid="achievement-overlay"
+			tabindex="-1"
+			onclick={() => {
+				showAchievementCelebration = false;
+				currentAchievement = null;
+			}}
+			onkeydown={(e) => {
+				if (e.key === 'Escape') {
+					showAchievementCelebration = false;
+					currentAchievement = null;
+				}
+			}}
+		>
+			<div
+				class="relative mx-4 max-w-md rounded-xl bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 p-1 shadow-2xl"
+				role="document"
+			>
+				<div class="rounded-lg bg-white p-6 text-center">
+					<!-- Celebration Icon -->
+					<div class="mb-4 flex justify-center">
+						<div class="relative">
+							<div class="text-6xl">🎉</div>
+							<div class="absolute -top-2 -right-2 animate-bounce text-2xl">✨</div>
+							<div class="absolute -bottom-2 -left-2 animate-pulse text-2xl">🌟</div>
+						</div>
+					</div>
+
+					<!-- Achievement Title -->
+					<h2
+						id="achievement-title"
+						class="mb-3 text-2xl font-bold text-gray-900"
+						data-testid="achievement-title"
+					>
+						Achievement Unlocked!
+					</h2>
+
+					<!-- Achievement Message -->
+					<p class="mb-6 text-lg font-medium text-gray-700" data-testid="achievement-message">
+						{currentAchievement}
+					</p>
+
+					<!-- Close Button -->
+					<button
+						class="rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-3 font-semibold text-white transition-all hover:from-purple-700 hover:to-blue-700 hover:shadow-lg"
+						onclick={() => {
+							showAchievementCelebration = false;
+							currentAchievement = null;
+						}}
+						data-testid="achievement-close-button"
+					>
+						Awesome!
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>

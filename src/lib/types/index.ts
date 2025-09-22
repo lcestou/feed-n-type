@@ -66,7 +66,20 @@ export interface PetState {
 	celebrationQueue: CelebrationEvent[];
 }
 
-export interface Milestone {
+export enum Milestone {
+	FIRST_EVOLUTION = 'First Evolution',
+	WEEKLY_STREAK = 'Weekly Streak',
+	WORDS_FED_100 = '100 Words Fed',
+	WORDS_FED_500 = '500 Words Fed',
+	WORDS_FED_1000 = '1000 Words Fed',
+	ACCURACY_90_PERCENT = '90% Accuracy',
+	ACCURACY_95_PERCENT = '95% Accuracy',
+	WPM_30 = '30 WPM',
+	WPM_50 = '50 WPM',
+	WPM_70 = '70 WPM'
+}
+
+export interface MilestoneData {
 	type: 'wpm' | 'accuracy' | 'streak' | 'words';
 	value: number;
 	timestamp: Date;
@@ -86,7 +99,7 @@ export interface UserProgress {
 	difficultyLevel: string;
 	challengingKeys: string[];
 	improvementAreas: string[];
-	milestones: Milestone[];
+	milestones: MilestoneData[];
 }
 
 export interface StreakData {
@@ -123,13 +136,15 @@ export interface Accessory {
 	equipped: boolean;
 }
 
+export type AchievementRarity = 'common' | 'rare' | 'epic' | 'legendary';
+
 export interface Achievement {
 	id: string;
 	title: string;
 	description: string;
 	icon: string;
 	points: number;
-	rarity: 'common' | 'rare' | 'epic' | 'legendary';
+	rarity: AchievementRarity;
 	dateEarned: Date;
 }
 
@@ -302,7 +317,7 @@ export interface ProgressTrackingService {
 	getTypingTrends(days: number): Promise<TypingTrends>;
 	identifyChallengingKeys(): Promise<KeyAnalysis[]>;
 	getImprovementSuggestions(): Promise<ImprovementArea[]>;
-	trackMilestones(): Promise<Milestone[]>;
+	trackMilestones(): Promise<MilestoneData[]>;
 	generateProgressReport(timeRange: TimeRange): Promise<ProgressReport>;
 	getParentSummary(): Promise<ParentSummary>;
 }
@@ -317,7 +332,7 @@ export interface AchievementService {
 	unlockAccessory(accessoryId: string, reason: string): Promise<boolean>;
 	getAvailableAccessories(): Promise<Accessory[]>;
 	equipAccessory(accessoryId: string): Promise<void>;
-	checkMilestones(progress: UserProgress): Promise<Milestone[]>;
+	checkMilestones(progress: UserProgress): Promise<MilestoneData[]>;
 	getPersonalBests(): Promise<PersonalBest[]>;
 	updatePersonalBest(category: string, value: number): Promise<boolean>;
 }

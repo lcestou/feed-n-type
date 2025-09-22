@@ -4,7 +4,6 @@ import type {
 	Achievement,
 	UnlockResult,
 	CelebrationEvent,
-	Accessory,
 	Milestone,
 	PersonalBest,
 	SessionSummary,

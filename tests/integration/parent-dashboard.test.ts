@@ -1,13 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { EvolutionForm, EmotionalState } from '$lib/types/index.js';
 import type {
 	ParentSummary,
 	ProgressReport,
 	TimeRange,
-	Achievement,
 	PetState,
-	EvolutionForm,
-	EmotionalState,
-	StreakData,
 	SessionSummary,
 	TypingTrends,
 	ImprovementArea,
@@ -16,10 +13,24 @@ import type {
 } from '$lib/types/index.js';
 
 describe('Integration Test: Parent Dashboard Data Access', () => {
-	let mockProgressService: any;
-	let mockPetStateService: any;
-	let mockAchievementService: any;
-	let mockLocalStorage: any;
+	let mockProgressService: vi.Mocked<{
+		generateProgressReport: (timeRange: TimeRange) => Promise<ProgressReport>;
+		getParentSummary: () => Promise<ParentSummary>;
+		getTypingTrends: (days: number) => Promise<TypingTrends>;
+		identifyChallengingKeys: () => Promise<KeyAnalysis[]>;
+		getImprovementSuggestions: () => Promise<ImprovementArea[]>;
+	}>;
+	let mockPetStateService: vi.Mocked<{
+		loadPetState: () => Promise<PetState>;
+	}>;
+	let mockAchievementService: vi.Mocked<{
+		getUnlockedAchievements: () => Promise<unknown[]>;
+	}>;
+	let mockLocalStorage: vi.Mocked<{
+		getStreakData: () => Promise<unknown>;
+		getAppPreferences: () => Promise<unknown>;
+		getLastSession: () => Promise<SessionSummary | null>;
+	}>;
 
 	beforeEach(() => {
 		mockProgressService = {
@@ -174,9 +185,9 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 			expect(trends.improvementRate).toBe(8.5);
 
 			// Verify upward trends
-			const wpmValues = trends.wpmTrend.map((t) => t.value);
-			const accuracyValues = trends.accuracyTrend.map((t) => t.value);
-			const practiceValues = trends.practiceTimeTrend.map((t) => t.value);
+			const wpmValues = trends.wpmTrend.map((t: { value: number }) => t.value);
+			const accuracyValues = trends.accuracyTrend.map((t: { value: number }) => t.value);
+			const practiceValues = trends.practiceTimeTrend.map((t: { value: number }) => t.value);
 
 			expect(wpmValues[4]).toBeGreaterThan(wpmValues[0]);
 			expect(accuracyValues[4]).toBeGreaterThan(accuracyValues[0]);
@@ -230,7 +241,7 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 			const improvementAreas = await mockProgressService.getImprovementSuggestions();
 
 			expect(challengingKeys).toHaveLength(3);
-			expect(challengingKeys.every((key) => key.errorRate > 0.2)).toBe(true);
+			expect(challengingKeys.every((key: { errorRate: number }) => key.errorRate > 0.2)).toBe(true);
 			expect(challengingKeys[0].practiceRecommendation).toContain('q-u');
 			expect(challengingKeys[1].improvementTrend).toBe('declining');
 
@@ -247,16 +258,7 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 				evolutionForm: EvolutionForm.TEEN,
 				happinessLevel: 85,
 				emotionalState: EmotionalState.CONTENT,
-				accessories: [
-					{
-						id: 'graduation-hat',
-						name: 'Scholar Hat',
-						category: 'hat',
-						unlockCondition: 'Reach Teen evolution',
-						dateUnlocked: new Date('2025-01-20'),
-						equipped: true
-					}
-				],
+				accessories: ['graduation-hat'],
 				totalWordsEaten: 750,
 				accuracyAverage: 87,
 				lastFeedTime: new Date('2025-01-25T10:30:00'),
@@ -316,7 +318,9 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 			expect(achievements[0].title).toBe('Growing Up!');
 			expect(achievements[1].rarity).toBe('uncommon');
 			expect(achievements[2].points).toBe(125);
-			expect(achievements.every((a) => a.dateEarned >= new Date('2025-01-18'))).toBe(true);
+			expect(
+				achievements.every((a: { dateEarned: Date }) => a.dateEarned >= new Date('2025-01-18'))
+			).toBe(true);
 		});
 
 		it('should provide session history with detailed metrics', async () => {
@@ -329,7 +333,14 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 					totalCharacters: 195,
 					errorsCount: 21,
 					improvementFromLastSession: 2,
-					milestonesAchieved: ['Daily Practice']
+					milestonesAchieved: [
+						{
+							type: 'streak',
+							value: 5,
+							timestamp: new Date('2025-01-23'),
+							celebrated: true
+						}
+					]
 				},
 				{
 					sessionId: 'session-2025-01-24',
@@ -349,7 +360,14 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 					totalCharacters: 153,
 					errorsCount: 23,
 					improvementFromLastSession: 3,
-					milestonesAchieved: ['Accuracy Streak']
+					milestonesAchieved: [
+						{
+							type: 'accuracy',
+							value: 90,
+							timestamp: new Date('2025-01-24'),
+							celebrated: true
+						}
+					]
 				}
 			];
 
@@ -365,7 +383,7 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 			expect(sessions[2].milestonesAchieved).toContain('Accuracy Streak');
 
 			// Verify improvement trend
-			const wpmValues = sessions.map((s) => s.wordsPerMinute);
+			const wpmValues = sessions.map((s: { wordsPerMinute: number }) => s.wordsPerMinute);
 			expect(wpmValues[0]).toBeGreaterThan(wpmValues[2]); // Most recent > oldest
 		});
 

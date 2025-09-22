@@ -28,7 +28,7 @@ interface AchievementDefinition {
 	icon: string;
 	points: number;
 	rarity: 'common' | 'rare' | 'epic' | 'legendary';
-	checkCondition: (session: SessionSummary, progress?: any) => boolean;
+	checkCondition: (session: SessionSummary, progress?: unknown) => boolean;
 	accessoryRewards?: string[];
 }
 

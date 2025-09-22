@@ -59,7 +59,7 @@ export class DatabaseManager {
 				}
 
 				if (!db.objectStoreNames.contains('achievements')) {
-					const achievementStore = db.createObjectStore('achievements', { keyPath: 'userId' });
+					db.createObjectStore('achievements', { keyPath: 'userId' });
 				}
 			};
 		});

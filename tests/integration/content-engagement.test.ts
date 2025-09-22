@@ -4,20 +4,29 @@ import type {
 	ContentSource,
 	DifficultyLevel,
 	ThemeCategory,
-	PetState,
-	EvolutionForm,
 	EmotionalState,
-	FeedingResult,
 	SessionSummary,
 	Achievement,
 	AchievementRarity
 } from '$lib/types/index.js';
 
 describe('Integration Test: Content Variety & Engagement', () => {
-	let mockContentService: any;
-	let mockPetStateService: any;
-	let mockProgressService: any;
-	let mockAchievementService: any;
+	let mockContentService: vi.Mocked<{
+		loadDailyContent: () => Promise<ContentItem[]>;
+		getContentBySource: (source: ContentSource) => Promise<ContentItem[]>;
+		getContentByDifficulty: (difficulty: DifficultyLevel) => Promise<ContentItem[]>;
+		getContentByTheme: (theme: ThemeCategory) => Promise<ContentItem[]>;
+	}>;
+	let mockPetStateService: vi.Mocked<{
+		feedWord: (isCorrect: boolean) => Promise<void>;
+		getCurrentState: () => Promise<{ emotionalState: EmotionalState }>;
+	}>;
+	let mockProgressService: vi.Mocked<{
+		endSession: () => Promise<SessionSummary>;
+	}>;
+	let mockAchievementService: vi.Mocked<{
+		checkForNewAchievements: () => Promise<Achievement[]>;
+	}>;
 
 	beforeEach(() => {
 		mockContentService = {

@@ -141,7 +141,7 @@ export class ProgressTrackingService implements IProgressTrackingService {
 			accuracyPercentage: accuracy,
 			totalCharacters: summary.totalCharacters,
 			errorsCount: summary.totalCharacters - summary.correctCharacters,
-			improvementFromLastSession: await this.calculateImprovementFromLast(wpm, accuracy),
+			improvementFromLastSession: await this.calculateImprovementFromLast(wpm),
 			milestonesAchieved: milestones
 		};
 
@@ -334,7 +334,7 @@ export class ProgressTrackingService implements IProgressTrackingService {
 					errorRate: Math.round(errorRate * 1000) / 1000,
 					attempts: stats.attempts,
 					improvementTrend,
-					practiceRecommendation: this.generateKeyPracticeRecommendation(key, errorRate)
+					practiceRecommendation: this.generateKeyPracticeRecommendation(key)
 				});
 			}
 		}
@@ -512,7 +512,7 @@ export class ProgressTrackingService implements IProgressTrackingService {
 		return 'unknown';
 	}
 
-	private async getSessionsInTimeSpan(timeSpan: TimeSpan): Promise<any[]> {
+	private async getSessionsInTimeSpan(timeSpan: TimeSpan): Promise<UserProgress[]> {
 		const now = new Date();
 		let daysBack: number;
 
@@ -536,14 +536,14 @@ export class ProgressTrackingService implements IProgressTrackingService {
 		return sessions.filter((session) => new Date(session.date) >= startDate);
 	}
 
-	private async getRecentSessions(days: number): Promise<any[]> {
+	private async getRecentSessions(days: number): Promise<UserProgress[]> {
 		const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 		const sessions = await dbManager.getAll('user_progress');
 
 		return sessions.filter((session) => new Date(session.date) >= startDate);
 	}
 
-	private async getSessionsInTimeRange(timeRange: TimeRange): Promise<any[]> {
+	private async getSessionsInTimeRange(timeRange: TimeRange): Promise<UserProgress[]> {
 		const sessions = await dbManager.getAll('user_progress');
 
 		return sessions.filter((session) => {
@@ -574,7 +574,7 @@ export class ProgressTrackingService implements IProgressTrackingService {
 		return 'stable';
 	}
 
-	private generateKeyPracticeRecommendation(key: string, errorRate: number): string {
+	private generateKeyPracticeRecommendation(key: string): string {
 		const recommendations = {
 			q: 'Focus on q-u combinations and left pinky reach',
 			z: 'Practice z-key reach exercises with left pinky',
@@ -589,10 +589,7 @@ export class ProgressTrackingService implements IProgressTrackingService {
 		);
 	}
 
-	private async calculateImprovementFromLast(
-		currentWPM: number,
-		currentAccuracy: number
-	): Promise<number> {
+	private async calculateImprovementFromLast(currentWPM: number): Promise<number> {
 		const recentSessions = await this.getRecentSessions(7);
 		if (recentSessions.length < 2) return 0;
 
@@ -613,7 +610,7 @@ export class ProgressTrackingService implements IProgressTrackingService {
 		return milestones;
 	}
 
-	private async calculateWPMForSessions(sessions: any[]): Promise<number> {
+	private async calculateWPMForSessions(sessions: UserProgress[]): Promise<number> {
 		if (sessions.length === 0) return 0;
 
 		const wpmValues = sessions
@@ -626,7 +623,7 @@ export class ProgressTrackingService implements IProgressTrackingService {
 		return wpmValues.reduce((sum, wpm) => sum + wpm, 0) / wpmValues.length;
 	}
 
-	private calculateAccuracyForSessions(sessions: any[]): number {
+	private calculateAccuracyForSessions(sessions: UserProgress[]): number {
 		if (sessions.length === 0) return 0;
 
 		let totalCharacters = 0;
@@ -640,7 +637,11 @@ export class ProgressTrackingService implements IProgressTrackingService {
 		return totalCharacters > 0 ? (correctCharacters / totalCharacters) * 100 : 0;
 	}
 
-	private generateParentNotes(sessions: any[], avgWPM: number, avgAccuracy: number): string[] {
+	private generateParentNotes(
+		sessions: UserProgress[],
+		avgWPM: number,
+		avgAccuracy: number
+	): string[] {
 		const notes: string[] = [];
 
 		if (sessions.length >= 5) {

@@ -209,7 +209,7 @@ export class UserProgressModel {
 
 		// Identify keys with error rate > 20% and minimum attempts
 		const challengingKeys = Object.entries(keyErrors)
-			.filter(([key, stats]) => {
+			.filter(([, stats]) => {
 				const errorRate = stats.errors / stats.attempts;
 				return stats.attempts >= 5 && errorRate > 0.2;
 			})
@@ -352,7 +352,7 @@ export class UserProgressModel {
 		});
 
 		return Object.entries(keyStats)
-			.filter(([_, stats]) => stats.attempts >= 3) // Minimum attempts for analysis
+			.filter(([, stats]) => stats.attempts >= 3) // Minimum attempts for analysis
 			.map(([key, stats]) => {
 				const errorRate = (stats.errors / stats.attempts) * 100;
 				const avgInterval =
@@ -572,7 +572,7 @@ export class UserProgressModel {
 	/**
 	 * Create instance from persisted data
 	 */
-	static fromJSON(data: any): UserProgressModel {
+	static fromJSON(data: unknown): UserProgressModel {
 		if (!data || typeof data !== 'object') {
 			throw new Error('Invalid user progress data');
 		}
@@ -583,7 +583,7 @@ export class UserProgressModel {
 		}
 
 		if (data.milestones && Array.isArray(data.milestones)) {
-			data.milestones.forEach((milestone: any) => {
+			data.milestones.forEach((milestone: unknown) => {
 				if (milestone.timestamp && typeof milestone.timestamp === 'string') {
 					milestone.timestamp = new Date(milestone.timestamp);
 				}

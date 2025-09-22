@@ -149,7 +149,6 @@ export class StreakDataModel {
 		let streakIncreased = false;
 		let bonusApplied = false;
 		let forgivenessUsed = false;
-		let motivationMessage: string | undefined;
 
 		// Check if this is the same day (no streak change)
 		if (daysSinceLastPractice === 0) {
@@ -218,7 +217,7 @@ export class StreakDataModel {
 		}
 
 		// Generate motivation message
-		motivationMessage = this.generateMotivationMessage(
+		const motivationMessage = this.generateMotivationMessage(
 			this._streak.currentStreak,
 			bonusApplied,
 			forgivenessUsed
@@ -252,7 +251,9 @@ export class StreakDataModel {
 		const daysSinceLastPractice = this.daysBetweenDates(lastPractice, today);
 
 		const canUseForgiveness = this._streak.forgivenessCredits > 0;
-		const canUseCatchUp = this._streak.catchUpDeadline && today <= this._streak.catchUpDeadline;
+		const canUseCatchUp = Boolean(
+			this._streak.catchUpDeadline && today <= this._streak.catchUpDeadline
+		);
 
 		let status: 'safe' | 'at_risk' | 'broken' | 'catch_up_available';
 		let message: string;
@@ -479,7 +480,7 @@ export class StreakDataModel {
 	/**
 	 * Create instance from persisted data
 	 */
-	static fromJSON(data: any): StreakDataModel {
+	static fromJSON(data: unknown): StreakDataModel {
 		if (!data || typeof data !== 'object') {
 			throw new Error('Invalid streak data');
 		}
