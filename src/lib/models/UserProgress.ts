@@ -7,7 +7,7 @@
 
 import type {
 	UserProgress,
-	Milestone,
+	MilestoneData,
 	SessionSummary,
 	TypingTrends,
 	TrendData,
@@ -85,7 +85,7 @@ export class UserProgressModel {
 		return [...this._progress.challengingKeys];
 	}
 
-	get milestones(): Milestone[] {
+	get milestones(): MilestoneData[] {
 		return [...this._progress.milestones];
 	}
 
@@ -289,8 +289,8 @@ export class UserProgressModel {
 	/**
 	 * Check for milestone achievements
 	 */
-	checkMilestones(): Milestone[] {
-		const newMilestones: Milestone[] = [];
+	checkMilestones(): MilestoneData[] {
+		const newMilestones: MilestoneData[] = [];
 		const existingMilestoneValues = new Set(
 			this._progress.milestones.map((m) => `${m.type}-${m.value}`)
 		);
@@ -578,19 +578,22 @@ export class UserProgressModel {
 		}
 
 		// Convert date strings back to Date objects if needed
-		if (data.date && typeof data.date === 'string') {
-			data.date = new Date(data.date);
+		const convertedData = { ...data } as Partial<UserProgress> & { [key: string]: unknown };
+
+		if (convertedData.date && typeof convertedData.date === 'string') {
+			convertedData.date = new Date(convertedData.date);
 		}
 
-		if (data.milestones && Array.isArray(data.milestones)) {
-			data.milestones.forEach((milestone: unknown) => {
-				if (milestone.timestamp && typeof milestone.timestamp === 'string') {
-					milestone.timestamp = new Date(milestone.timestamp);
+		if (convertedData.milestones && Array.isArray(convertedData.milestones)) {
+			convertedData.milestones.forEach((milestone: unknown) => {
+				const typedMilestone = milestone as { timestamp?: unknown; [key: string]: unknown };
+				if (typedMilestone.timestamp && typeof typedMilestone.timestamp === 'string') {
+					typedMilestone.timestamp = new Date(typedMilestone.timestamp);
 				}
 			});
 		}
 
-		return new UserProgressModel(data);
+		return new UserProgressModel(convertedData);
 	}
 
 	/**

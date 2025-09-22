@@ -1,54 +1,15 @@
 [
   {
     "id": "pokemon-001",
-    "title": "New Pokémon Cards Released",
-    "text": "The latest Pokémon cards feature amazing new creatures. Pikachu remains everyone's favorite electric type. Trainers are excited about the new collection.",
+    "title": "Pikachu and Friends",
+    "text": "Pikachu is yellow and loves to play with friends. The cute Pokémon enjoys running and jumping in the park.",
     "source": "pokemon",
     "difficulty": "beginner",
-    "theme": "news",
-    "wordCount": 25,
+    "theme": "characters",
+    "wordCount": 18,
     "estimatedWPM": 15,
     "dateAdded": "2025-01-21T00:00:00.000Z",
     "ageAppropriate": true,
     "specialChallenge": false
-  },
-  {
-    "id": "pokemon-002",
-    "title": "Pokémon Character Spotlight",
-    "text": "Charizard is a fire and flying type Pokémon. It evolves from Charmeleon at level thirty six. This powerful dragon breathes intense flames that can melt almost anything.",
-    "source": "pokemon",
-    "difficulty": "intermediate",
-    "theme": "characters",
-    "wordCount": 32,
-    "estimatedWPM": 20,
-    "dateAdded": "2025-01-21T00:00:00.000Z",
-    "ageAppropriate": true,
-    "specialChallenge": false
-  },
-  {
-    "id": "pokemon-003",
-    "title": "Advanced Pokémon Strategy",
-    "text": "Competitive Pokémon battles require careful strategy and team composition. Understanding type advantages, movesets, and statistical calculations helps trainers succeed in tournaments. Professional players analyze matchups extensively.",
-    "source": "pokemon",
-    "difficulty": "advanced",
-    "theme": "games",
-    "wordCount": 35,
-    "estimatedWPM": 25,
-    "dateAdded": "2025-01-21T00:00:00.000Z",
-    "ageAppropriate": true,
-    "specialChallenge": false
-  },
-  {
-    "id": "pokemon-004",
-    "title": "Weekend Pokémon Challenge",
-    "text": "This weekend features a special Pokémon typing tournament. Trainers will face rare legendary creatures in timed challenges. Rewards include exclusive badges and special recognition.",
-    "source": "pokemon",
-    "difficulty": "intermediate",
-    "theme": "events",
-    "wordCount": 30,
-    "estimatedWPM": 22,
-    "dateAdded": "2025-01-21T00:00:00.000Z",
-    "ageAppropriate": true,
-    "specialChallenge": true
   }
 ]

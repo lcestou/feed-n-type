@@ -46,7 +46,7 @@ export class ContentService implements IContentService {
 			const processedContent: ContentItem[] = [];
 			for (const rawItem of allContent) {
 				const model = new ContentItemModel(rawItem);
-				if (model.validateContent().isValid) {
+				if (model.validateState().isValid) {
 					processedContent.push(model.toJSON());
 				}
 			}

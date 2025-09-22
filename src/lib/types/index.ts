@@ -215,7 +215,7 @@ export interface SessionSummary {
 	totalCharacters: number;
 	errorsCount: number;
 	improvementFromLastSession: number;
-	milestonesAchieved: Milestone[];
+	milestonesAchieved: MilestoneData[];
 }
 
 export interface TrendData {

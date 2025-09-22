@@ -166,13 +166,21 @@
 		</div>
 	{/if}
 
+	<!-- Hidden instructions for screen readers -->
+	<div id="typing-instructions" class="sr-only">
+		Use your keyboard to type the text shown. Correct characters will be highlighted in green,
+		incorrect characters in red. The current character to type is highlighted in blue.
+	</div>
+
 	<div
 		id="text-display"
 		class="text-display"
 		role="textbox"
 		aria-readonly="true"
-		aria-label="Text to type"
+		aria-label="Text to type - {text.length} characters total"
+		aria-describedby="typing-instructions"
 		data-testid="text-display"
+		tabindex="0"
 	>
 		{#each characters as char, index (index)}
 			<span
@@ -181,6 +189,8 @@
 				class:space={char === ' '}
 				aria-label="{char === ' ' ? 'space' : char} - {characterStates[index]}"
 				data-testid="character-{index}"
+				role="text"
+				aria-current={characterStates[index] === 'current' ? 'location' : undefined}
 			>
 				{char === ' ' ? '·' : char}
 			</span>
@@ -196,23 +206,28 @@
 	}
 
 	.character.correct {
-		background-color: rgb(187 247 208);
-		color: rgb(22 101 52);
+		background-color: rgb(134 239 172); /* Stronger green for better contrast */
+		color: rgb(15 78 38); /* Darker green text for 7:1 contrast ratio */
+		border: 1px solid rgb(34 197 94);
 	}
 
 	.character.incorrect {
-		background-color: rgb(254 202 202);
-		color: rgb(153 27 27);
+		background-color: rgb(252 165 165); /* Stronger red for better contrast */
+		color: rgb(127 29 29); /* Darker red text for 7:1 contrast ratio */
+		border: 1px solid rgb(239 68 68);
 	}
 
 	.character.current {
-		background-color: rgb(191 219 254);
-		color: rgb(30 64 175);
+		background-color: rgb(147 197 253); /* Stronger blue for better contrast */
+		color: rgb(30 58 138); /* Darker blue text for 7:1 contrast ratio */
+		border: 2px solid rgb(59 130 246);
 		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+		outline: 2px solid rgb(59 130 246);
+		outline-offset: 2px;
 	}
 
 	.character.upcoming {
-		color: rgb(75 85 99);
+		color: rgb(55 65 81); /* Darker gray for better contrast */
 	}
 
 	.character.space {
@@ -220,15 +235,20 @@
 	}
 
 	.character.space.correct {
-		background-color: rgb(187 247 208);
+		background-color: rgb(134 239 172);
+		border: 1px solid rgb(34 197 94);
 	}
 
 	.character.space.incorrect {
-		background-color: rgb(254 202 202);
+		background-color: rgb(252 165 165);
+		border: 1px solid rgb(239 68 68);
 	}
 
 	.character.space.current {
-		background-color: rgb(191 219 254);
+		background-color: rgb(147 197 253);
+		border: 2px solid rgb(59 130 246);
+		outline: 2px solid rgb(59 130 246);
+		outline-offset: 2px;
 		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 	}
 
@@ -310,5 +330,18 @@
 		.metric-value {
 			font-size: 1rem;
 		}
+	}
+
+	/* Screen reader only content */
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 </style>

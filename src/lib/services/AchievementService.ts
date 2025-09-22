@@ -13,7 +13,9 @@ import type {
 	UnlockResult,
 	CelebrationEvent,
 	Accessory,
-	Milestone,
+	AccessoryCategory,
+	AnimationType,
+	MilestoneData,
 	PersonalBest,
 	SessionSummary,
 	UserProgress
@@ -162,7 +164,7 @@ export class AchievementService implements IAchievementService {
 		await this.ensureModelLoaded();
 
 		const newAchievements: Achievement[] = [];
-		const unlockedIds = this.model!.getUnlockedAchievements().map((a) => a.id);
+		const unlockedIds = this.model!.milestonesReached.map((a) => a.id);
 
 		// Check each achievement definition
 		for (const definition of this.ACHIEVEMENT_DEFINITIONS) {
@@ -205,7 +207,7 @@ export class AchievementService implements IAchievementService {
 		}
 
 		// Check if already unlocked
-		const unlockedIds = this.model!.getUnlockedAchievements().map((a) => a.id);
+		const unlockedIds = this.model!.milestonesReached.map((a) => a.id);
 		if (unlockedIds.includes(achievementId)) {
 			return {
 				success: false,
@@ -235,7 +237,7 @@ export class AchievementService implements IAchievementService {
 			dateEarned: new Date()
 		};
 
-		this.model!.unlockAchievement(achievement);
+		this.model!.unlockAchievement(achievementId);
 
 		// Unlock associated accessories
 		const accessoriesUnlocked: Accessory[] = [];
@@ -251,7 +253,7 @@ export class AchievementService implements IAchievementService {
 					accessoriesUnlocked.push({
 						id: accessoryId,
 						name: this.getAccessoryName(accessoryId),
-						category: this.getAccessoryCategory(accessoryId),
+						category: this.getAccessoryCategory(accessoryId) as AccessoryCategory,
 						unlockCondition: `Achievement: ${definition.title}`,
 						dateUnlocked: new Date(),
 						equipped: false
@@ -263,10 +265,10 @@ export class AchievementService implements IAchievementService {
 		// Queue celebration
 		await this.queueCelebration({
 			id: `achievement-${achievementId}-${Date.now()}`,
-			type: 'achievement',
+			type: 'milestone',
 			title: `Achievement Unlocked!`,
 			message: definition.title,
-			animation: this.getAnimationForRarity(definition.rarity),
+			animation: this.getAnimationForRarity(definition.rarity) as AnimationType,
 			duration: this.getDurationForRarity(definition.rarity),
 			soundEffect: this.getSoundForRarity(definition.rarity),
 			priority: this.getPriorityForRarity(definition.rarity),
@@ -290,7 +292,7 @@ export class AchievementService implements IAchievementService {
 	 */
 	async getUnlockedAchievements(): Promise<Achievement[]> {
 		await this.ensureModelLoaded();
-		return this.model!.getUnlockedAchievements();
+		return this.model!.milestonesReached;
 	}
 
 	/**
@@ -340,7 +342,7 @@ export class AchievementService implements IAchievementService {
 			return false;
 		}
 
-		const success = this.model!.unlockAccessory(accessoryId);
+		const success = this.model!.unlockAccessory(accessoryId, reason);
 
 		if (success) {
 			// Queue accessory unlock celebration
@@ -367,7 +369,7 @@ export class AchievementService implements IAchievementService {
 	 */
 	async getAvailableAccessories(): Promise<Accessory[]> {
 		await this.ensureModelLoaded();
-		return this.model!.getAvailableAccessories();
+		return this.model!.unlockedAccessories;
 	}
 
 	/**
@@ -376,7 +378,7 @@ export class AchievementService implements IAchievementService {
 	async equipAccessory(accessoryId: string): Promise<void> {
 		await this.ensureModelLoaded();
 
-		const available = this.model!.getAvailableAccessories();
+		const available = this.model!.unlockedAccessories;
 		const accessory = available.find((acc) => acc.id === accessoryId);
 
 		if (!accessory) {
@@ -390,13 +392,13 @@ export class AchievementService implements IAchievementService {
 	/**
 	 * Check milestone achievements for progress data
 	 */
-	async checkMilestones(progress: UserProgress): Promise<Milestone[]> {
+	async checkMilestones(progress: UserProgress): Promise<MilestoneData[]> {
 		// Validate progress data
 		if (!this.validateProgressData(progress)) {
 			throw new Error('Progress data corrupted');
 		}
 
-		const milestones: Milestone[] = [];
+		const milestones: MilestoneData[] = [];
 
 		// WPM milestones
 		if (progress.wordsPerMinute >= 25 && progress.wordsPerMinute % 5 === 0) {
@@ -422,7 +424,7 @@ export class AchievementService implements IAchievementService {
 		const sessionMinutes = progress.duration / (1000 * 60);
 		if (sessionMinutes >= 10 && sessionMinutes % 10 === 0) {
 			milestones.push({
-				type: 'duration',
+				type: 'words',
 				value: sessionMinutes,
 				timestamp: new Date(),
 				celebrated: false
@@ -437,7 +439,7 @@ export class AchievementService implements IAchievementService {
 	 */
 	async getPersonalBests(): Promise<PersonalBest[]> {
 		await this.ensureModelLoaded();
-		return this.model!.getPersonalBests();
+		return this.model!.personalBests;
 	}
 
 	/**
@@ -446,13 +448,16 @@ export class AchievementService implements IAchievementService {
 	async updatePersonalBest(category: string, value: number): Promise<boolean> {
 		await this.ensureModelLoaded();
 
-		const updated = this.model!.updatePersonalBest(category, value);
+		const updated = this.model!.updatePersonalBest(
+			category as 'wpm' | 'accuracy' | 'streak' | 'session_time' | 'words_total',
+			value
+		);
 
 		if (updated) {
 			// Queue personal best celebration
 			await this.queueCelebration({
 				id: `best-${category}-${Date.now()}`,
-				type: 'personal-best',
+				type: 'personal_best',
 				title: 'Personal Best!',
 				message: `New ${category} record: ${value}`,
 				animation: 'bounce',

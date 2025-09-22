@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { EmotionalState, EvolutionForm } from '$lib/types/index.js';
 import type { PetState, FeedingResult, SessionSummary } from '$lib/types/index.js';
 
 describe('Integration Test: Error Handling & Pet Reactions', () => {

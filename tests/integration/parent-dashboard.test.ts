@@ -26,7 +26,7 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 	let mockAchievementService: vi.Mocked<{
 		getUnlockedAchievements: () => Promise<unknown[]>;
 	}>;
-	let mockLocalStorage: vi.Mocked<{
+	let _mockLocalStorage: vi.Mocked<{
 		getStreakData: () => Promise<unknown>;
 		getAppPreferences: () => Promise<unknown>;
 		getLastSession: () => Promise<SessionSummary | null>;
@@ -336,7 +336,7 @@ describe('Integration Test: Parent Dashboard Data Access', () => {
 					milestonesAchieved: [
 						{
 							type: 'streak',
-							value: 5,
+							value: 7,
 							timestamp: new Date('2025-01-23'),
 							celebrated: true
 						}

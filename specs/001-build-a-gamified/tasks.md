@@ -103,10 +103,10 @@
 
 ## Phase 3.5: Polish & Validation
 
-- [ ] T035 [P] Performance optimization: Bundle size analysis and code splitting
-- [ ] T036 [P] Accessibility improvements: ARIA labels and keyboard navigation enhancement
-- [ ] T037 Data migration utilities for existing user progress in `src/lib/utils/migration.ts`
-- [ ] T038 Execute quickstart.md validation scenarios and fix any integration issues
+- [x] T035 [P] Performance optimization: Bundle size analysis and code splitting
+- [x] T036 [P] Accessibility improvements: ARIA labels and keyboard navigation enhancement
+- [x] T037 Data migration utilities for existing user progress in `src/lib/utils/migration.ts`
+- [x] T038 Execute quickstart.md validation scenarios and fix any integration issues
 
 ## Dependencies
 

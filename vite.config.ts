@@ -27,24 +27,27 @@ export default defineConfig({
 						if (id.includes('svelte') && !id.includes('@sveltejs/kit')) {
 							return 'vendor-svelte';
 						}
-						if (id.includes('lodash') || id.includes('date-fns')) {
-							return 'vendor-utils';
+						if (id.includes('@fontsource')) {
+							return 'vendor-fonts';
 						}
 						return 'vendor';
 					}
 
-					// Split our services into separate chunks
-					if (id.includes('$lib/services/')) {
-						return 'services';
+					// Split core services and heavy services separately
+					if (id.includes('ContentService') || id.includes('PetStateService')) {
+						return 'services-core';
+					}
+					if (id.includes('AchievementService') || id.includes('ProgressTrackingService')) {
+						return 'services-tracking';
 					}
 
-					// Split models
-					if (id.includes('$lib/models/')) {
-						return 'models';
+					// Split models and storage
+					if (id.includes('$lib/models/') || id.includes('$lib/storage/')) {
+						return 'data-layer';
 					}
 
 					// Split heavy components that might be lazy-loaded
-					if (id.includes('ParentDashboard.svelte')) {
+					if (id.includes('ParentDashboard.svelte') || id.includes('Settings.svelte')) {
 						return 'dashboard';
 					}
 

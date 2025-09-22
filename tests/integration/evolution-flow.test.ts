@@ -336,7 +336,20 @@ describe('Integration Test: Daily Practice & Evolution Flow', () => {
 				totalCharacters: 420,
 				errorsCount: 55,
 				improvementFromLastSession: 8,
-				milestonesAchieved: ['First Evolution', 'Weekly Streak', '100 Words Fed']
+				milestonesAchieved: [
+					{
+						type: 'streak',
+						value: 7,
+						timestamp: new Date(),
+						celebrated: false
+					},
+					{
+						type: 'words',
+						value: 100,
+						timestamp: new Date(),
+						celebrated: false
+					}
+				]
 			};
 
 			mockProgressService.endSession.mockResolvedValue(weeklySummary);

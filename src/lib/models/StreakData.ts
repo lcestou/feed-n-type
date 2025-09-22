@@ -376,7 +376,7 @@ export class StreakDataModel {
 		let message = '';
 
 		// Milestone celebrations
-		if (STREAK_SETTINGS.motivationThresholds.includes(streakCount)) {
+		if ((STREAK_SETTINGS.motivationThresholds as readonly number[]).includes(streakCount)) {
 			if (streakCount === 7) {
 				message = '🎉 Amazing! One week streak! Your Typingotchi is so proud!';
 			} else if (streakCount === 14) {
@@ -486,7 +486,7 @@ export class StreakDataModel {
 		}
 
 		// Convert date strings back to Date objects if needed
-		const convertedData = { ...data };
+		const convertedData = { ...data } as Partial<StreakData> & { [key: string]: unknown };
 
 		if (convertedData.lastPracticeDate && typeof convertedData.lastPracticeDate === 'string') {
 			convertedData.lastPracticeDate = new Date(convertedData.lastPracticeDate);

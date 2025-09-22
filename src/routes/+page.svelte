@@ -905,11 +905,17 @@
 	<title>Feed-n-Type - Interactive Typing Learning</title>
 	<meta
 		name="description"
-		content="Interactive typing learning with engaging content - Practice Mode"
+		content="Interactive typing learning with engaging content - Practice Mode. WCAG AAA compliant gamified typing trainer for children."
 	/>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta name="author" content="Feed-n-Type Team" />
-	<meta name="keywords" content="typing, practice, gamified, learning, keyboard, speed, accuracy" />
+	<meta
+		name="keywords"
+		content="typing, practice, gamified, learning, keyboard, speed, accuracy, accessible, WCAG"
+	/>
+	<!-- Accessibility meta tags -->
+	<meta name="theme-color" content="#4f43ae" />
+	<meta name="color-scheme" content="light" />
 </svelte:head>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -918,14 +924,50 @@
 	id="main-app-container"
 	class="flex flex-1 flex-col bg-gradient-to-br from-blue-50 to-indigo-100"
 	data-testid="main-app-container"
+	role="application"
+	aria-label="Feed-n-Type - Interactive Typing Learning Game"
 >
+	<!-- ARIA Live Regions for Screen Reader Announcements -->
+	<div aria-live="polite" aria-atomic="true" class="sr-only" data-testid="typing-announcements">
+		{#if sessionActive && currentWpm > 0}
+			Current typing speed: {currentWpm} words per minute
+		{/if}
+	</div>
+
+	<div aria-live="assertive" aria-atomic="true" class="sr-only" data-testid="error-announcements">
+		{#if hasTypingError}
+			Typing error detected
+		{/if}
+	</div>
+
+	<div
+		aria-live="polite"
+		aria-atomic="true"
+		class="sr-only"
+		data-testid="achievement-announcements"
+	>
+		{#if showAchievementCelebration && currentAchievement}
+			Achievement unlocked: {currentAchievement}
+		{/if}
+	</div>
+
+	<div aria-live="polite" aria-atomic="true" class="sr-only" data-testid="progress-announcements">
+		{#if currentPosition > 0}
+			Progress: {Math.round((currentPosition / practiceText.length) * 100)} percent complete
+		{/if}
+	</div>
+
 	<!-- Header with navigation icons, title and reset button -->
-	<header id="main-header" class="border-b border-[#4f43ae] bg-[#4f43ae]" data-testid="main-header">
+	<header
+		id="main-header"
+		class="border-b border-[#4f43ae] bg-[#4f43ae]"
+		data-testid="main-header"
+		role="banner"
+	>
 		<div id="header-wrapper" class="mx-auto max-w-6xl px-6" data-testid="header-wrapper">
 			<div
 				id="header-content"
 				class="flex h-16 items-center justify-between"
-				role="banner"
 				data-testid="header-content"
 			>
 				<!-- Left: Title -->
@@ -941,12 +983,15 @@
 						id="navigation-controls"
 						class="flex items-center space-x-3"
 						data-testid="navigation-controls"
+						aria-label="Application settings and options"
 					>
 						<button
 							id="keyboard-settings-button"
-							class="rounded-lg p-2 transition-colors hover:bg-[#b5b6e4]"
-							aria-label="Keyboard settings"
+							class="rounded-lg p-2 transition-colors hover:bg-[#b5b6e4] focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#4f43ae] focus:outline-none"
+							aria-label="Open keyboard settings (Not yet implemented)"
 							data-testid="keyboard-settings-button"
+							type="button"
+							title="Keyboard settings"
 						>
 							<svg
 								class="h-6 w-6 text-white"
@@ -961,9 +1006,11 @@
 						</button>
 						<button
 							id="sound-settings-button"
-							class="rounded-lg p-2 transition-colors hover:bg-[#b5b6e4]"
-							aria-label="Sound settings"
+							class="rounded-lg p-2 transition-colors hover:bg-[#b5b6e4] focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#4f43ae] focus:outline-none"
+							aria-label="Open sound settings (Not yet implemented)"
 							data-testid="sound-settings-button"
+							type="button"
+							title="Sound settings"
 						>
 							<svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
@@ -976,28 +1023,38 @@
 						</button>
 					</nav>
 					<!-- Content Source Selection -->
-					<div class="flex items-center space-x-2">
+					<div
+						class="flex items-center space-x-2"
+						role="group"
+						aria-label="Content theme selection"
+					>
 						<button
 							onclick={() => loadContentFromSource(ContentSource.POKEMON)}
-							class="rounded-lg bg-yellow-400 px-2 py-1 text-xs font-medium text-yellow-900 transition-colors hover:bg-yellow-300"
+							class="min-h-[44px] min-w-[44px] rounded-lg bg-yellow-400 px-3 py-2 text-xs font-medium text-yellow-900 transition-colors hover:bg-yellow-300 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none"
 							disabled={isLoadingContent}
-							aria-label="Load Pokemon content"
+							aria-label="Load Pokemon themed content"
+							type="button"
+							title="Pokemon themed content"
 						>
 							⚡
 						</button>
 						<button
 							onclick={() => loadContentFromSource(ContentSource.NINTENDO)}
-							class="rounded-lg bg-red-400 px-2 py-1 text-xs font-medium text-red-900 transition-colors hover:bg-red-300"
+							class="min-h-[44px] min-w-[44px] rounded-lg bg-red-400 px-3 py-2 text-xs font-medium text-red-900 transition-colors hover:bg-red-300 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
 							disabled={isLoadingContent}
-							aria-label="Load Nintendo content"
+							aria-label="Load Nintendo themed content"
+							type="button"
+							title="Nintendo themed content"
 						>
 							🍄
 						</button>
 						<button
 							onclick={() => loadContentFromSource(ContentSource.ROBLOX)}
-							class="rounded-lg bg-blue-400 px-2 py-1 text-xs font-medium text-blue-900 transition-colors hover:bg-blue-300"
+							class="min-h-[44px] min-w-[44px] rounded-lg bg-blue-400 px-3 py-2 text-xs font-medium text-blue-900 transition-colors hover:bg-blue-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 							disabled={isLoadingContent}
-							aria-label="Load Roblox content"
+							aria-label="Load Roblox themed content"
+							type="button"
+							title="Roblox themed content"
 						>
 							🎮
 						</button>
@@ -1006,10 +1063,13 @@
 					<button
 						id="new-content-button"
 						onclick={resetAndLoadNewContent}
-						class="flex items-center space-x-2 rounded-lg bg-[#b5b6e4] px-3 py-2 text-[#4f43ae] transition-colors hover:bg-white"
+						class="flex min-h-[44px] items-center space-x-2 rounded-lg bg-[#b5b6e4] px-3 py-2 text-[#4f43ae] transition-colors hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#4f43ae] focus:outline-none"
 						type="button"
 						disabled={isLoadingContent}
 						data-testid="new-content-button"
+						aria-label="Load new typing content"
+						title="Get new practice text"
+						aria-describedby={isLoadingContent ? 'loading-content-description' : ''}
 					>
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -1026,8 +1086,21 @@
 		</div>
 	</header>
 
+	<!-- Skip to main content link for keyboard users -->
+	<a
+		href="#typing-area-section"
+		class="sr-only z-50 rounded-lg bg-white px-4 py-2 font-medium text-[#4f43ae] focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:ring-2 focus:ring-[#4f43ae] focus:outline-none"
+	>
+		Skip to typing area
+	</a>
+
 	<!-- Main content area with vertical layout -->
-	<main id="main-content" class="mx-auto w-full max-w-6xl flex-1 p-4" data-testid="main-content">
+	<main
+		id="main-content"
+		class="mx-auto w-full max-w-6xl flex-1 p-4"
+		data-testid="main-content"
+		role="main"
+	>
 		<div
 			id="main-layout-container"
 			class="flex h-full flex-col gap-4"
@@ -1035,9 +1108,11 @@
 		>
 			<!-- Content source indicator -->
 			{#if currentContent}
-				<div
+				<section
 					class="flex items-center justify-between rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 p-3 shadow-sm"
 					data-testid="content-info"
+					role="region"
+					aria-label="Current content information"
 				>
 					<div class="flex items-center space-x-3">
 						<div
@@ -1062,19 +1137,24 @@
 					</div>
 					<button
 						onclick={resetAndLoadNewContent}
-						class="rounded-md bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+						class="min-h-[44px] rounded-md bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none"
 						disabled={isLoadingContent}
+						aria-label="Load next content"
+						type="button"
 					>
 						{isLoadingContent ? 'Loading...' : 'Next'}
 					</button>
-				</div>
+				</section>
 			{/if}
 
 			<!-- Combined typing area with Typingotchi -->
-			<div
+			<section
 				id="typing-area-section"
 				class="min-h-0 flex-[3] rounded-lg bg-white shadow-lg"
 				data-testid="typing-area-container"
+				role="region"
+				aria-label="Typing practice and virtual pet area"
+				tabindex="-1"
 			>
 				<div class="flex h-full flex-col">
 					<!-- Text display area -->
@@ -1090,8 +1170,10 @@
 					</div>
 
 					<!-- Typingotchi playground - Game Boy LCD style -->
-					<div
+					<section
 						class="gameboy-lcd relative flex h-28 overflow-hidden border-t border-[#6b7b2f] bg-[#9bbc0f]"
+						role="region"
+						aria-label="Virtual pet playground - Typingotchi responds to your typing"
 					>
 						<div
 							class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/5"
@@ -1125,20 +1207,44 @@
 						</div>
 
 						<!-- Status box (right side) - content-aware size -->
-						<div
+						<aside
 							class="relative z-10 min-w-20 border-l border-[#6b7b2f] bg-[#9bbc0f]/80"
 							data-testid="stats-box"
+							role="complementary"
+							aria-label="Real-time typing statistics"
 						>
 							<div class="flex h-full flex-col justify-center gap-0.5 px-2 py-1 text-[#0f380f]">
-								<div class="font-mono text-xs font-bold">WPM: {currentWpm}</div>
-								<div class="font-mono text-xs font-bold">Words: {fallingWords.length}</div>
-								<div class="font-mono text-xs font-bold">💩: {poopCount}</div>
+								<div
+									class="font-mono text-xs font-bold"
+									aria-label="Words per minute: {currentWpm}"
+								>
+									WPM: {currentWpm}
+								</div>
+								<div
+									class="font-mono text-xs font-bold"
+									aria-label="Available words: {fallingWords.length}"
+								>
+									Words: {fallingWords.length}
+								</div>
+								<div class="font-mono text-xs font-bold" aria-label="Typing errors: {poopCount}">
+									💩: {poopCount}
+								</div>
 							</div>
-						</div>
-					</div>
+						</aside>
+					</section>
 
 					<!-- Progress bar - flush against lawn, rounded bottom only -->
-					<div class="relative h-8 w-full rounded-b-lg bg-slate-600 shadow-inner">
+					<div
+						class="relative h-8 w-full rounded-b-lg bg-slate-600 shadow-inner"
+						role="progressbar"
+						aria-label="Typing progress"
+						aria-valuenow={Math.round((currentPosition / practiceText.length) * 100)}
+						aria-valuemin="0"
+						aria-valuemax="100"
+						aria-valuetext="{Math.round(
+							(currentPosition / practiceText.length) * 100
+						)} percent complete"
+					>
 						<div
 							class="relative h-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-500 ease-out"
 							style="width: {currentPosition > 0
@@ -1149,6 +1255,7 @@
 						<!-- Progress percentage and message -->
 						<div
 							class="absolute inset-0 flex items-center justify-center text-sm font-bold text-white"
+							aria-hidden="true"
 						>
 							{#if currentPosition === 0}
 								Start typing!
@@ -1158,13 +1265,15 @@
 						</div>
 					</div>
 				</div>
-			</div>
+			</section>
 
 			<!-- Bottom: Virtual keyboard -->
-			<div
+			<section
 				id="virtual-keyboard-section"
 				class="flex min-h-0 flex-[2] items-center justify-center"
 				data-testid="virtual-keyboard-container"
+				role="region"
+				aria-label="Virtual keyboard for typing practice"
 			>
 				<div
 					id="virtual-keyboard-wrapper"
@@ -1182,7 +1291,7 @@
 						data-component-id="virtual-keyboard"
 					/>
 				</div>
-			</div>
+			</section>
 		</div>
 	</main>
 
@@ -1193,6 +1302,7 @@
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="achievement-title"
+			aria-describedby="achievement-message"
 			data-testid="achievement-overlay"
 			tabindex="-1"
 			onclick={() => {
@@ -1230,18 +1340,25 @@
 					</h2>
 
 					<!-- Achievement Message -->
-					<p class="mb-6 text-lg font-medium text-gray-700" data-testid="achievement-message">
+					<p
+						id="achievement-message"
+						class="mb-6 text-lg font-medium text-gray-700"
+						data-testid="achievement-message"
+					>
 						{currentAchievement}
 					</p>
 
 					<!-- Close Button -->
 					<button
-						class="rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-3 font-semibold text-white transition-all hover:from-purple-700 hover:to-blue-700 hover:shadow-lg"
+						class="min-h-[44px] rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-3 font-semibold text-white transition-all hover:from-purple-700 hover:to-blue-700 hover:shadow-lg focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none"
 						onclick={() => {
 							showAchievementCelebration = false;
 							currentAchievement = null;
 						}}
 						data-testid="achievement-close-button"
+						type="button"
+						aria-label="Close achievement celebration"
+						autofocus
 					>
 						Awesome!
 					</button>
@@ -1250,3 +1367,41 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	/* Screen reader only content */
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.sr-only:focus {
+		position: static;
+		width: auto;
+		height: auto;
+		padding: inherit;
+		margin: inherit;
+		overflow: visible;
+		clip: auto;
+		white-space: normal;
+	}
+
+	/* Focus visible improvements for keyboard navigation */
+	.focus\:not-sr-only:focus {
+		position: static;
+		width: auto;
+		height: auto;
+		padding: 1rem;
+		margin: 0;
+		overflow: visible;
+		clip: auto;
+		white-space: normal;
+	}
+</style>
