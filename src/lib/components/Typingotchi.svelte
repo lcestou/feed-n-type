@@ -627,11 +627,12 @@
 	{#if fallingWords}
 		{#each fallingWords as word (word.id)}
 			<div
+				id="falling-word-{word.id}"
 				class="absolute animate-bounce text-xs font-semibold text-green-800 transition-all duration-1000 ease-out {word.isBeingEaten
 					? 'opacity-0'
 					: 'opacity-100'}"
 				style="left: {word.x}%; top: {word.y}%; transform: translateX(-50%); animation-duration: 2s;"
-				data-testid="falling-word"
+				data-testid="falling-word-{word.id}"
 			>
 				{word.word}
 			</div>
@@ -641,15 +642,32 @@
 	<!-- Evolution progress overlay -->
 	{#if isEvolutionAnimating}
 		<div
+			id="evolution-overlay"
 			class="absolute inset-0 z-50 flex items-center justify-center"
 			data-testid="evolution-overlay"
 		>
-			<div class="evolution-sparkle-bg rounded-xl p-4 text-center">
-				<div class="mb-2 text-lg font-bold text-white">EVOLUTION!</div>
-				<div class="h-2 w-24 overflow-hidden rounded-full bg-white/30">
+			<div
+				id="evolution-content"
+				class="evolution-sparkle-bg rounded-xl p-4 text-center"
+				data-testid="evolution-content"
+			>
+				<div
+					id="evolution-title"
+					class="mb-2 text-lg font-bold text-white"
+					data-testid="evolution-title"
+				>
+					EVOLUTION!
+				</div>
+				<div
+					id="evolution-progress-bar"
+					class="h-2 w-24 overflow-hidden rounded-full bg-white/30"
+					data-testid="evolution-progress-bar"
+				>
 					<div
+						id="evolution-progress-fill"
 						class="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 transition-all duration-100"
 						style="width: {evolutionProgress}%"
+						data-testid="evolution-progress-fill"
 					></div>
 				</div>
 			</div>
@@ -659,13 +677,30 @@
 	<!-- Celebration overlay -->
 	{#if currentCelebration}
 		<div
+			id="celebration-overlay"
 			class="absolute inset-0 z-40 flex items-center justify-center"
 			data-testid="celebration-overlay"
 		>
-			<div class="celebration-popup rounded-lg bg-white/90 p-3 text-center shadow-lg">
-				<div class="text-sm font-bold text-gray-800">{currentCelebration.title}</div>
+			<div
+				id="celebration-popup"
+				class="celebration-popup rounded-lg bg-white/90 p-3 text-center shadow-lg"
+				data-testid="celebration-popup"
+			>
+				<div
+					id="celebration-title"
+					class="text-sm font-bold text-gray-800"
+					data-testid="celebration-title"
+				>
+					{currentCelebration.title}
+				</div>
 				{#if currentCelebration.message}
-					<div class="text-xs text-gray-600">{currentCelebration.message}</div>
+					<div
+						id="celebration-message"
+						class="text-xs text-gray-600"
+						data-testid="celebration-message"
+					>
+						{currentCelebration.message}
+					</div>
 				{/if}
 			</div>
 		</div>
@@ -673,16 +708,19 @@
 
 	<!-- Pet avatar with walking animation positioning -->
 	<div
+		id="pet-avatar-container"
 		class="absolute transition-all duration-100 ease-out"
 		style="left: {characterX}%; bottom: {2 + characterY}px; transform: translateX(-50%);"
+		data-testid="pet-avatar-container"
 	>
-		<div class="relative">
+		<div id="pet-avatar-wrapper" class="relative" data-testid="pet-avatar-wrapper">
 			<!-- Fire aura background effect -->
 			{#if fireLevel > 0}
 				<div
+					id="fire-aura"
 					class="absolute inset-0 rounded-xl {fireEffectClass()}"
 					style="z-index: 0;"
-					data-testid="typingotchi-fire-aura"
+					data-testid="fire-aura"
 				></div>
 			{/if}
 
@@ -704,12 +742,18 @@
 		</div>
 
 		<!-- Heart health system below character -->
-		<div class="mt-1 flex justify-center gap-0.5" data-testid="typingotchi-hearts">
+		<div
+			id="heart-health-system"
+			class="mt-1 flex justify-center gap-0.5"
+			data-testid="heart-health-system"
+		>
 			{#each Array(5) as _, index (index)}
 				<span
-					class="text-sm {index < character().hearts ? 'text-gray-800' : 'text-gray-400'} 
+					id="heart-{index + 1}"
+					class="text-sm {index < character().hearts ? 'text-gray-800' : 'text-gray-400'}
 					       {character().mood === 'superFire' || character().mood === 'onFire' ? 'animate-pulse' : ''}"
 					aria-label={index < character().hearts ? 'full heart' : 'empty heart'}
+					data-testid="heart-{index + 1}"
 				>
 					{index < character().hearts ? '♥' : '♡'}
 				</span>

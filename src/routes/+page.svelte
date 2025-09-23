@@ -1118,12 +1118,19 @@
 			{#if currentContent}
 				<section
 					class="flex items-center justify-between rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 p-3 shadow-sm"
-					data-testid="content-info"
+					id="content-info-section"
+					data-testid="content-info-section"
 					aria-label="Current content information"
 				>
-					<div class="flex items-center space-x-3">
+					<div
+						id="content-theme-info"
+						class="flex items-center space-x-3"
+						data-testid="content-theme-info"
+					>
 						<div
+							id="content-theme-icon"
 							class="flex h-8 w-8 items-center justify-center rounded-full"
+							data-testid="content-theme-icon"
 							class:bg-yellow-200={currentContent.source === ContentSource.POKEMON}
 							class:bg-red-200={currentContent.source === ContentSource.NINTENDO}
 							class:bg-blue-200={currentContent.source === ContentSource.ROBLOX}
@@ -1133,9 +1140,15 @@
 							{:else if currentContent.source === ContentSource.ROBLOX}🎮
 							{/if}
 						</div>
-						<div>
-							<h2 class="text-sm font-semibold text-gray-800">{currentContent.title}</h2>
-							<p class="text-xs text-gray-600">
+						<div id="content-details" data-testid="content-details">
+							<h2
+								id="content-title"
+								class="text-sm font-semibold text-gray-800"
+								data-testid="content-title"
+							>
+								{currentContent.title}
+							</h2>
+							<p id="content-metadata" class="text-xs text-gray-600" data-testid="content-metadata">
 								{currentContent.source.charAt(0).toUpperCase() + currentContent.source.slice(1)} •
 								{currentContent.difficulty} •
 								{currentContent.wordCount} words
@@ -1143,11 +1156,13 @@
 						</div>
 					</div>
 					<button
+						id="next-content-button"
 						onclick={resetAndLoadNewContent}
 						class="min-h-[44px] rounded-md bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none"
 						disabled={isLoadingContent}
 						aria-label="Load next content"
 						type="button"
+						data-testid="next-content-button"
 					>
 						{isLoadingContent ? 'Loading...' : 'Next'}
 					</button>
@@ -1156,15 +1171,15 @@
 
 			<!-- Combined typing area with Typingotchi -->
 			<section
-				id="typing-area-section"
+				id="game-container"
 				class="min-h-0 flex-[3] rounded-lg bg-white shadow-lg"
-				data-testid="typing-area-container"
+				data-testid="game-container"
 				aria-label="Typing practice and virtual pet area"
 				tabindex="-1"
 			>
-				<div class="flex h-full flex-col">
+				<div id="game-layout" class="flex h-full flex-col" data-testid="game-layout">
 					<!-- Text display area -->
-					<div class="flex-1">
+					<div id="text-display-area" class="flex-1" data-testid="text-display-area">
 						<TypingArea
 							text={practiceText}
 							{userInput}
@@ -1177,8 +1192,10 @@
 
 					<!-- Typingotchi playground - Game Boy LCD style -->
 					<section
+						id="typingotchi-playground"
 						class="gameboy-lcd relative flex h-28 overflow-hidden border-t border-[#6b7b2f] bg-[#9bbc0f]"
 						aria-label="Virtual pet playground - Typingotchi responds to your typing"
+						data-testid="typingotchi-playground"
 					>
 						<div
 							class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/5"
@@ -1189,8 +1206,13 @@
 						></div>
 
 						<!-- Main playground area (left side) -->
-						<div class="relative flex-1">
-							<div class="relative z-10" style="margin-left: {typingotchiOffset}px">
+						<div id="pet-area" class="relative flex-1" data-testid="pet-area">
+							<div
+								id="pet-container"
+								class="relative z-10"
+								style="margin-left: {typingotchiOffset}px"
+								data-testid="pet-container"
+							>
 								<Typingotchi
 									{isTyping}
 									hasError={hasTypingError}
@@ -1213,24 +1235,38 @@
 
 						<!-- Status box (right side) - content-aware size -->
 						<aside
+							id="stats-display"
 							class="relative z-10 min-w-20 border-l border-[#6b7b2f] bg-[#9bbc0f]/80"
-							data-testid="stats-box"
+							data-testid="stats-display"
 							aria-label="Real-time typing statistics"
 						>
-							<div class="flex h-full flex-col justify-center gap-0.5 px-2 py-1 text-[#0f380f]">
+							<div
+								id="stats-content"
+								class="flex h-full flex-col justify-center gap-0.5 px-2 py-1 text-[#0f380f]"
+								data-testid="stats-content"
+							>
 								<div
+									id="wpm-display"
 									class="font-mono text-xs font-bold"
 									aria-label="Words per minute: {currentWpm}"
+									data-testid="wpm-display"
 								>
 									WPM: {currentWpm}
 								</div>
 								<div
+									id="words-counter"
 									class="font-mono text-xs font-bold"
 									aria-label="Available words: {fallingWords.length}"
+									data-testid="words-counter"
 								>
 									Words: {fallingWords.length}
 								</div>
-								<div class="font-mono text-xs font-bold" aria-label="Typing errors: {poopCount}">
+								<div
+									id="error-counter"
+									class="font-mono text-xs font-bold"
+									aria-label="Typing errors: {poopCount}"
+									data-testid="error-counter"
+								>
 									💩: {poopCount}
 								</div>
 							</div>
@@ -1239,7 +1275,9 @@
 
 					<!-- Progress bar - flush against lawn, rounded bottom only -->
 					<div
+						id="progress-bar"
 						class="relative h-8 w-full rounded-b-lg bg-slate-600 shadow-inner"
+						data-testid="progress-bar"
 						role="progressbar"
 						aria-label="Typing progress"
 						aria-valuenow={Math.round((currentPosition / practiceText.length) * 100)}
@@ -1250,16 +1288,19 @@
 						)} percent complete"
 					>
 						<div
+							id="progress-fill"
 							class="relative h-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-500 ease-out"
 							style="width: {currentPosition > 0
 								? (currentPosition / practiceText.length) * 100
 								: 0}%"
-							data-testid="progress-bar"
+							data-testid="progress-fill"
 						></div>
 						<!-- Progress percentage and message -->
 						<div
+							id="progress-text"
 							class="absolute inset-0 flex items-center justify-center text-sm font-bold text-white"
 							aria-hidden="true"
+							data-testid="progress-text"
 						>
 							{#if currentPosition === 0}
 								Start typing!
@@ -1275,14 +1316,10 @@
 			<section
 				id="virtual-keyboard-section"
 				class="flex min-h-0 flex-[2] items-center justify-center"
-				data-testid="virtual-keyboard-container"
+				data-testid="virtual-keyboard-section"
 				aria-label="Virtual keyboard for typing practice"
 			>
-				<div
-					id="virtual-keyboard-wrapper"
-					class="w-full max-w-4xl"
-					data-testid="virtual-keyboard-wrapper"
-				>
+				<div id="virtual-keyboard" class="w-full max-w-4xl" data-testid="virtual-keyboard">
 					<VirtualKeyboard
 						onKeyPress={handleKeyPress}
 						{pressedKey}
@@ -1301,6 +1338,7 @@
 	<!-- Achievement Celebration Overlay -->
 	{#if showAchievementCelebration && currentAchievement}
 		<div
+			id="achievement-overlay"
 			class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
 			role="dialog"
 			aria-modal="true"
@@ -1320,13 +1358,23 @@
 			}}
 		>
 			<div
+				id="achievement-modal"
 				class="relative mx-4 max-w-md rounded-xl bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 p-1 shadow-2xl"
 				role="document"
+				data-testid="achievement-modal"
 			>
-				<div class="rounded-lg bg-white p-6 text-center">
+				<div
+					id="achievement-content"
+					class="rounded-lg bg-white p-6 text-center"
+					data-testid="achievement-content"
+				>
 					<!-- Celebration Icon -->
-					<div class="mb-4 flex justify-center">
-						<div class="relative">
+					<div
+						id="achievement-icons"
+						class="mb-4 flex justify-center"
+						data-testid="achievement-icons"
+					>
+						<div id="celebration-icon-group" class="relative" data-testid="celebration-icon-group">
 							<div class="text-6xl">🎉</div>
 							<div class="absolute -top-2 -right-2 animate-bounce text-2xl">✨</div>
 							<div class="absolute -bottom-2 -left-2 animate-pulse text-2xl">🌟</div>
@@ -1353,6 +1401,7 @@
 
 					<!-- Close Button -->
 					<button
+						id="achievement-close-button"
 						class="min-h-[44px] rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-3 font-semibold text-white transition-all hover:from-purple-700 hover:to-blue-700 hover:shadow-lg focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none"
 						onclick={() => {
 							showAchievementCelebration = false;

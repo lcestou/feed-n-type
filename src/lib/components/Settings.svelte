@@ -250,6 +250,7 @@
 {#if visible}
 	<!-- Settings Modal -->
 	<div
+		id="settings-modal-overlay"
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
 		role="dialog"
 		aria-modal="true"
@@ -257,18 +258,37 @@
 		tabindex="0"
 		onclick={onClose}
 		onkeydown={handleKeydown}
+		data-testid="settings-modal-overlay"
 	>
 		<div
+			id="settings-modal"
 			class="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-xl bg-white shadow-2xl"
+			data-testid="settings-modal"
 		>
 			<!-- Header -->
-			<div class="border-b border-gray-200 px-6 py-4">
-				<div class="flex items-center justify-between">
-					<h1 id="settings-title" class="text-2xl font-bold text-gray-900">Settings</h1>
+			<div
+				id="settings-header"
+				class="border-b border-gray-200 px-6 py-4"
+				data-testid="settings-header"
+			>
+				<div
+					id="settings-header-content"
+					class="flex items-center justify-between"
+					data-testid="settings-header-content"
+				>
+					<h1
+						id="settings-title"
+						class="text-2xl font-bold text-gray-900"
+						data-testid="settings-title"
+					>
+						Settings
+					</h1>
 					<button
+						id="settings-close-button"
 						class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
 						onclick={onClose}
 						aria-label="Close settings"
+						data-testid="settings-close-button"
 					>
 						<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -282,34 +302,44 @@
 				</div>
 
 				<!-- Tab Navigation -->
-				<div class="mt-4 flex space-x-1 rounded-lg bg-gray-100 p-1">
+				<div
+					id="settings-tabs"
+					class="mt-4 flex space-x-1 rounded-lg bg-gray-100 p-1"
+					data-testid="settings-tabs"
+				>
 					<button
+						id="pet-tab"
 						class="flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors"
 						class:bg-white={activeTab === 'pet'}
 						class:shadow-sm={activeTab === 'pet'}
 						class:text-gray-900={activeTab === 'pet'}
 						class:text-gray-600={activeTab !== 'pet'}
 						onclick={() => handleTabChange('pet')}
+						data-testid="pet-tab"
 					>
 						🐾 Pet Customization
 					</button>
 					<button
+						id="preferences-tab"
 						class="flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors"
 						class:bg-white={activeTab === 'preferences'}
 						class:shadow-sm={activeTab === 'preferences'}
 						class:text-gray-900={activeTab === 'preferences'}
 						class:text-gray-600={activeTab !== 'preferences'}
 						onclick={() => handleTabChange('preferences')}
+						data-testid="preferences-tab"
 					>
 						⚙️ Preferences
 					</button>
 					<button
+						id="accessibility-tab"
 						class="flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors"
 						class:bg-white={activeTab === 'accessibility'}
 						class:shadow-sm={activeTab === 'accessibility'}
 						class:text-gray-900={activeTab === 'accessibility'}
 						class:text-gray-600={activeTab !== 'accessibility'}
 						onclick={() => handleTabChange('accessibility')}
+						data-testid="accessibility-tab"
 					>
 						♿ Accessibility
 					</button>
@@ -317,20 +347,36 @@
 			</div>
 
 			<!-- Content -->
-			<div class="max-h-[60vh] overflow-y-auto p-6">
+			<div
+				id="settings-content"
+				class="max-h-[60vh] overflow-y-auto p-6"
+				data-testid="settings-content"
+			>
 				{#if isLoading}
 					<!-- Loading State -->
-					<div class="flex h-64 items-center justify-center">
-						<div class="text-center">
+					<div
+						id="loading-state"
+						class="flex h-64 items-center justify-center"
+						data-testid="loading-state"
+					>
+						<div id="loading-content" class="text-center" data-testid="loading-content">
 							<div
+								id="loading-spinner"
 								class="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"
+								data-testid="loading-spinner"
 							></div>
-							<p class="mt-2 text-sm text-gray-600">Loading settings...</p>
+							<p id="loading-text" class="mt-2 text-sm text-gray-600" data-testid="loading-text">
+								Loading settings...
+							</p>
 						</div>
 					</div>
 				{:else if activeTab === 'pet'}
 					<!-- Pet Customization Tab -->
-					<div class="space-y-8">
+					<div
+						id="pet-customization-content"
+						class="space-y-8"
+						data-testid="pet-customization-content"
+					>
 						<div>
 							<h3 class="mb-4 text-lg font-semibold text-gray-900">Customize Your Typingotchi</h3>
 							<p class="mb-6 text-sm text-gray-600">
@@ -408,7 +454,7 @@
 					</div>
 				{:else if activeTab === 'preferences'}
 					<!-- App Preferences Tab -->
-					<div class="space-y-8">
+					<div id="preferences-content" class="space-y-8" data-testid="preferences-content">
 						<!-- Sound Settings -->
 						<div class="space-y-4">
 							<h3 class="text-lg font-semibold text-gray-900">Sound & Audio</h3>
@@ -557,7 +603,7 @@
 					</div>
 				{:else if activeTab === 'accessibility'}
 					<!-- Accessibility Tab -->
-					<div class="space-y-8">
+					<div id="accessibility-content" class="space-y-8" data-testid="accessibility-content">
 						<div>
 							<h3 class="text-lg font-semibold text-gray-900">Accessibility Options</h3>
 							<p class="mt-1 text-sm text-gray-600">
@@ -649,21 +695,38 @@
 			</div>
 
 			<!-- Footer -->
-			<div class="border-t border-gray-200 px-6 py-4">
-				<div class="flex items-center justify-between">
-					<button class="text-sm text-gray-500 hover:text-gray-700" onclick={resetToDefaults}>
+			<div
+				id="settings-footer"
+				class="border-t border-gray-200 px-6 py-4"
+				data-testid="settings-footer"
+			>
+				<div
+					id="settings-footer-content"
+					class="flex items-center justify-between"
+					data-testid="settings-footer-content"
+				>
+					<button
+						id="reset-defaults-button"
+						class="text-sm text-gray-500 hover:text-gray-700"
+						onclick={resetToDefaults}
+						data-testid="reset-defaults-button"
+					>
 						Reset to Defaults
 					</button>
-					<div class="flex space-x-3">
+					<div id="settings-actions" class="flex space-x-3" data-testid="settings-actions">
 						<button
+							id="settings-cancel-button"
 							class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
 							onclick={onClose}
+							data-testid="settings-cancel-button"
 						>
 							Cancel
 						</button>
 						<button
+							id="settings-save-button"
 							class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
 							onclick={onClose}
+							data-testid="settings-save-button"
 						>
 							Save Changes
 						</button>

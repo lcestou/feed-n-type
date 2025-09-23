@@ -438,10 +438,12 @@
 
 	<!-- Confetti Particles -->
 	{#if confettiVisible}
-		{#each confettiParticles as particle (particle.id)}
-			<div
-				class="confetti-fall pointer-events-none fixed h-3 w-3"
-				style="
+		<div id="confetti-container" data-testid="confetti-container">
+			{#each confettiParticles as particle (particle.id)}
+				<div
+					data-testid="confetti-particle"
+					class="confetti-fall pointer-events-none fixed h-3 w-3"
+					style="
 					left: {particle.x}%;
 					top: {particle.y}px;
 					background-color: {particle.color};
@@ -449,7 +451,8 @@
 					animation-delay: {particle.delay}ms;
 					animation-duration: {3000 + Math.random() * 2000}ms;
 				"
-			></div>
-		{/each}
+				></div>
+			{/each}
+		</div>
 	{/if}
 {/if}

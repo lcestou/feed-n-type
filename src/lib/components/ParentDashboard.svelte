@@ -188,6 +188,8 @@
 {#if visible}
 	<!-- Modal overlay -->
 	<div
+		id="parent-dashboard-overlay"
+		data-testid="parent-dashboard-overlay"
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
 		role="dialog"
 		aria-modal="true"
@@ -198,11 +200,17 @@
 	>
 		<!-- Dashboard content -->
 		<div
+			id="parent-dashboard"
+			data-testid="parent-dashboard"
 			class="relative max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-xl bg-white shadow-2xl"
 			role="document"
 		>
 			<!-- Header -->
-			<div class="sticky top-0 z-10 border-b border-gray-200 bg-white px-6 py-4">
+			<div
+				id="dashboard-header"
+				data-testid="dashboard-header"
+				class="sticky top-0 z-10 border-b border-gray-200 bg-white px-6 py-4"
+			>
 				<div class="flex items-center justify-between">
 					<div>
 						<h1 id="dashboard-title" class="text-2xl font-bold text-gray-900">Parent Dashboard</h1>
@@ -210,9 +218,19 @@
 					</div>
 
 					<!-- Time range selector -->
-					<div class="flex items-center space-x-4">
-						<div class="flex rounded-lg bg-gray-100 p-1">
+					<div
+						id="time-range-selector"
+						data-testid="time-range-selector"
+						class="flex items-center space-x-4"
+					>
+						<div
+							id="time-range-buttons"
+							data-testid="time-range-buttons"
+							class="flex rounded-lg bg-gray-100 p-1"
+						>
 							<button
+								id="week-button"
+								data-testid="week-button"
 								class="rounded-md px-3 py-1 text-sm font-medium transition-colors"
 								class:bg-white={selectedTimeRange === 'week'}
 								class:shadow-sm={selectedTimeRange === 'week'}
@@ -223,6 +241,8 @@
 								Week
 							</button>
 							<button
+								id="month-button"
+								data-testid="month-button"
 								class="rounded-md px-3 py-1 text-sm font-medium transition-colors"
 								class:bg-white={selectedTimeRange === 'month'}
 								class:shadow-sm={selectedTimeRange === 'month'}
@@ -236,6 +256,8 @@
 
 						<!-- Close button -->
 						<button
+							id="dashboard-close-button"
+							data-testid="dashboard-close-button"
 							class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
 							onclick={onClose}
 							aria-label="Close dashboard"
@@ -255,7 +277,11 @@
 
 			{#if isLoading}
 				<!-- Loading state -->
-				<div class="flex h-64 items-center justify-center">
+				<div
+					id="loading-state"
+					data-testid="loading-state"
+					class="flex h-64 items-center justify-center"
+				>
 					<div class="text-center">
 						<div
 							class="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"
@@ -265,11 +291,19 @@
 				</div>
 			{:else if parentSummary}
 				<!-- Dashboard content -->
-				<div class="p-6">
+				<div id="dashboard-content" data-testid="dashboard-content" class="p-6">
 					<!-- Overview Cards -->
-					<div class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+					<div
+						id="stats-overview"
+						data-testid="stats-overview"
+						class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+					>
 						<!-- Practice Time -->
-						<div class="rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 p-6">
+						<div
+							id="stat-practice-time"
+							data-testid="stat-practice-time"
+							class="rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 p-6"
+						>
 							<div class="flex items-center">
 								<div class="flex-shrink-0">
 									<div
@@ -293,7 +327,11 @@
 						</div>
 
 						<!-- Current Streak -->
-						<div class="rounded-lg bg-gradient-to-br from-green-50 to-green-100 p-6">
+						<div
+							id="stat-streak"
+							data-testid="stat-streak"
+							class="rounded-lg bg-gradient-to-br from-green-50 to-green-100 p-6"
+						>
 							<div class="flex items-center">
 								<div class="flex-shrink-0">
 									<div
@@ -319,7 +357,11 @@
 						</div>
 
 						<!-- Typing Speed -->
-						<div class="rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 p-6">
+						<div
+							id="stat-speed"
+							data-testid="stat-speed"
+							class="rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 p-6"
+						>
 							<div class="flex items-center">
 								<div class="flex-shrink-0">
 									<div
@@ -345,7 +387,11 @@
 						</div>
 
 						<!-- Accuracy -->
-						<div class="rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 p-6">
+						<div
+							id="stat-accuracy"
+							data-testid="stat-accuracy"
+							class="rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 p-6"
+						>
 							<div class="flex items-center">
 								<div class="flex-shrink-0">
 									<div
@@ -373,6 +419,8 @@
 
 					<!-- Overall Progress Message -->
 					<div
+						id="progress-overview"
+						data-testid="progress-overview"
 						class="mb-8 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white"
 					>
 						<div class="flex items-start">
@@ -403,16 +451,27 @@
 					</div>
 
 					<!-- Two Column Layout -->
-					<div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+					<div
+						id="two-column-layout"
+						data-testid="two-column-layout"
+						class="grid grid-cols-1 gap-8 lg:grid-cols-2"
+					>
 						<!-- Left Column -->
-						<div class="space-y-8">
+						<div id="left-column" data-testid="left-column" class="space-y-8">
 							<!-- Recent Achievements -->
-							<div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200">
+							<div
+								id="recent-achievements"
+								data-testid="recent-achievements"
+								class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200"
+							>
 								<h3 class="mb-4 text-lg font-semibold text-gray-900">Recent Achievements</h3>
 								{#if recentAchievements.length > 0}
-									<div class="space-y-3">
+									<div id="achievements-list" data-testid="achievements-list" class="space-y-3">
 										{#each recentAchievements as achievement (achievement.id)}
-											<div class="flex items-center rounded-lg bg-gray-50 p-3">
+											<div
+												data-testid="achievement-item"
+												class="flex items-center rounded-lg bg-gray-50 p-3"
+											>
 												<div class="text-2xl">{achievement.icon}</div>
 												<div class="ml-3">
 													<p class="font-medium text-gray-900">{achievement.title}</p>
@@ -437,12 +496,19 @@
 							</div>
 
 							<!-- Improvement Suggestions -->
-							<div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200">
+							<div
+								id="improvement-suggestions"
+								data-testid="improvement-suggestions"
+								class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200"
+							>
 								<h3 class="mb-4 text-lg font-semibold text-gray-900">Areas for Improvement</h3>
 								{#if improvementSuggestions.length > 0}
-									<div class="space-y-3">
+									<div id="suggestions-list" data-testid="suggestions-list" class="space-y-3">
 										{#each improvementSuggestions as suggestion (suggestion.description)}
-											<div class="rounded-lg border border-gray-200 p-4">
+											<div
+												data-testid="suggestion-item"
+												class="rounded-lg border border-gray-200 p-4"
+											>
 												<div class="flex items-start justify-between">
 													<div class="flex-1">
 														<h4 class="font-medium text-gray-900">{suggestion.description}</h4>
@@ -468,14 +534,21 @@
 						</div>
 
 						<!-- Right Column -->
-						<div class="space-y-8">
+						<div id="right-column" data-testid="right-column" class="space-y-8">
 							<!-- Challenging Keys -->
-							<div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200">
+							<div
+								id="challenging-keys"
+								data-testid="challenging-keys"
+								class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200"
+							>
 								<h3 class="mb-4 text-lg font-semibold text-gray-900">Keys Needing Practice</h3>
 								{#if challengingKeys.length > 0}
-									<div class="space-y-3">
+									<div id="keys-list" data-testid="keys-list" class="space-y-3">
 										{#each challengingKeys as keyData (keyData.key)}
-											<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+											<div
+												data-testid="key-item"
+												class="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+											>
 												<div class="flex items-center">
 													<div
 														class="mr-3 flex h-8 w-8 items-center justify-center rounded-md bg-gray-200 font-mono font-bold"
@@ -516,9 +589,13 @@
 
 							<!-- Typing Trends (simplified) -->
 							{#if typingTrends && typingTrends.wpmTrend.length > 0}
-								<div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200">
+								<div
+									id="progress-trends"
+									data-testid="progress-trends"
+									class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200"
+								>
 									<h3 class="mb-4 text-lg font-semibold text-gray-900">Progress Trends</h3>
-									<div class="space-y-4">
+									<div id="trends-content" data-testid="trends-content" class="space-y-4">
 										<div>
 											<p class="text-sm font-medium text-gray-900">Speed Improvement</p>
 											<p
@@ -535,7 +612,7 @@
 											</p>
 										</div>
 
-										<div class="space-y-2">
+										<div id="recent-sessions" data-testid="recent-sessions" class="space-y-2">
 											<p class="text-sm font-medium text-gray-900">Recent Sessions</p>
 											{#each typingTrends.wpmTrend.slice(-5) as trend (trend.date.toISOString())}
 												<div class="flex items-center justify-between text-sm">
@@ -555,7 +632,7 @@
 					</div>
 
 					<!-- Footer -->
-					<div class="mt-8 rounded-lg bg-blue-50 p-6">
+					<div id="parent-tips" data-testid="parent-tips" class="mt-8 rounded-lg bg-blue-50 p-6">
 						<div class="flex items-start">
 							<div class="flex-shrink-0">
 								<svg
@@ -588,7 +665,11 @@
 				</div>
 			{:else}
 				<!-- Error state -->
-				<div class="flex h-64 items-center justify-center">
+				<div
+					id="error-state"
+					data-testid="error-state"
+					class="flex h-64 items-center justify-center"
+				>
 					<div class="text-center">
 						<svg
 							class="mx-auto h-12 w-12 text-gray-400"
@@ -605,6 +686,8 @@
 						</svg>
 						<p class="mt-2 text-sm text-gray-600">Unable to load progress data</p>
 						<button
+							id="retry-button"
+							data-testid="retry-button"
 							class="mt-2 rounded-md bg-purple-600 px-4 py-2 text-sm text-white hover:bg-purple-700"
 							onclick={loadDashboardData}
 						>

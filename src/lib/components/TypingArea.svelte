@@ -142,21 +142,22 @@
 	<!-- Progress tracking display (only shown when session is active) -->
 	{#if sessionActive && (currentWPM > 0 || keystrokeCount > 0)}
 		<div
+			id="progress-display"
 			class="progress-display"
 			role="region"
 			aria-label="Real-time typing progress"
 			data-testid="progress-display"
 		>
-			<div class="progress-metrics">
-				<div class="metric" data-testid="wpm-display">
+			<div id="progress-metrics" class="progress-metrics" data-testid="progress-metrics">
+				<div id="wpm-metric" class="metric" data-testid="wpm-metric">
 					<span class="metric-label">WPM</span>
 					<span class="metric-value" aria-live="polite">{currentWPM}</span>
 				</div>
-				<div class="metric" data-testid="accuracy-display">
+				<div id="accuracy-metric" class="metric" data-testid="accuracy-metric">
 					<span class="metric-label">Accuracy</span>
 					<span class="metric-value" aria-live="polite">{currentAccuracy}%</span>
 				</div>
-				<div class="metric" data-testid="progress-counter">
+				<div id="progress-counter-metric" class="metric" data-testid="progress-counter-metric">
 					<span class="metric-label">Progress</span>
 					<span class="metric-value">
 						{userInput.length}/{text.length}

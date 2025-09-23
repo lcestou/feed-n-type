@@ -348,6 +348,8 @@
 {#if visible}
 	<!-- Evolution Celebration Overlay -->
 	<div
+		id="evolution-overlay"
+		data-testid="evolution-overlay"
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
 		role="dialog"
 		aria-modal="true"
@@ -358,16 +360,28 @@
 	>
 		<!-- Main celebration container -->
 		<div
+			id="evolution-container"
+			data-testid="evolution-container"
 			class="relative mx-4 max-w-lg rounded-2xl bg-gradient-to-br {toData.color} p-1 shadow-2xl"
 			class:evolution-glow={animationPhase === 'transformation'}
 		>
-			<div class="rounded-xl bg-white p-8 text-center">
+			<div
+				id="evolution-content"
+				data-testid="evolution-content"
+				class="rounded-xl bg-white p-8 text-center"
+			>
 				<!-- Evolution Progress Bar (during transformation) -->
 				{#if animationPhase === 'transformation'}
-					<div class="mb-6">
+					<div id="evolution-progress" data-testid="evolution-progress" class="mb-6">
 						<div class="mb-2 text-sm font-medium text-gray-700">Evolution Progress</div>
-						<div class="h-2 w-full rounded-full bg-gray-200">
+						<div
+							id="progress-bar-track"
+							data-testid="progress-bar-track"
+							class="h-2 w-full rounded-full bg-gray-200"
+						>
 							<div
+								id="progress-bar-fill"
+								data-testid="progress-bar-fill"
 								class="h-2 rounded-full bg-gradient-to-r {toData.color} transition-all duration-500 ease-out"
 								style="width: {transformationProgress}%"
 							></div>
@@ -377,10 +391,16 @@
 				{/if}
 
 				<!-- Evolution Display -->
-				<div class="mb-6 flex items-center justify-center space-x-4">
+				<div
+					id="evolution-display"
+					data-testid="evolution-display"
+					class="mb-6 flex items-center justify-center space-x-4"
+				>
 					<!-- From Form -->
-					<div class="text-center">
+					<div id="evolution-from" data-testid="evolution-from" class="text-center">
 						<div
+							id="from-form-emoji"
+							data-testid="from-form-emoji"
 							class="text-6xl transition-all duration-1000"
 							class:opacity-50={animationPhase === 'transformation' && transformationProgress > 50}
 							class:evolution-pulse={animationPhase === 'entrance'}
@@ -391,7 +411,11 @@
 					</div>
 
 					<!-- Evolution Arrow -->
-					<div class="flex flex-col items-center">
+					<div
+						id="evolution-arrow"
+						data-testid="evolution-arrow"
+						class="flex flex-col items-center"
+					>
 						<div
 							class="text-4xl transition-all duration-500"
 							class:evolution-spin={animationPhase === 'transformation'}
@@ -409,8 +433,10 @@
 					</div>
 
 					<!-- To Form -->
-					<div class="text-center">
+					<div id="evolution-to" data-testid="evolution-to" class="text-center">
 						<div
+							id="to-form-emoji"
+							data-testid="to-form-emoji"
 							class="text-6xl transition-all duration-1000"
 							class:opacity-20={animationPhase === 'entrance'}
 							class:opacity-50={animationPhase === 'transformation' && transformationProgress < 100}
@@ -423,9 +449,10 @@
 				</div>
 
 				<!-- Celebration Text -->
-				<div class="mb-6">
+				<div id="celebration-text" data-testid="celebration-text" class="mb-6">
 					<h2
 						id="evolution-title"
+						data-testid="evolution-title"
 						class="text-2xl font-bold text-gray-900 transition-all duration-500"
 						class:text-glow={animationPhase === 'celebration'}
 					>
@@ -435,20 +462,34 @@
 							Evolution in Progress
 						{/if}
 					</h2>
-					<p class="mt-2 text-lg text-gray-700">
+					<p
+						id="evolution-message"
+						data-testid="evolution-message"
+						class="mt-2 text-lg text-gray-700"
+					>
 						{celebrationText}
 					</p>
 					{#if animationPhase === 'celebration'}
-						<p class="mt-2 text-sm text-gray-600">
+						<p
+							id="evolution-description"
+							data-testid="evolution-description"
+							class="mt-2 text-sm text-gray-600"
+						>
 							{toData.description}
 						</p>
 					{/if}
 				</div>
 
 				<!-- Action Buttons -->
-				<div class="flex justify-center space-x-4">
+				<div
+					id="evolution-actions"
+					data-testid="evolution-actions"
+					class="flex justify-center space-x-4"
+				>
 					{#if animationPhase === 'celebration'}
 						<button
+							id="evolution-complete-button"
+							data-testid="evolution-complete-button"
 							class="rounded-lg bg-gradient-to-r {toData.color} px-6 py-3 font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
 							onclick={onComplete}
 						>
@@ -456,6 +497,8 @@
 						</button>
 					{:else}
 						<button
+							id="evolution-skip-button"
+							data-testid="evolution-skip-button"
 							class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
 							onclick={handleSkip}
 						>
@@ -466,7 +509,11 @@
 
 				<!-- Achievement Info (if provided) -->
 				{#if celebrationData && animationPhase === 'celebration'}
-					<div class="mt-6 rounded-lg bg-yellow-50 p-4">
+					<div
+						id="unlock-notification"
+						data-testid="unlock-notification"
+						class="mt-6 rounded-lg bg-yellow-50 p-4"
+					>
 						<div class="flex items-center justify-center">
 							<svg class="h-5 w-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
 								<path
@@ -486,19 +533,26 @@
 
 		<!-- Celebration Particles -->
 		{#if particlesVisible}
-			{#each particles as particle (particle.id)}
-				<div
-					class="pointer-events-none fixed text-2xl {particle.animation}"
-					style="left: {particle.x}%; top: {particle.y}%; transform: rotate({particle.rotation}deg) scale({particle.scale})"
-				>
-					{particle.emoji}
-				</div>
-			{/each}
+			<div id="particle-container" data-testid="particle-container">
+				{#each particles as particle (particle.id)}
+					<div
+						data-testid="celebration-particle"
+						class="pointer-events-none fixed text-2xl {particle.animation}"
+						style="left: {particle.x}%; top: {particle.y}%; transform: rotate({particle.rotation}deg) scale({particle.scale})"
+					>
+						{particle.emoji}
+					</div>
+				{/each}
+			</div>
 		{/if}
 
 		<!-- Skip instruction -->
 		{#if animationPhase !== 'celebration'}
-			<div class="absolute bottom-4 left-1/2 -translate-x-1/2">
+			<div
+				id="skip-instruction"
+				data-testid="skip-instruction"
+				class="absolute bottom-4 left-1/2 -translate-x-1/2"
+			>
 				<p class="text-sm text-white/80">Click anywhere to skip animation</p>
 			</div>
 		{/if}

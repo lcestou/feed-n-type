@@ -1,8 +1,16 @@
 /**
- * UserProgress Model with Metrics Calculation
+ * @fileoverview UserProgress Model with Metrics Calculation
  *
- * Tracks typing performance metrics and learning progression.
- * Includes WPM calculation, accuracy tracking, and improvement analysis.
+ * Comprehensive typing performance tracking and analysis system for the
+ * gamified typing trainer. Monitors real-time keystroke data, calculates
+ * performance metrics, identifies improvement areas, and provides detailed
+ * analytics for young learners aged 7-12.
+ *
+ * Features include WPM calculation, accuracy tracking, keystroke analysis,
+ * milestone detection, and personalized improvement recommendations.
+ *
+ * @module UserProgressModel
+ * @since 1.0.0
  */
 
 import type {
@@ -15,6 +23,23 @@ import type {
 	ImprovementArea
 } from '$lib/types/index.js';
 
+/**
+ * Default session configuration settings for progress tracking.
+ * Controls session duration limits, calculation windows, and weighting factors.
+ *
+ * @constant DEFAULT_SESSION_SETTINGS
+ * @property {number} minSessionDuration - Minimum session duration in ms (30 seconds)
+ * @property {number} maxSessionDuration - Maximum session duration in ms (30 minutes)
+ * @property {number} wpmCalculationWindow - Time window for real-time WPM calculation (1 minute)
+ * @property {number} accuracyWeight - Weight given to accuracy vs speed (0.75 = 75%)
+ * @property {number} improvementThreshold - Minimum improvement threshold (5%)
+ * @example
+ * const minTime = DEFAULT_SESSION_SETTINGS.minSessionDuration; // 30000ms
+ * if (sessionDuration < minTime) {
+ *   console.log('Session too short for meaningful data');
+ * }
+ * @since 1.0.0
+ */
 export const DEFAULT_SESSION_SETTINGS = {
 	minSessionDuration: 30000, // 30 seconds minimum
 	maxSessionDuration: 1800000, // 30 minutes maximum
@@ -23,6 +48,24 @@ export const DEFAULT_SESSION_SETTINGS = {
 	improvementThreshold: 0.05 // 5% improvement threshold
 } as const;
 
+/**
+ * Milestone threshold values for different performance metrics.
+ * Used to detect and celebrate achievement milestones in typing progress.
+ *
+ * @constant MILESTONE_THRESHOLDS
+ * @property {number[]} wpm - Words per minute milestone thresholds
+ * @property {number[]} accuracy - Accuracy percentage milestone thresholds
+ * @property {number[]} streak - Practice streak day milestone thresholds
+ * @property {number[]} words - Total words typed milestone thresholds
+ * @example
+ * const nextWpmGoal = MILESTONE_THRESHOLDS.wpm.find(threshold => userWPM < threshold);
+ * console.log(`Next WPM goal: ${nextWpmGoal}`);
+ *
+ * // Check if user hit accuracy milestone
+ * const accuracyMilestones = MILESTONE_THRESHOLDS.accuracy.filter(t => userAccuracy >= t);
+ * @see {@link MilestoneData} for milestone data structure
+ * @since 1.0.0
+ */
 export const MILESTONE_THRESHOLDS = {
 	wpm: [10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100],
 	accuracy: [70, 75, 80, 85, 90, 92, 94, 96, 98, 99],
@@ -30,6 +73,30 @@ export const MILESTONE_THRESHOLDS = {
 	words: [50, 100, 250, 500, 1000, 2500, 5000, 10000]
 } as const;
 
+/**
+ * Model class for tracking and analyzing typing performance and progress.
+ * Provides real-time keystroke analysis, performance metrics calculation,
+ * milestone detection, and improvement recommendations for young learners.
+ *
+ * @class UserProgressModel
+ * @example
+ * // Create a new typing session
+ * const progress = new UserProgressModel({
+ *   sessionId: 'session-123',
+ *   contentSource: 'pokemon'
+ * });
+ *
+ * // Record keystrokes during typing
+ * progress.recordKeystroke('h', true, Date.now());
+ * progress.recordKeystroke('e', true, Date.now() + 200);
+ * progress.recordKeystroke('l', false, Date.now() + 400); // Error
+ *
+ * // Get real-time metrics
+ * const wpm = progress.calculateRealtimeWPM();
+ * const rhythm = progress.calculateTypingRhythm();
+ * const suggestions = progress.generateImprovementSuggestions();
+ * @since 1.0.0
+ */
 export class UserProgressModel {
 	private _progress: UserProgress;
 	private _keystrokeHistory: Array<{
@@ -44,53 +111,163 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Get current progress state
+	 * Get a deep copy of the current progress data.
+	 * Returns immutable copy to prevent external modifications.
+	 *
+	 * @returns {UserProgress} Complete progress data with all metrics
+	 * @example
+	 * const currentProgress = model.progress;
+	 * console.log(`WPM: ${currentProgress.wordsPerMinute}, Accuracy: ${currentProgress.accuracyPercentage}%`);
+	 * @since 1.0.0
 	 */
 	get progress(): UserProgress {
 		return { ...this._progress };
 	}
 
 	/**
-	 * Get specific properties
+	 * Get the unique identifier for this typing session.
+	 *
+	 * @returns {string} Session's unique ID
+	 * @example
+	 * const sessionId = model.sessionId; // 'session-1234567890-abc123'
+	 * @since 1.0.0
 	 */
 	get sessionId(): string {
 		return this._progress.sessionId;
 	}
 
+	/**
+	 * Get the current calculated words per minute typing speed.
+	 * Based on total characters typed divided by session duration.
+	 *
+	 * @returns {number} Current WPM (calculated as characters/5/minutes)
+	 * @example
+	 * const speed = model.wordsPerMinute; // 23.45
+	 * console.log(`Current speed: ${speed.toFixed(1)} WPM`);
+	 * @since 1.0.0
+	 */
 	get wordsPerMinute(): number {
 		return this._progress.wordsPerMinute;
 	}
 
+	/**
+	 * Get the current typing accuracy percentage.
+	 * Calculated as (correct characters / total characters) * 100.
+	 *
+	 * @returns {number} Accuracy percentage (0-100)
+	 * @example
+	 * const accuracy = model.accuracyPercentage; // 87.65
+	 * console.log(`Accuracy: ${accuracy.toFixed(1)}%`);
+	 * @since 1.0.0
+	 */
 	get accuracyPercentage(): number {
 		return this._progress.accuracyPercentage;
 	}
 
+	/**
+	 * Get the total number of characters typed in this session.
+	 * Includes both correct and incorrect keystrokes.
+	 *
+	 * @returns {number} Total character count
+	 * @example
+	 * const total = model.totalCharacters; // 127
+	 * console.log(`${total} characters typed so far`);
+	 * @since 1.0.0
+	 */
 	get totalCharacters(): number {
 		return this._progress.totalCharacters;
 	}
 
+	/**
+	 * Get the number of correctly typed characters in this session.
+	 * Used for accuracy calculations and progress tracking.
+	 *
+	 * @returns {number} Correct character count
+	 * @example
+	 * const correct = model.correctCharacters; // 111
+	 * const total = model.totalCharacters;     // 127
+	 * const accuracy = (correct / total) * 100; // 87.4%
+	 * @since 1.0.0
+	 */
 	get correctCharacters(): number {
 		return this._progress.correctCharacters;
 	}
 
+	/**
+	 * Get the total number of typing errors in this session.
+	 * Represents incorrect keystrokes that need correction.
+	 *
+	 * @returns {number} Total error count
+	 * @example
+	 * const errors = model.errorsCount; // 16
+	 * console.log(`${errors} errors made this session`);
+	 * @since 1.0.0
+	 */
 	get errorsCount(): number {
 		return this._progress.errorsCount;
 	}
 
+	/**
+	 * Get the total duration of the typing session in milliseconds.
+	 * Calculated from first keystroke to most recent keystroke.
+	 *
+	 * @returns {number} Session duration in milliseconds
+	 * @example
+	 * const durationMs = model.duration;  // 125000
+	 * const durationMin = durationMs / 60000; // 2.08 minutes
+	 * console.log(`Session lasted ${durationMin.toFixed(1)} minutes`);
+	 * @since 1.0.0
+	 */
 	get duration(): number {
 		return this._progress.duration;
 	}
 
+	/**
+	 * Get a copy of keys that are consistently typed incorrectly.
+	 * Automatically identified based on error patterns and frequency.
+	 *
+	 * @returns {string[]} Array of challenging key characters
+	 * @example
+	 * const problemKeys = model.challengingKeys; // ['q', 'z', 'x']
+	 * if (problemKeys.length > 0) {
+	 *   console.log(`Practice these keys: ${problemKeys.join(', ')}`);
+	 * }
+	 * @see {@link updateChallengingKeys} for analysis logic
+	 * @since 1.0.0
+	 */
 	get challengingKeys(): string[] {
 		return [...this._progress.challengingKeys];
 	}
 
+	/**
+	 * Get a copy of all milestones achieved in this session.
+	 * Milestones are automatically detected based on performance thresholds.
+	 *
+	 * @returns {MilestoneData[]} Array of achieved milestones
+	 * @example
+	 * const achievements = model.milestones;
+	 * achievements.forEach(milestone => {
+	 *   console.log(`Achieved ${milestone.type}: ${milestone.value}`);
+	 * });
+	 * @see {@link MilestoneData} for milestone structure
+	 * @see {@link MILESTONE_THRESHOLDS} for threshold values
+	 * @since 1.0.0
+	 */
 	get milestones(): MilestoneData[] {
 		return [...this._progress.milestones];
 	}
 
 	/**
-	 * Validate and normalize progress data
+	 * Validate and normalize progress data to ensure data integrity.
+	 * Calculates derived metrics and provides safe defaults for missing values.
+	 *
+	 * @private
+	 * @param {Partial<UserProgress>} progress - Raw progress data to validate
+	 * @returns {UserProgress} Validated and normalized progress data
+	 * @example
+	 * // Internal use only - called by constructor
+	 * const safeProgress = this.validateAndNormalize(rawData);
+	 * @since 1.0.0
 	 */
 	private validateAndNormalize(progress: Partial<UserProgress>): UserProgress {
 		const sessionId =
@@ -131,7 +308,17 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Calculate Words Per Minute
+	 * Calculate typing speed in words per minute using industry standard formula.
+	 * Uses 5 characters = 1 word conversion for consistent measurement.
+	 *
+	 * @private
+	 * @param {number} characters - Total characters typed
+	 * @param {number} durationMs - Duration in milliseconds
+	 * @returns {number} Words per minute (rounded to 2 decimal places)
+	 * @example
+	 * // Internal use only
+	 * const wpm = this.calculateWPM(300, 60000); // 60 WPM for 300 chars in 1 minute
+	 * @since 1.0.0
 	 */
 	private calculateWPM(characters: number, durationMs: number): number {
 		if (durationMs <= 0) return 0;
@@ -145,7 +332,24 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Record a keystroke
+	 * Record a single keystroke with timing and accuracy data.
+	 * Updates all derived metrics and maintains keystroke history for analysis.
+	 *
+	 * @param {string} key - The character that was typed
+	 * @param {boolean} correct - Whether the keystroke was correct
+	 * @param {number} timestamp - Timestamp of the keystroke in milliseconds
+	 * @example
+	 * // Record correct keystrokes
+	 * progress.recordKeystroke('h', true, Date.now());
+	 * progress.recordKeystroke('e', true, Date.now() + 150);
+	 *
+	 * // Record an error
+	 * progress.recordKeystroke('l', false, Date.now() + 300);
+	 *
+	 * // Metrics are automatically updated
+	 * console.log(`Current WPM: ${progress.wordsPerMinute}`);
+	 * console.log(`Accuracy: ${progress.accuracyPercentage}%`);
+	 * @since 1.0.0
 	 */
 	recordKeystroke(key: string, correct: boolean, timestamp: number): void {
 		const lastKeystroke = this._keystrokeHistory[this._keystrokeHistory.length - 1];
@@ -189,7 +393,17 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Update challenging keys based on error patterns
+	 * Analyze keystroke patterns to identify consistently problematic keys.
+	 * Uses error rate and frequency analysis over recent keystrokes.
+	 *
+	 * @private
+	 * @example
+	 * // Internal use only - called automatically by recordKeystroke
+	 * this.updateChallengingKeys();
+	 *
+	 * // Keys with >20% error rate and >5 attempts are flagged
+	 * // Limited to top 10 most problematic keys
+	 * @since 1.0.0
 	 */
 	private updateChallengingKeys(): void {
 		const keyErrors: Record<string, { attempts: number; errors: number }> = {};
@@ -220,7 +434,20 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Calculate real-time WPM over a time window
+	 * Calculate real-time words per minute over a sliding time window.
+	 * Provides more responsive WPM updates than session-total calculations.
+	 *
+	 * @param {number} [windowMs=DEFAULT_SESSION_SETTINGS.wpmCalculationWindow] - Time window in milliseconds
+	 * @returns {number} Real-time WPM for the specified time window
+	 * @example
+	 * // Get WPM for last minute (default)
+	 * const currentWPM = progress.calculateRealtimeWPM();
+	 *
+	 * // Get WPM for last 30 seconds
+	 * const recentWPM = progress.calculateRealtimeWPM(30000);
+	 *
+	 * console.log(`Current burst: ${currentWPM.toFixed(1)} WPM`);
+	 * @since 1.0.0
 	 */
 	calculateRealtimeWPM(windowMs: number = DEFAULT_SESSION_SETTINGS.wpmCalculationWindow): number {
 		if (this._keystrokeHistory.length === 0) return 0;
@@ -241,7 +468,22 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Calculate typing rhythm and consistency
+	 * Analyze typing rhythm patterns and consistency metrics.
+	 * Identifies typing style characteristics for personalized feedback.
+	 *
+	 * @returns {object} Rhythm analysis data
+	 * @returns {number} returns.averageKeyInterval - Average time between keystrokes (ms)
+	 * @returns {number} returns.rhythmConsistency - Consistency score (0-100)
+	 * @returns {boolean} returns.burstTyping - Whether user types in bursts
+	 * @example
+	 * const rhythm = progress.calculateTypingRhythm();
+	 * console.log(`Average interval: ${rhythm.averageKeyInterval}ms`);
+	 * console.log(`Consistency: ${rhythm.rhythmConsistency}%`);
+	 *
+	 * if (rhythm.burstTyping) {
+	 *   console.log('User tends to type in bursts rather than steadily');
+	 * }
+	 * @since 1.0.0
 	 */
 	calculateTypingRhythm(): {
 		averageKeyInterval: number;
@@ -287,7 +529,22 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Check for milestone achievements
+	 * Check current performance against milestone thresholds and detect new achievements.
+	 * Automatically identifies WPM and accuracy milestones reached in this session.
+	 *
+	 * @returns {MilestoneData[]} Array of newly achieved milestones
+	 * @example
+	 * const newMilestones = progress.checkMilestones();
+	 * newMilestones.forEach(milestone => {
+	 *   console.log(`🎉 Reached ${milestone.type} milestone: ${milestone.value}!`);
+	 *   celebrateMilestone(milestone);
+	 * });
+	 *
+	 * // Check if any speed milestones were hit
+	 * const speedMilestones = newMilestones.filter(m => m.type === 'wpm');
+	 * @see {@link MILESTONE_THRESHOLDS} for threshold values
+	 * @see {@link MilestoneData} for milestone structure
+	 * @since 1.0.0
 	 */
 	checkMilestones(): MilestoneData[] {
 		const newMilestones: MilestoneData[] = [];
@@ -328,7 +585,22 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Generate detailed key analysis
+	 * Generate detailed per-key performance analysis with improvement recommendations.
+	 * Analyzes error rates, timing patterns, and trends for each key typed.
+	 *
+	 * @returns {KeyAnalysis[]} Array of key performance analyses, sorted by error rate
+	 * @example
+	 * const keyAnalysis = progress.generateKeyAnalysis();
+	 * keyAnalysis.forEach(analysis => {
+	 *   console.log(`Key '${analysis.key}': ${analysis.errorRate}% error rate`);
+	 *   console.log(`Trend: ${analysis.improvementTrend}`);
+	 *   console.log(`Tip: ${analysis.practiceRecommendation}`);
+	 * });
+	 *
+	 * // Find keys that need the most work
+	 * const problemKeys = keyAnalysis.filter(k => k.errorRate > 15);
+	 * @see {@link KeyAnalysis} for analysis structure
+	 * @since 1.0.0
 	 */
 	generateKeyAnalysis(): KeyAnalysis[] {
 		const keyStats: Record<
@@ -398,7 +670,22 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Generate improvement suggestions
+	 * Generate personalized improvement suggestions based on performance analysis.
+	 * Provides actionable recommendations for accuracy, speed, rhythm, and specific keys.
+	 *
+	 * @returns {ImprovementArea[]} Array of improvement suggestions, prioritized by importance
+	 * @example
+	 * const suggestions = progress.generateImprovementSuggestions();
+	 * suggestions.forEach(suggestion => {
+	 *   console.log(`${suggestion.priority.toUpperCase()}: ${suggestion.area}`);
+	 *   console.log(suggestion.description);
+	 *   console.log(`💡 ${suggestion.recommendation}`);
+	 * });
+	 *
+	 * // Show only high-priority suggestions
+	 * const urgent = suggestions.filter(s => s.priority === 'high');
+	 * @see {@link ImprovementArea} for suggestion structure
+	 * @since 1.0.0
 	 */
 	generateImprovementSuggestions(): ImprovementArea[] {
 		const suggestions: ImprovementArea[] = [];
@@ -462,7 +749,24 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Generate session summary
+	 * Generate a comprehensive summary of the current typing session.
+	 * Compares performance with previous sessions and identifies new milestones.
+	 *
+	 * @param {UserProgress[]} [previousSessions] - Previous session data for comparison
+	 * @returns {SessionSummary} Complete session summary with metrics and improvements
+	 * @example
+	 * const summary = progress.generateSessionSummary(previousSessions);
+	 * console.log(`Session Summary:`);
+	 * console.log(`- WPM: ${summary.wordsPerMinute}`);
+	 * console.log(`- Accuracy: ${summary.accuracyPercentage}%`);
+	 * console.log(`- Duration: ${(summary.duration / 60000).toFixed(1)} minutes`);
+	 * console.log(`- Improvement: ${summary.improvementFromLastSession.toFixed(1)}`);
+	 *
+	 * if (summary.milestonesAchieved.length > 0) {
+	 *   console.log(`🎉 Milestones: ${summary.milestonesAchieved.length}`);
+	 * }
+	 * @see {@link SessionSummary} for summary structure
+	 * @since 1.0.0
 	 */
 	generateSessionSummary(previousSessions?: UserProgress[]): SessionSummary {
 		let improvementFromLastSession = 0;
@@ -492,7 +796,27 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Calculate typing trends over time
+	 * Calculate typing performance trends over a specified time period.
+	 * Analyzes progression patterns and provides moving averages for trend analysis.
+	 *
+	 * @static
+	 * @param {UserProgress[]} sessions - Array of session data to analyze
+	 * @param {number} [days=30] - Number of days to include in analysis
+	 * @returns {TypingTrends} Comprehensive trend analysis with moving averages
+	 * @example
+	 * const trends = UserProgressModel.calculateTypingTrends(allSessions, 14);
+	 * console.log(`Overall improvement rate: ${trends.improvementRate}`);
+	 *
+	 * // Plot WPM trend over time
+	 * trends.wpmTrend.forEach(point => {
+	 *   console.log(`${point.date.toLocaleDateString()}: ${point.value} WPM (avg: ${point.movingAverage})`);
+	 * });
+	 *
+	 * // Check recent accuracy trend
+	 * const recentAccuracy = trends.accuracyTrend.slice(-5);
+	 * @see {@link TypingTrends} for trend data structure
+	 * @see {@link TrendData} for individual trend points
+	 * @since 1.0.0
 	 */
 	static calculateTypingTrends(sessions: UserProgress[], days: number = 30): TypingTrends {
 		const cutoffDate = new Date();
@@ -563,14 +887,43 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Export progress for persistence
+	 * Export the current progress data for persistence to storage.
+	 * Returns a plain object suitable for JSON serialization.
+	 *
+	 * @returns {UserProgress} Plain object representation of progress
+	 * @example
+	 * const progressData = progress.toJSON();
+	 * localStorage.setItem('session-progress', JSON.stringify(progressData));
+	 *
+	 * // Save to database
+	 * await saveProgressToDatabase(progressData);
+	 * @since 1.0.0
 	 */
 	toJSON(): UserProgress {
 		return { ...this._progress };
 	}
 
 	/**
-	 * Create instance from persisted data
+	 * Create a UserProgressModel instance from persisted JSON data.
+	 * Handles date deserialization and milestone data restoration.
+	 *
+	 * @static
+	 * @param {unknown} data - Raw data from storage (JSON parsed)
+	 * @returns {UserProgressModel} New model instance with restored progress
+	 * @throws {Error} When data is invalid or corrupted
+	 * @example
+	 * const savedData = JSON.parse(localStorage.getItem('session-progress'));
+	 * const progress = UserProgressModel.fromJSON(savedData);
+	 *
+	 * // Handle missing data gracefully
+	 * try {
+	 *   const progress = UserProgressModel.fromJSON(data);
+	 *   console.log(`Restored session: ${progress.sessionId}`);
+	 * } catch (error) {
+	 *   console.error('Failed to load progress:', error);
+	 *   const progress = new UserProgressModel({}); // Fresh session
+	 * }
+	 * @since 1.0.0
 	 */
 	static fromJSON(data: unknown): UserProgressModel {
 		if (!data || typeof data !== 'object') {
@@ -597,7 +950,35 @@ export class UserProgressModel {
 	}
 
 	/**
-	 * Validate progress state integrity
+	 * Validate the current state of the progress data for integrity issues.
+	 * Performs comprehensive checks on all metrics and relationships.
+	 *
+	 * @returns {object} Validation result
+	 * @returns {boolean} returns.isValid - True if all validations pass
+	 * @returns {string[]} returns.errors - Array of validation error messages
+	 * @example
+	 * const validation = progress.validateState();
+	 * if (!validation.isValid) {
+	 *   console.error('Progress data has issues:');
+	 *   validation.errors.forEach(error => console.error(`- ${error}`));
+	 * }
+	 *
+	 * // Use for debugging or data migration
+	 * if (validation.isValid) {
+	 *   saveProgressData(progress.toJSON());
+	 * } else {
+	 *   reportDataCorruption(validation.errors);
+	 *   // Try to recover or reset progress
+	 * }
+	 *
+	 * // Automated validation in production
+	 * setInterval(() => {
+	 *   const check = progress.validateState();
+	 *   if (!check.isValid) {
+	 *     logDataIntegrityIssues(check.errors);
+	 *   }
+	 * }, 60000); // Check every minute
+	 * @since 1.0.0
 	 */
 	validateState(): { isValid: boolean; errors: string[] } {
 		const errors: string[] = [];

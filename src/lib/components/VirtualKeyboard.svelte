@@ -240,7 +240,7 @@
 	data-component-id={componentId}
 	data-testid="virtual-keyboard"
 >
-	<div class="flex flex-col gap-1">
+	<div id="keyboard-layout" class="flex flex-col gap-1" data-testid="keyboard-layout">
 		{#each keyboardLayout as row, rowIndex (rowIndex)}
 			{@const gridTemplate =
 				rowIndex === 0
@@ -253,6 +253,7 @@
 								? '2.5fr repeat(10, 1fr) 2.5fr'
 								: 'repeat(15, 1fr)'}
 			<div
+				id="keyboard-row-{rowIndex + 1}"
 				class="grid gap-1"
 				style="grid-template-columns: {gridTemplate};"
 				role="row"
@@ -263,6 +264,7 @@
 						rowIndex === 4 &&
 						['Ctrl', 'Alt', 'LeftMenu', 'Menu', 'AltGr', 'RightCtrl'].includes(keyObj.key)}
 					<button
+						id="key-{keyObj.key.toLowerCase()}"
 						class="relative flex h-12 cursor-pointer rounded-lg border border-gray-300 bg-white font-normal
 							   text-gray-700 transition-all duration-100
 							   hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:shadow-md

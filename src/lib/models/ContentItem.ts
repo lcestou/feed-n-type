@@ -1,13 +1,40 @@
 /**
- * ContentItem Model with Filtering Logic
+ * @fileoverview ContentItem Model with Filtering Logic
  *
- * Represents typing practice content from gaming sources with age-appropriate
- * filtering, difficulty assessment, and content categorization logic.
+ * Manages typing practice content sourced from child-friendly gaming franchises
+ * like Pokemon, Nintendo, and Roblox. Provides automated content filtering,
+ * difficulty assessment, and age-appropriateness validation for kids aged 7-12.
+ *
+ * Features comprehensive content analysis including complexity scoring,
+ * automatic difficulty determination, and suitability recommendations
+ * based on individual typing skill levels.
+ *
+ * @module ContentItemModel
+ * @since 1.0.0
  */
 
 import { ContentSource, DifficultyLevel, ThemeCategory } from '$lib/types/index.js';
 import type { ContentItem, ContentCriteria } from '$lib/types/index.js';
 
+/**
+ * Configuration settings for content management and validation.
+ * Controls content aging, length limits, and appropriateness filtering.
+ *
+ * @constant CONTENT_SETTINGS
+ * @property {number} maxContentAge - Days before content is considered stale (90)
+ * @property {number} maxWordCount - Maximum words per content item (200)
+ * @property {number} minWordCount - Minimum words per content item (10)
+ * @property {number} beginnerMaxWords - Word limit for beginner content (50)
+ * @property {number} intermediateMaxWords - Word limit for intermediate content (100)
+ * @property {number} advancedMaxWords - Word limit for advanced content (200)
+ * @property {boolean} ageAppropriateOnly - Enforce age-appropriate content only (true)
+ * @property {number} specialChallengeFrequency - Ratio of special challenge content (0.2)
+ * @example
+ * if (wordCount > CONTENT_SETTINGS.maxWordCount) {
+ *   throw new Error('Content too long');
+ * }
+ * @since 1.0.0
+ */
 export const CONTENT_SETTINGS = {
 	maxContentAge: 90, // Days before content is considered stale
 	maxWordCount: 200, // Maximum words per content item
@@ -19,12 +46,40 @@ export const CONTENT_SETTINGS = {
 	specialChallengeFrequency: 0.2 // 20% of content can be special challenges
 } as const;
 
+/**
+ * Word count ranges and target WPM speeds for each difficulty level.
+ * Used for automatic difficulty classification and performance estimation.
+ *
+ * @constant DIFFICULTY_WORD_RANGES
+ * @property {object} beginner - Entry level: 10-50 words, 15 WPM target
+ * @property {object} intermediate - Middle level: 30-100 words, 25 WPM target
+ * @property {object} advanced - Expert level: 60-200 words, 35 WPM target
+ * @example
+ * const targetSpeed = DIFFICULTY_WORD_RANGES.intermediate.avgWPM; // 25
+ * const isBeginnerLength = wordCount <= DIFFICULTY_WORD_RANGES.beginner.max;
+ * @see {@link DifficultyLevel} for difficulty enum values
+ * @since 1.0.0
+ */
 export const DIFFICULTY_WORD_RANGES = {
 	beginner: { min: 10, max: 50, avgWPM: 15 },
 	intermediate: { min: 30, max: 100, avgWPM: 25 },
 	advanced: { min: 60, max: 200, avgWPM: 35 }
 } as const;
 
+/**
+ * List of terms that are considered inappropriate for children aged 7-12.
+ * Used for automated content filtering to ensure age-appropriate material.
+ * Includes violence, adult content, inappropriate language, and scary themes.
+ *
+ * @constant AGE_INAPPROPRIATE_TERMS
+ * @type {readonly string[]}
+ * @example
+ * const hasInappropriateContent = AGE_INAPPROPRIATE_TERMS.some(term =>
+ *   content.toLowerCase().includes(term)
+ * );
+ * @see {@link checkAgeAppropriateness} for usage in content validation
+ * @since 1.0.0
+ */
 export const AGE_INAPPROPRIATE_TERMS = [
 	// Violence and conflict
 	'violence',
@@ -84,6 +139,29 @@ export const AGE_INAPPROPRIATE_TERMS = [
 	'dark magic'
 ] as const;
 
+/**
+ * Model class for managing typing practice content items.
+ * Handles content validation, difficulty assessment, age-appropriateness filtering,
+ * and suitability scoring for individual learners. Designed specifically for
+ * child-friendly content from gaming sources.
+ *
+ * @class ContentItemModel
+ * @example
+ * // Create content from gaming source
+ * const content = new ContentItemModel({
+ *   title: 'Pikachu Adventures',
+ *   text: 'Pikachu is a friendly electric Pokemon who loves to help trainers.',
+ *   source: ContentSource.POKEMON,
+ *   theme: ThemeCategory.CHARACTERS
+ * });
+ *
+ * // Check suitability for a user
+ * const suitability = content.getSuitabilityScore(20, 85);
+ * if (suitability.recommended) {
+ *   console.log('Great content for this user!');
+ * }
+ * @since 1.0.0
+ */
 export class ContentItemModel {
 	private _content: ContentItem;
 
@@ -92,61 +170,188 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Get current content state
+	 * Get a deep copy of the current content item data.
+	 * Returns immutable copy to prevent external modifications.
+	 *
+	 * @returns {ContentItem} Complete content item data
+	 * @example
+	 * const contentData = model.content;
+	 * console.log(`${contentData.title}: ${contentData.wordCount} words`);
+	 * @since 1.0.0
 	 */
 	get content(): ContentItem {
 		return { ...this._content };
 	}
 
 	/**
-	 * Get specific properties
+	 * Get the unique identifier for this content item.
+	 *
+	 * @returns {string} Content item's unique ID
+	 * @example
+	 * const contentId = model.id; // 'content-1234567890-abc123'
+	 * @since 1.0.0
 	 */
 	get id(): string {
 		return this._content.id;
 	}
 
+	/**
+	 * Get the content's display title.
+	 * Sanitized and safe for display to children.
+	 *
+	 * @returns {string} Content title
+	 * @example
+	 * const title = model.title; // 'Pokemon Adventure Story'
+	 * @since 1.0.0
+	 */
 	get title(): string {
 		return this._content.title;
 	}
 
+	/**
+	 * Get the actual typing practice text content.
+	 * Text is sanitized and validated for age-appropriateness.
+	 *
+	 * @returns {string} Practice text content
+	 * @example
+	 * const practiceText = model.text;
+	 * console.log(`Practice: ${practiceText.substring(0, 50)}...`);
+	 * @since 1.0.0
+	 */
 	get text(): string {
 		return this._content.text;
 	}
 
+	/**
+	 * Get the source franchise of this content.
+	 * Indicates which gaming universe the content is from.
+	 *
+	 * @returns {ContentSource} Content source (Pokemon, Nintendo, or Roblox)
+	 * @example
+	 * const source = model.source; // ContentSource.POKEMON
+	 * console.log(`From ${source} universe`);
+	 * @see {@link ContentSource} for available sources
+	 * @since 1.0.0
+	 */
 	get source(): ContentSource {
 		return this._content.source;
 	}
 
+	/**
+	 * Get the automatically assessed difficulty level.
+	 * Based on text complexity, word count, and vocabulary analysis.
+	 *
+	 * @returns {DifficultyLevel} Difficulty level (beginner, intermediate, or advanced)
+	 * @example
+	 * const level = model.difficulty; // DifficultyLevel.INTERMEDIATE
+	 * console.log(`Difficulty: ${level}`);
+	 * @see {@link DifficultyLevel} for level definitions
+	 * @since 1.0.0
+	 */
 	get difficulty(): DifficultyLevel {
 		return this._content.difficulty;
 	}
 
+	/**
+	 * Get the thematic category of this content.
+	 * Helps organize content by topic for varied practice sessions.
+	 *
+	 * @returns {ThemeCategory} Theme category (news, characters, games, or events)
+	 * @example
+	 * const theme = model.theme; // ThemeCategory.CHARACTERS
+	 * console.log(`Theme: ${theme}`);
+	 * @see {@link ThemeCategory} for available themes
+	 * @since 1.0.0
+	 */
 	get theme(): ThemeCategory {
 		return this._content.theme;
 	}
 
+	/**
+	 * Get the actual word count of the practice text.
+	 * Automatically calculated and validated during content creation.
+	 *
+	 * @returns {number} Number of words in the text
+	 * @example
+	 * const words = model.wordCount; // 45
+	 * console.log(`${words} words to type`);
+	 * @since 1.0.0
+	 */
 	get wordCount(): number {
 		return this._content.wordCount;
 	}
 
+	/**
+	 * Get the estimated typing speed for this content.
+	 * Calculated based on text complexity and difficulty level.
+	 *
+	 * @returns {number} Estimated words per minute for average typist
+	 * @example
+	 * const targetWPM = model.estimatedWPM; // 22
+	 * console.log(`Target speed: ${targetWPM} WPM`);
+	 * @since 1.0.0
+	 */
 	get estimatedWPM(): number {
 		return this._content.estimatedWPM;
 	}
 
+	/**
+	 * Get the date when this content was added to the system.
+	 * Used for content freshness tracking and staleness detection.
+	 *
+	 * @returns {Date} Date when content was created/added
+	 * @example
+	 * const added = model.dateAdded;
+	 * console.log(`Added: ${added.toLocaleDateString()}`);
+	 * @since 1.0.0
+	 */
 	get dateAdded(): Date {
 		return new Date(this._content.dateAdded);
 	}
 
+	/**
+	 * Get whether this content passed age-appropriateness validation.
+	 * Content is checked against inappropriate terms and themes for kids 7-12.
+	 *
+	 * @returns {boolean} True if content is suitable for children
+	 * @example
+	 * if (model.ageAppropriate) {
+	 *   console.log('Safe for kids!');
+	 * }
+	 * @see {@link AGE_INAPPROPRIATE_TERMS} for filtering criteria
+	 * @since 1.0.0
+	 */
 	get ageAppropriate(): boolean {
 		return this._content.ageAppropriate;
 	}
 
+	/**
+	 * Get whether this content is marked as a special challenge.
+	 * Special challenges provide extra difficulty or unique practice opportunities.
+	 *
+	 * @returns {boolean} True if content is a special challenge
+	 * @example
+	 * if (model.specialChallenge) {
+	 *   console.log('⭐ Special Challenge Content!');
+	 * }
+	 * @since 1.0.0
+	 */
 	get specialChallenge(): boolean {
 		return this._content.specialChallenge;
 	}
 
 	/**
-	 * Validate and normalize content data
+	 * Validate and normalize content data to ensure data integrity and safety.
+	 * Performs sanitization, complexity analysis, and age-appropriateness checking.
+	 *
+	 * @private
+	 * @param {Partial<ContentItem>} content - Raw content data to validate
+	 * @returns {ContentItem} Validated and normalized content item
+	 * @throws {Error} When content fails validation (empty text, inappropriate content, etc.)
+	 * @example
+	 * // Internal use only - called by constructor
+	 * const safeContent = this.validateAndNormalize(rawData);
+	 * @since 1.0.0
 	 */
 	private validateAndNormalize(content: Partial<ContentItem>): ContentItem {
 		// Generate ID if not provided
@@ -212,7 +417,17 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Sanitize text content
+	 * Sanitize text content by normalizing whitespace and removing unsafe characters.
+	 * Ensures content is safe for display and typing practice.
+	 *
+	 * @private
+	 * @param {string} text - Raw text to sanitize
+	 * @returns {string} Sanitized and normalized text
+	 * @example
+	 * // Internal use only
+	 * const cleanText = this.sanitizeText('  Hello    world!!! ');
+	 * // Returns: "Hello world!"
+	 * @since 1.0.0
 	 */
 	private sanitizeText(text: string): string {
 		return text
@@ -223,7 +438,16 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Calculate word count
+	 * Calculate the actual word count of text content.
+	 * Uses whitespace splitting and filters empty strings.
+	 *
+	 * @private
+	 * @param {string} text - Text to count words in
+	 * @returns {number} Number of words found
+	 * @example
+	 * // Internal use only
+	 * const count = this.calculateWordCount('Hello world test'); // 3
+	 * @since 1.0.0
 	 */
 	private calculateWordCount(text: string): number {
 		return text
@@ -233,7 +457,17 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Validate content source
+	 * Validate and normalize content source to a known gaming franchise.
+	 * Defaults to Pokemon if source is invalid or not provided.
+	 *
+	 * @private
+	 * @param {ContentSource} [source] - Source to validate
+	 * @returns {ContentSource} Valid content source
+	 * @example
+	 * // Internal use only
+	 * const validSource = this.validateSource(ContentSource.NINTENDO);
+	 * @see {@link ContentSource} for available sources
+	 * @since 1.0.0
 	 */
 	private validateSource(source?: ContentSource): ContentSource {
 		const validSources: ContentSource[] = [
@@ -248,7 +482,17 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Validate theme category
+	 * Validate and normalize content theme to a known category.
+	 * Defaults to News if theme is invalid or not provided.
+	 *
+	 * @private
+	 * @param {ThemeCategory} [theme] - Theme to validate
+	 * @returns {ThemeCategory} Valid theme category
+	 * @example
+	 * // Internal use only
+	 * const validTheme = this.validateTheme(ThemeCategory.CHARACTERS);
+	 * @see {@link ThemeCategory} for available themes
+	 * @since 1.0.0
 	 */
 	private validateTheme(theme?: ThemeCategory): ThemeCategory {
 		const validThemes: ThemeCategory[] = [
@@ -264,7 +508,19 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Determine difficulty based on content analysis
+	 * Automatically determine difficulty level based on content analysis.
+	 * Uses word count and text complexity scoring to classify content.
+	 *
+	 * @private
+	 * @param {string} text - Content text to analyze
+	 * @param {number} wordCount - Number of words in text
+	 * @returns {DifficultyLevel} Determined difficulty level
+	 * @example
+	 * // Internal use only
+	 * const difficulty = this.determineDifficulty(text, 75);
+	 * @see {@link calculateComplexityScore} for complexity analysis
+	 * @see {@link DIFFICULTY_WORD_RANGES} for classification thresholds
+	 * @since 1.0.0
 	 */
 	private determineDifficulty(text: string, wordCount: number): DifficultyLevel {
 		const complexityScore = this.calculateComplexityScore(text);
@@ -284,7 +540,17 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Calculate text complexity score (0-1)
+	 * Calculate a complexity score for text content (0-1 scale).
+	 * Analyzes word length, vocabulary diversity, sentence structure, and special characters.
+	 *
+	 * @private
+	 * @param {string} text - Text to analyze for complexity
+	 * @returns {number} Complexity score from 0 (simple) to 1 (complex)
+	 * @example
+	 * // Internal use only
+	 * const complexity = this.calculateComplexityScore('Hello world'); // ~0.2
+	 * const hardText = this.calculateComplexityScore('Sophisticated terminology'); // ~0.8
+	 * @since 1.0.0
 	 */
 	private calculateComplexityScore(text: string): number {
 		const words = text.toLowerCase().split(/\s+/);
@@ -316,7 +582,18 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Calculate estimated WPM based on difficulty and content
+	 * Calculate estimated typing speed (WPM) for this content.
+	 * Combines base WPM for difficulty level with complexity adjustments.
+	 *
+	 * @private
+	 * @param {string} text - Content text to analyze
+	 * @param {DifficultyLevel} difficulty - Determined difficulty level
+	 * @returns {number} Estimated WPM (5-50 range)
+	 * @example
+	 * // Internal use only
+	 * const wpm = this.calculateEstimatedWPM(text, DifficultyLevel.INTERMEDIATE);
+	 * @see {@link DIFFICULTY_WORD_RANGES} for base WPM values
+	 * @since 1.0.0
 	 */
 	private calculateEstimatedWPM(text: string, difficulty: DifficultyLevel): number {
 		const baseWPM = DIFFICULTY_WORD_RANGES[difficulty].avgWPM;
@@ -331,7 +608,18 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Check if content is age-appropriate for children 7-12
+	 * Check if content is age-appropriate for children aged 7-12.
+	 * Scans for inappropriate terms and content patterns.
+	 *
+	 * @private
+	 * @param {string} text - Content text to check
+	 * @param {string} title - Content title to check
+	 * @returns {boolean} True if content is appropriate for children
+	 * @example
+	 * // Internal use only
+	 * const safe = this.checkAgeAppropriateness('Pokemon adventure', 'Fun Story');
+	 * @see {@link AGE_INAPPROPRIATE_TERMS} for filtered terms
+	 * @since 1.0.0
 	 */
 	private checkAgeAppropriateness(text: string, title: string): boolean {
 		const combinedText = (text + ' ' + title).toLowerCase();
@@ -355,7 +643,23 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Check if content matches given criteria
+	 * Check if this content item matches the specified filtering criteria.
+	 * Used for content search and recommendation systems.
+	 *
+	 * @param {ContentCriteria} criteria - Filtering criteria to match against
+	 * @returns {boolean} True if content matches all specified criteria
+	 * @example
+	 * const matches = content.matchesCriteria({
+	 *   source: ContentSource.POKEMON,
+	 *   difficulty: DifficultyLevel.BEGINNER,
+	 *   maxWords: 30
+	 * });
+	 *
+	 * if (matches) {
+	 *   console.log('Content suitable for beginner Pokemon fans!');
+	 * }
+	 * @see {@link ContentCriteria} for available criteria
+	 * @since 1.0.0
 	 */
 	matchesCriteria(criteria: ContentCriteria): boolean {
 		// Source filter
@@ -387,7 +691,23 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Get content suitability for user skill level
+	 * Calculate how suitable this content is for a specific user's skill level.
+	 * Provides a score, recommendation, and reasoning for content selection.
+	 *
+	 * @param {number} userWPM - User's current typing speed (words per minute)
+	 * @param {number} userAccuracy - User's typing accuracy percentage (0-100)
+	 * @returns {object} Suitability assessment
+	 * @returns {number} returns.score - Suitability score (0-100)
+	 * @returns {string} returns.reason - Human-readable explanation
+	 * @returns {boolean} returns.recommended - Whether content is recommended
+	 * @example
+	 * const assessment = content.getSuitabilityScore(25, 90);
+	 * console.log(`Score: ${assessment.score}% - ${assessment.reason}`);
+	 *
+	 * if (assessment.recommended) {
+	 *   addToRecommendedList(content);
+	 * }
+	 * @since 1.0.0
 	 */
 	getSuitabilityScore(
 		userWPM: number,
@@ -436,7 +756,21 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Check if content is stale/expired
+	 * Check if content is considered stale or expired based on age.
+	 * Stale content may be deprioritized in recommendations.
+	 *
+	 * @param {Date} [currentDate=new Date()] - Current date for comparison
+	 * @returns {boolean} True if content is older than the maximum age threshold
+	 * @example
+	 * if (content.isStale()) {
+	 *   console.log('Content is getting old, consider refreshing');
+	 * }
+	 *
+	 * // Check against specific date
+	 * const staleOn = new Date('2024-01-01');
+	 * const wasStale = content.isStale(staleOn);
+	 * @see {@link CONTENT_SETTINGS.maxContentAge} for age threshold
+	 * @since 1.0.0
 	 */
 	isStale(currentDate: Date = new Date()): boolean {
 		const daysSinceAdded = Math.floor(
@@ -446,7 +780,23 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Get practice statistics for this content
+	 * Generate a practice preview with statistics and features for display.
+	 * Provides user-friendly information about what to expect from this content.
+	 *
+	 * @returns {object} Practice preview data
+	 * @returns {number} returns.wordCount - Number of words to type
+	 * @returns {string} returns.estimatedDuration - Estimated time to complete
+	 * @returns {string} returns.difficultyDescription - Human-readable difficulty info
+	 * @returns {string[]} returns.keyFeatures - Notable features of the content
+	 * @example
+	 * const preview = content.generatePracticePreview();
+	 * console.log(`${preview.wordCount} words, ${preview.estimatedDuration}`);
+	 * console.log(`Features: ${preview.keyFeatures.join(', ')}`);
+	 *
+	 * // Display to user:
+	 * // "45 words, 2m 30s"
+	 * // "Features: Pokemon content, Punctuation training, Capitalization practice"
+	 * @since 1.0.0
 	 */
 	generatePracticePreview(): {
 		wordCount: number;
@@ -492,7 +842,19 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Update content text and recalculate derived properties
+	 * Update the content's text and automatically recalculate all derived properties.
+	 * Validates new text and updates word count, difficulty, and WPM estimates.
+	 *
+	 * @param {string} newText - New text content to set
+	 * @throws {Error} When text fails validation (length, appropriateness, etc.)
+	 * @example
+	 * try {
+	 *   content.updateText('Pikachu loves to play with other Pokemon in the sunny meadow.');
+	 *   console.log(`Updated to ${content.wordCount} words`);
+	 * } catch (error) {
+	 *   console.error('Text update failed:', error.message);
+	 * }
+	 * @since 1.0.0
 	 */
 	updateText(newText: string): void {
 		const sanitizedText = this.sanitizeText(newText);
@@ -519,14 +881,41 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Mark as special challenge content
+	 * Mark this content as a special challenge or remove the special status.
+	 * Special challenges can provide extra rewards or unique typing experiences.
+	 *
+	 * @param {boolean} isSpecial - Whether to mark as special challenge
+	 * @example
+	 * content.setSpecialChallenge(true);
+	 * console.log(content.specialChallenge); // true
+	 *
+	 * // Remove special status
+	 * content.setSpecialChallenge(false);
+	 * @since 1.0.0
 	 */
 	setSpecialChallenge(isSpecial: boolean): void {
 		this._content.specialChallenge = isSpecial;
 	}
 
 	/**
-	 * Filter content array by multiple criteria
+	 * Filter an array of content items by multiple criteria and return sorted results.
+	 * Provides content discovery and search functionality.
+	 *
+	 * @static
+	 * @param {ContentItemModel[]} contentList - Array of content items to filter
+	 * @param {ContentCriteria} criteria - Filtering criteria to apply
+	 * @param {number} [limit] - Maximum number of results to return
+	 * @returns {ContentItemModel[]} Filtered and sorted content items
+	 * @example
+	 * const pokemonContent = ContentItemModel.filterContent(allContent, {
+	 *   source: ContentSource.POKEMON,
+	 *   difficulty: DifficultyLevel.BEGINNER,
+	 *   maxWords: 50
+	 * }, 10);
+	 *
+	 * console.log(`Found ${pokemonContent.length} beginner Pokemon content items`);
+	 * @see {@link ContentCriteria} for filtering options
+	 * @since 1.0.0
 	 */
 	static filterContent(
 		contentList: ContentItemModel[],
@@ -561,7 +950,30 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Generate content recommendations based on user progress
+	 * Generate personalized content recommendations based on user typing skills.
+	 * Returns the most suitable content items ranked by suitability score.
+	 *
+	 * @static
+	 * @param {ContentItemModel[]} contentList - Available content to choose from
+	 * @param {number} userWPM - User's current typing speed
+	 * @param {number} userAccuracy - User's typing accuracy percentage
+	 * @param {DifficultyLevel} userDifficulty - User's current difficulty level
+	 * @param {number} [count=5] - Number of recommendations to return
+	 * @returns {Array<object>} Recommended content with suitability scores
+	 * @example
+	 * const recommendations = ContentItemModel.generateRecommendations(
+	 *   allContent,
+	 *   22, // 22 WPM
+	 *   85, // 85% accuracy
+	 *   DifficultyLevel.INTERMEDIATE,
+	 *   3   // Top 3 recommendations
+	 * );
+	 *
+	 * recommendations.forEach(rec => {
+	 *   console.log(`${rec.content.title}: ${rec.suitability.score}% match`);
+	 *   console.log(`Reason: ${rec.suitability.reason}`);
+	 * });
+	 * @since 1.0.0
 	 */
 	static generateRecommendations(
 		contentList: ContentItemModel[],
@@ -586,14 +998,39 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Export content for persistence
+	 * Export the current content item data for persistence to storage.
+	 * Returns a plain object suitable for JSON serialization.
+	 *
+	 * @returns {ContentItem} Plain object representation of content
+	 * @example
+	 * const contentData = content.toJSON();
+	 * localStorage.setItem('content-123', JSON.stringify(contentData));
+	 * @since 1.0.0
 	 */
 	toJSON(): ContentItem {
 		return { ...this._content };
 	}
 
 	/**
-	 * Create instance from persisted data
+	 * Create a ContentItemModel instance from persisted JSON data.
+	 * Handles date deserialization and data validation.
+	 *
+	 * @static
+	 * @param {unknown} data - Raw data from storage (JSON parsed)
+	 * @returns {ContentItemModel} New model instance with restored content
+	 * @throws {Error} When data is invalid or corrupted
+	 * @example
+	 * const savedData = JSON.parse(localStorage.getItem('content-123'));
+	 * const content = ContentItemModel.fromJSON(savedData);
+	 *
+	 * // Handle missing data gracefully
+	 * try {
+	 *   const content = ContentItemModel.fromJSON(data);
+	 * } catch (error) {
+	 *   console.error('Failed to load content:', error);
+	 *   // Handle error or create default content
+	 * }
+	 * @since 1.0.0
 	 */
 	static fromJSON(data: unknown): ContentItemModel {
 		if (!data || typeof data !== 'object') {
@@ -611,7 +1048,26 @@ export class ContentItemModel {
 	}
 
 	/**
-	 * Validate content state integrity
+	 * Validate the current state of the content item for data integrity issues.
+	 * Performs comprehensive checks on all properties and relationships.
+	 *
+	 * @returns {object} Validation result
+	 * @returns {boolean} returns.isValid - True if all validations pass
+	 * @returns {string[]} returns.errors - Array of validation error messages
+	 * @example
+	 * const validation = content.validateState();
+	 * if (!validation.isValid) {
+	 *   console.error('Content has issues:');
+	 *   validation.errors.forEach(error => console.error(`- ${error}`));
+	 * }
+	 *
+	 * // Use for debugging or data migration
+	 * if (validation.isValid) {
+	 *   saveContentData(content.toJSON());
+	 * } else {
+	 *   reportDataCorruption(validation.errors);
+	 * }
+	 * @since 1.0.0
 	 */
 	validateState(): { isValid: boolean; errors: string[] } {
 		const errors: string[] = [];

@@ -1,9 +1,15 @@
 /**
- * ProgressTrackingService Implementation
- *
- * Handles typing session tracking, metrics calculation, and progress analysis
+ * @module ProgressTrackingService
+ * @description Handles typing session tracking, metrics calculation, and progress analysis
  * for the gamified typing trainer. Provides real-time keypress recording,
  * WPM/accuracy calculations, trend analysis, and improvement suggestions.
+ *
+ * This service is essential for tracking kids' typing progress, identifying
+ * improvement areas, and providing personalized feedback to support learning.
+ * All metrics are calculated with performance optimization for real-time feedback.
+ *
+ * @since 1.0.0
+ * @performance Real-time keypress recording with <5ms response time
  */
 
 import type {
@@ -23,6 +29,18 @@ import type {
 import { UserProgressModel } from '$lib/models/UserProgress.js';
 import { dbManager } from '$lib/storage/db.js';
 
+/**
+ * @interface ActiveSession
+ * @description Represents an active typing session with real-time tracking data
+ *
+ * @property {SessionId} sessionId - Unique identifier for the typing session
+ * @property {string} contentId - ID of the content being typed
+ * @property {Date} startTime - When the typing session began
+ * @property {Array} keypresses - Real-time keypress data with accuracy tracking
+ * @property {UserProgressModel} model - Progress model for metric calculations
+ *
+ * @since 1.0.0
+ */
 interface ActiveSession {
 	sessionId: SessionId;
 	contentId: string;
@@ -41,7 +59,20 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	private batchFlushTimeout: number | null = null;
 
 	/**
-	 * Start new typing session with performance tracking
+	 * Starts a new typing session with performance tracking and metrics initialization.
+	 * Creates session model and prepares for real-time keypress recording.
+	 *
+	 * @param {string} contentId - Unique identifier of the content to be typed
+	 * @returns {Promise<SessionId>} Unique session identifier for tracking
+	 *
+	 * @example
+	 * // Start a new typing session for a Pokemon story
+	 * const sessionId = await progressTrackingService.startSession('pokemon-001');
+	 * console.log(`Started typing session: ${sessionId}`);
+	 * // Now ready to record keypresses and track progress
+	 *
+	 * @performance Creates lightweight session model for real-time tracking
+	 * @since 1.0.0
 	 */
 	async startSession(contentId: string): Promise<SessionId> {
 		const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -77,7 +108,24 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * Record keypress with real-time performance (<5ms)
+	 * Records a keypress with real-time performance tracking and validation.
+	 * Uses batching for optimal performance while maintaining accuracy.
+	 *
+	 * @param {string} key - The key that was pressed by the kid
+	 * @param {boolean} isCorrect - Whether the keypress matches the expected character
+	 * @param {number} [timestamp=Date.now()] - When the keypress occurred (milliseconds)
+	 * @returns {Promise<void>}
+	 * @throws {Error} If no active session or invalid timestamp
+	 *
+	 * @example
+	 * // Record a correct keypress
+	 * await progressTrackingService.recordKeypress('h', true);
+	 *
+	 * // Record an incorrect keypress with custom timestamp
+	 * await progressTrackingService.recordKeypress('x', false, Date.now());
+	 *
+	 * @performance <5ms response time using batch processing
+	 * @since 1.0.0
 	 */
 	async recordKeypress(
 		key: string,
@@ -110,7 +158,26 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * End session and return comprehensive summary
+	 * Ends the current typing session and generates a comprehensive performance summary.
+	 * Calculates final metrics, checks milestones, and persists session data.
+	 *
+	 * @returns {Promise<SessionSummary>} Complete session summary with metrics and achievements
+	 * @throws {Error} If no active session exists
+	 *
+	 * @example
+	 * // End typing session and get results
+	 * const summary = await progressTrackingService.endSession();
+	 * console.log(`Session completed!`);
+	 * console.log(`WPM: ${summary.wordsPerMinute}`);
+	 * console.log(`Accuracy: ${summary.accuracyPercentage}%`);
+	 * console.log(`Errors: ${summary.errorsCount}`);
+	 * console.log(`Improvement: +${summary.improvementFromLastSession} WPM`);
+	 * if (summary.milestonesAchieved.length > 0) {
+	 *   console.log('Milestones achieved this session!');
+	 * }
+	 *
+	 * @performance Flushes batched keypresses and calculates final metrics
+	 * @since 1.0.0
 	 */
 	async endSession(): Promise<SessionSummary> {
 		if (!this.activeSession) {
@@ -152,7 +219,23 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * Calculate WPM with outlier exclusion
+	 * Calculates words per minute with intelligent outlier exclusion and weighted averaging.
+	 * Recent sessions are weighted more heavily to reflect current skill level.
+	 *
+	 * @param {TimeSpan} [timeSpan='week'] - Time period for calculation ('day', 'week', 'month')
+	 * @returns {Promise<number>} Weighted average WPM rounded to one decimal place
+	 *
+	 * @example
+	 * // Get current week's typing speed
+	 * const weeklyWPM = await progressTrackingService.calculateWPM('week');
+	 * console.log(`This week's average: ${weeklyWPM} WPM`);
+	 *
+	 * // Get today's performance
+	 * const dailyWPM = await progressTrackingService.calculateWPM('day');
+	 * console.log(`Today's speed: ${dailyWPM} WPM`);
+	 *
+	 * @performance Excludes unrealistic values (0-300 WPM range) and uses weighted averaging
+	 * @since 1.0.0
 	 */
 	async calculateWPM(timeSpan: TimeSpan = 'week'): Promise<number> {
 		const sessions = await this.getSessionsInTimeSpan(timeSpan);
@@ -178,7 +261,24 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * Calculate accuracy percentage
+	 * Calculates typing accuracy percentage across multiple sessions.
+	 * Aggregates all characters typed for accurate overall accuracy measurement.
+	 *
+	 * @param {TimeSpan} [timeSpan='week'] - Time period for calculation ('day', 'week', 'month')
+	 * @returns {Promise<number>} Accuracy percentage rounded to one decimal place
+	 *
+	 * @example
+	 * // Check this week's accuracy
+	 * const accuracy = await progressTrackingService.calculateAccuracy('week');
+	 * console.log(`This week's accuracy: ${accuracy}%`);
+	 * if (accuracy >= 90) {
+	 *   console.log('Excellent accuracy! Keep it up!');
+	 * } else if (accuracy < 75) {
+	 *   console.log('Focus on accuracy over speed.');
+	 * }
+	 *
+	 * @performance Aggregates character counts across sessions for precise calculation
+	 * @since 1.0.0
 	 */
 	async calculateAccuracy(timeSpan: TimeSpan = 'week'): Promise<number> {
 		const sessions = await this.getSessionsInTimeSpan(timeSpan);
@@ -199,7 +299,25 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * Get typing trends with moving averages
+	 * Analyzes typing trends over time with moving averages for smooth progression tracking.
+	 * Provides daily breakdowns with trend analysis for WPM, accuracy, and practice time.
+	 *
+	 * @param {number} [days=7] - Number of recent days to analyze for trends
+	 * @returns {Promise<TypingTrends>} Comprehensive trend data with moving averages
+	 *
+	 * @example
+	 * // Get last week's typing trends
+	 * const trends = await progressTrackingService.getTypingTrends(7);
+	 * console.log(`Improvement rate: ${trends.improvementRate} WPM per day`);
+	 * trends.wpmTrend.forEach(day => {
+	 *   console.log(`${day.date.toLocaleDateString()}: ${day.value} WPM`);
+	 * });
+	 *
+	 * // Get monthly trends for detailed analysis
+	 * const monthlyTrends = await progressTrackingService.getTypingTrends(30);
+	 *
+	 * @performance Uses 3-day moving averages to smooth out daily variations
+	 * @since 1.0.0
 	 */
 	async getTypingTrends(days: number = 7): Promise<TypingTrends> {
 		const sessions = await this.getRecentSessions(days);
@@ -295,7 +413,22 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * Identify challenging keys (>20% error rate)
+	 * Identifies keys with high error rates and provides improvement recommendations.
+	 * Analyzes the last 30 days of typing data to find persistent problem keys.
+	 *
+	 * @returns {Promise<KeyAnalysis[]>} Array of challenging keys sorted by error rate (highest first)
+	 *
+	 * @example
+	 * // Find which keys need practice
+	 * const problemKeys = await progressTrackingService.identifyChallengingKeys();
+	 * problemKeys.forEach(key => {
+	 *   console.log(`${key.key} key: ${(key.errorRate * 100).toFixed(1)}% error rate`);
+	 *   console.log(`Recommendation: ${key.practiceRecommendation}`);
+	 *   console.log(`Trend: ${key.improvementTrend}`);
+	 * });
+	 *
+	 * @performance Filters keys with >20% error rate and minimum 10 attempts
+	 * @since 1.0.0
 	 */
 	async identifyChallengingKeys(): Promise<KeyAnalysis[]> {
 		const sessions = await this.getRecentSessions(30); // Last 30 days
@@ -347,7 +480,22 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * Get improvement suggestions based on analysis
+	 * Generates personalized improvement suggestions based on comprehensive analysis.
+	 * Combines WPM, accuracy, and key-specific data to provide targeted recommendations.
+	 *
+	 * @returns {Promise<ImprovementArea[]>} Top 3 improvement suggestions prioritized by impact
+	 *
+	 * @example
+	 * // Get personalized improvement tips for the kid
+	 * const suggestions = await progressTrackingService.getImprovementSuggestions();
+	 * suggestions.forEach(suggestion => {
+	 *   console.log(`${suggestion.priority.toUpperCase()} Priority: ${suggestion.area}`);
+	 *   console.log(`Issue: ${suggestion.description}`);
+	 *   console.log(`Tip: ${suggestion.recommendation}`);
+	 * });
+	 *
+	 * @performance Analyzes recent performance metrics and challenging keys
+	 * @since 1.0.0
 	 */
 	async getImprovementSuggestions(): Promise<ImprovementArea[]> {
 		const recentWPM = await this.calculateWPM('week');
@@ -402,7 +550,17 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * Track milestones achieved in session
+	 * Tracks milestones achieved during typing sessions.
+	 * This is a placeholder that will integrate with AchievementService in future versions.
+	 *
+	 * @returns {Promise<MilestoneData[]>} Array of milestone achievements
+	 *
+	 * @example
+	 * // Check for milestones (future integration)
+	 * const milestones = await progressTrackingService.trackMilestones();
+	 * // Will return achievements like speed milestones, accuracy goals, etc.
+	 *
+	 * @since 1.0.0
 	 */
 	async trackMilestones(): Promise<MilestoneData[]> {
 		// This would integrate with AchievementService in real implementation
@@ -410,7 +568,27 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * Generate comprehensive progress report
+	 * Generates comprehensive progress report for specified time period.
+	 * Includes aggregate metrics, challenging areas, and parent-friendly insights.
+	 *
+	 * @param {TimeRange} timeRange - Date range with start and end dates for the report
+	 * @returns {Promise<ProgressReport>} Detailed progress report with metrics and recommendations
+	 *
+	 * @example
+	 * // Generate weekly progress report
+	 * const lastWeek = {
+	 *   start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+	 *   end: new Date()
+	 * };
+	 * const report = await progressTrackingService.generateProgressReport(lastWeek);
+	 * console.log(`Sessions completed: ${report.sessionsCompleted}`);
+	 * console.log(`Average WPM: ${report.averageWPM}`);
+	 * console.log(`Average accuracy: ${report.averageAccuracy}%`);
+	 * console.log(`Practice time: ${Math.round(report.totalPracticeTime / 60000)} minutes`);
+	 * console.log(`Areas to focus on: ${report.challengingAreas.join(', ')}`);
+	 *
+	 * @performance Aggregates data across multiple sessions for comprehensive analysis
+	 * @since 1.0.0
 	 */
 	async generateProgressReport(timeRange: TimeRange): Promise<ProgressReport> {
 		const sessions = await this.getSessionsInTimeRange(timeRange);
@@ -453,7 +631,26 @@ export class ProgressTrackingService implements IProgressTrackingService {
 	}
 
 	/**
-	 * Get parent-friendly summary
+	 * Generates parent-friendly summary of child's typing progress and engagement.
+	 * Provides clear insights for parents to understand their child's development.
+	 *
+	 * @returns {Promise<ParentSummary>} Parent-oriented summary with progress indicators
+	 *
+	 * @example
+	 * // Get summary for parent communication
+	 * const summary = await progressTrackingService.getParentSummary();
+	 * console.log(`${summary.childName}'s Progress Summary:`);
+	 * console.log(`Current typing speed: ${summary.currentWPM} words per minute`);
+	 * console.log(`Accuracy: ${summary.averageAccuracy}%`);
+	 * console.log(`Practice streak: ${summary.currentStreak} days`);
+	 * console.log(`Total practice: ${Math.round(summary.totalPracticeTime / 60000)} minutes`);
+	 * console.log(`Overall progress: ${summary.overallProgress}`);
+	 * if (summary.areasNeedingFocus.length > 0) {
+	 *   console.log(`Areas to practice: ${summary.areasNeedingFocus.join(', ')}`);
+	 * }
+	 *
+	 * @performance Analyzes 30 days of data for comprehensive parent insights
+	 * @since 1.0.0
 	 */
 	async getParentSummary(): Promise<ParentSummary> {
 		const recentSessions = await this.getRecentSessions(30);

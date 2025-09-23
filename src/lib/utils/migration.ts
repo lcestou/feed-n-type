@@ -1,8 +1,15 @@
 /**
- * Data Migration Utilities
+ * @module DataMigration
+ * @description Data migration utilities for the gamified typing trainer.
+ * Handles migrating user data between different versions of the application,
+ * ensuring backward compatibility and data integrity when models or schemas change.
  *
- * Handles migrating user data between different versions of the application.
- * Ensures backward compatibility and data integrity when models or schemas change.
+ * This module is critical for maintaining user progress and preferences when
+ * the app is updated. It includes backup/restore capabilities to prevent data loss
+ * during migration processes.
+ *
+ * @since 1.0.0
+ * @performance Implements incremental migrations and automatic backup creation
  */
 
 import { PetStateModel } from '$lib/models/PetState.js';
@@ -17,7 +24,30 @@ import type { PetState, UserProgress } from '$lib/types/index.js';
 const CURRENT_DATA_VERSION = '1.0.0';
 const VERSION_KEY = 'app_data_version';
 
-// Migration result types
+/**
+ * @interface MigrationResult
+ * @description Result object returned from migration operations
+ *
+ * @property {boolean} success - Whether the migration completed successfully
+ * @property {string | null} fromVersion - Source version before migration
+ * @property {string} toVersion - Target version after migration
+ * @property {string[]} migratedEntities - List of data entities that were migrated
+ * @property {string[]} errors - Any errors encountered during migration
+ * @property {string[]} warnings - Non-fatal warnings from the migration process
+ *
+ * @example
+ * // Example migration result
+ * const result: MigrationResult = {
+ *   success: true,
+ *   fromVersion: '0.9.0',
+ *   toVersion: '1.0.0',
+ *   migratedEntities: ['PetState', 'UserProgress'],
+ *   errors: [],
+ *   warnings: ['New field added with default value']
+ * };
+ *
+ * @since 1.0.0
+ */
 export interface MigrationResult {
 	success: boolean;
 	fromVersion: string | null;
@@ -27,6 +57,26 @@ export interface MigrationResult {
 	warnings: string[];
 }
 
+/**
+ * @interface BackupResult
+ * @description Result object returned from backup operations
+ *
+ * @property {boolean} success - Whether the backup was created successfully
+ * @property {string} backupKey - Unique key for accessing the backup data
+ * @property {number} timestamp - When the backup was created (milliseconds)
+ * @property {string[]} entities - List of data entities included in the backup
+ *
+ * @example
+ * // Example backup result
+ * const backup: BackupResult = {
+ *   success: true,
+ *   backupKey: 'backup_1640995200000',
+ *   timestamp: 1640995200000,
+ *   entities: ['pet_states', 'user_progress', 'localStorage:streak_data']
+ * };
+ *
+ * @since 1.0.0
+ */
 export interface BackupResult {
 	success: boolean;
 	backupKey: string;
@@ -35,7 +85,22 @@ export interface BackupResult {
 }
 
 /**
- * Main migration coordinator
+ * @class DataMigrationService
+ * @description Main migration coordinator that handles data schema updates and version transitions.
+ * Provides comprehensive backup/restore capabilities and incremental migration support.
+ *
+ * The service ensures that kids' typing progress and pet data are preserved
+ * across app updates while maintaining data integrity and performance.
+ *
+ * @example
+ * // Run migration check during app startup
+ * const migrationService = new DataMigrationService();
+ * const result = await migrationService.checkAndMigrate();
+ * if (result.success) {
+ *   console.log(`Migrated from ${result.fromVersion} to ${result.toVersion}`);
+ * }
+ *
+ * @since 1.0.0
  */
 export class DataMigrationService {
 	private petStateModel: PetStateModel;
@@ -51,7 +116,23 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Check if migration is needed and execute if required
+	 * Checks if data migration is needed and executes migration if required.
+	 * Creates automatic backup before migration and handles rollback on failure.
+	 *
+	 * @returns {Promise<MigrationResult>} Detailed result of the migration process
+	 *
+	 * @example
+	 * // Check and migrate during app initialization
+	 * const result = await migrationService.checkAndMigrate();
+	 * if (!result.success) {
+	 *   console.error('Migration failed:', result.errors);
+	 *   // Handle migration failure (show error to user, etc.)
+	 * } else if (result.migratedEntities.length > 0) {
+	 *   console.log('Successfully migrated:', result.migratedEntities);
+	 * }
+	 *
+	 * @performance Creates backup before migration for safety
+	 * @since 1.0.0
 	 */
 	async checkAndMigrate(): Promise<MigrationResult> {
 		const currentVersion = localStorageManager.get<string>(VERSION_KEY) ?? null;
@@ -106,7 +187,16 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Execute migrations based on version ranges
+	 * Executes version-specific migrations based on source and target versions.
+	 * Implements incremental migration strategy for complex version jumps.
+	 *
+	 * @private
+	 * @param {string} fromVersion - Current data version
+	 * @param {string} toVersion - Target data version
+	 * @param {MigrationResult} result - Result object to populate with migration details
+	 * @returns {Promise<void>}
+	 *
+	 * @since 1.0.0
 	 */
 	private async executeMigrations(
 		fromVersion: string,
@@ -127,7 +217,21 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Migration to version 1.0.0 (current baseline)
+	 * Migrates all data entities to version 1.0.0 schema.
+	 * This is the current baseline version with comprehensive data structure.
+	 *
+	 * @private
+	 * @param {MigrationResult} result - Result object to populate with migration status
+	 * @returns {Promise<void>}
+	 *
+	 * @example
+	 * // Internal migration process for v1.0.0
+	 * // - Adds missing pet accessory fields
+	 * // - Normalizes user progress data structure
+	 * // - Migrates streak data with forgiveness credits
+	 * // - Updates achievement progress format
+	 *
+	 * @since 1.0.0
 	 */
 	private async migrateToV1_0_0(result: MigrationResult): Promise<void> {
 		// Migrate PetState data
@@ -172,7 +276,20 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Migrate PetState data structure
+	 * Migrates all PetState records to current schema format.
+	 * Ensures virtual pet data maintains compatibility across app versions.
+	 *
+	 * @private
+	 * @returns {Promise<void>}
+	 *
+	 * @example
+	 * // Internal migration updates:
+	 * // - Adds missing accessories array
+	 * // - Normalizes emotion state values
+	 * // - Converts old 'stage' to 'evolutionForm'
+	 * // - Ensures numeric happiness values
+	 *
+	 * @since 1.0.0
 	 */
 	private async migratePetStateData(): Promise<void> {
 		// Get all existing pet state records using DatabaseManager
@@ -187,7 +304,14 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Migrate individual PetState record
+	 * Migrates a single PetState record to current schema.
+	 * Handles field additions, type conversions, and value mapping.
+	 *
+	 * @private
+	 * @param {unknown} record - Raw PetState record to migrate
+	 * @returns {unknown} Migrated record with current schema
+	 *
+	 * @since 1.0.0
 	 */
 	private migratePetStateRecord(record: unknown): unknown {
 		if (!record || typeof record !== 'object') return record;
@@ -219,7 +343,20 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Migrate UserProgress data structure
+	 * Migrates all UserProgress records to current schema format.
+	 * Preserves typing session history and performance metrics.
+	 *
+	 * @private
+	 * @returns {Promise<void>}
+	 *
+	 * @example
+	 * // Internal migration updates:
+	 * // - Adds session history tracking
+	 * // - Initializes weekly goals structure
+	 * // - Renames 'stats' to 'statistics'
+	 * // - Ensures data consistency
+	 *
+	 * @since 1.0.0
 	 */
 	private async migrateUserProgressData(): Promise<void> {
 		// Get all existing user progress records using DatabaseManager
@@ -234,7 +371,14 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Migrate individual UserProgress record
+	 * Migrates a single UserProgress record to current schema.
+	 * Preserves all typing performance data during schema updates.
+	 *
+	 * @private
+	 * @param {unknown} record - Raw UserProgress record to migrate
+	 * @returns {unknown} Migrated record with current schema
+	 *
+	 * @since 1.0.0
 	 */
 	private migrateUserProgressRecord(record: unknown): unknown {
 		if (!record || typeof record !== 'object') return record;
@@ -263,7 +407,20 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Migrate StreakData structure
+	 * Migrates StreakData to support forgiveness credits and catch-up features.
+	 * Enhances streak tracking for better user engagement.
+	 *
+	 * @private
+	 * @returns {Promise<void>}
+	 *
+	 * @example
+	 * // Internal migration updates:
+	 * // - Adds forgiveness credit system
+	 * // - Implements catch-up windows
+	 * // - Converts date string formats
+	 * // - Maintains streak continuity
+	 *
+	 * @since 1.0.0
 	 */
 	private async migrateStreakData(): Promise<void> {
 		const streakKey = 'streak_data';
@@ -278,7 +435,14 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Migrate StreakData record
+	 * Migrates a single StreakData record to current schema.
+	 * Adds advanced streak management features.
+	 *
+	 * @private
+	 * @param {unknown} record - Raw StreakData record to migrate
+	 * @returns {unknown} Migrated record with enhanced streak features
+	 *
+	 * @since 1.0.0
 	 */
 	private migrateStreakRecord(record: unknown): unknown {
 		if (!record || typeof record !== 'object') return record;
@@ -309,7 +473,20 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Migrate AchievementProgress data
+	 * Migrates AchievementProgress data to current achievement system.
+	 * Preserves all unlocked achievements and accessory rewards.
+	 *
+	 * @private
+	 * @returns {Promise<void>}
+	 *
+	 * @example
+	 * // Internal migration updates:
+	 * // - Standardizes achievement format
+	 * // - Adds accessory tracking
+	 * // - Converts legacy achievement arrays
+	 * // - Preserves unlock dates
+	 *
+	 * @since 1.0.0
 	 */
 	private async migrateAchievementData(): Promise<void> {
 		const achievementKey = 'achievement_progress';
@@ -324,7 +501,14 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Migrate AchievementProgress record
+	 * Migrates a single AchievementProgress record to current schema.
+	 * Ensures all achievements and accessories are properly formatted.
+	 *
+	 * @private
+	 * @param {unknown} record - Raw AchievementProgress record to migrate
+	 * @returns {unknown} Migrated record with current achievement structure
+	 *
+	 * @since 1.0.0
 	 */
 	private migrateAchievementRecord(record: unknown): unknown {
 		if (!record || typeof record !== 'object') return record;
@@ -361,7 +545,23 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Create backup of current data
+	 * Creates comprehensive backup of all user data before migration.
+	 * Includes both IndexedDB and localStorage data for complete recovery.
+	 *
+	 * @returns {Promise<BackupResult>} Result indicating backup success and details
+	 *
+	 * @example
+	 * // Create backup before risky operation
+	 * const backup = await migrationService.createBackup();
+	 * if (backup.success) {
+	 *   console.log(`Backup created: ${backup.backupKey}`);
+	 *   console.log(`Backed up entities: ${backup.entities.join(', ')}`);
+	 * } else {
+	 *   console.error('Backup failed - aborting migration');
+	 * }
+	 *
+	 * @performance Stores backup in localStorage with timestamp key
+	 * @since 1.0.0
 	 */
 	async createBackup(): Promise<BackupResult> {
 		const timestamp = Date.now();
@@ -407,7 +607,23 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Restore data from backup
+	 * Restores all user data from a previously created backup.
+	 * Used for rollback when migration fails or data corruption occurs.
+	 *
+	 * @param {string} backupKey - Unique key identifying the backup to restore
+	 * @returns {Promise<boolean>} True if restoration was successful, false otherwise
+	 *
+	 * @example
+	 * // Restore from backup after failed migration
+	 * const restored = await migrationService.restoreFromBackup('backup_1640995200000');
+	 * if (restored) {
+	 *   console.log('Successfully restored user data from backup');
+	 * } else {
+	 *   console.error('Failed to restore from backup');
+	 * }
+	 *
+	 * @performance Clears existing data before restoration
+	 * @since 1.0.0
 	 */
 	async restoreFromBackup(backupKey: string): Promise<boolean> {
 		try {
@@ -421,7 +637,10 @@ export class DataMigrationService {
 				// Clear and restore using DatabaseManager methods
 				await dbManager.clear(storeName as keyof DatabaseSchema);
 				for (const record of records as unknown[]) {
-					await dbManager.put(storeName as keyof DatabaseSchema, record as any);
+					await dbManager.put(
+						storeName as keyof DatabaseSchema,
+						record as DatabaseSchema[keyof DatabaseSchema]
+					);
 				}
 			}
 
@@ -443,7 +662,22 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Clean up old backups
+	 * Removes old backup files to prevent storage bloat.
+	 * Automatically called during migration to maintain optimal storage usage.
+	 *
+	 * @param {number} [maxAge=7 * 24 * 60 * 60 * 1000] - Maximum age in milliseconds (default: 7 days)
+	 * @returns {Promise<number>} Number of backups cleaned up
+	 *
+	 * @example
+	 * // Clean up backups older than 3 days
+	 * const cleaned = await migrationService.cleanupOldBackups(3 * 24 * 60 * 60 * 1000);
+	 * console.log(`Removed ${cleaned} old backup files`);
+	 *
+	 * // Use default 7-day cleanup
+	 * const defaultCleanup = await migrationService.cleanupOldBackups();
+	 *
+	 * @performance Iterates through localStorage keys to find old backups
+	 * @since 1.0.0
 	 */
 	async cleanupOldBackups(maxAge: number = 7 * 24 * 60 * 60 * 1000): Promise<number> {
 		const keys = Object.keys(localStorage);
@@ -464,7 +698,20 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Helper: Check if version A is less than version B
+	 * Compares two semantic version strings to determine ordering.
+	 * Used for determining which migrations need to be applied.
+	 *
+	 * @private
+	 * @param {string} versionA - First version string (e.g., '1.0.0')
+	 * @param {string} versionB - Second version string (e.g., '1.1.0')
+	 * @returns {boolean} True if versionA is less than versionB
+	 *
+	 * @example
+	 * // Internal usage for migration logic
+	 * const needsMigration = this.isVersionLessThan('0.9.0', '1.0.0'); // true
+	 * const alreadyCurrent = this.isVersionLessThan('1.0.0', '1.0.0'); // false
+	 *
+	 * @since 1.0.0
 	 */
 	private isVersionLessThan(versionA: string, versionB: string): boolean {
 		const partsA = versionA.split('.').map((x) => parseInt(x, 10));
@@ -482,7 +729,19 @@ export class DataMigrationService {
 	}
 
 	/**
-	 * Helper: Map old stage values to new EvolutionForm enum
+	 * Maps legacy pet stage values to current EvolutionForm enum values.
+	 * Ensures backward compatibility for pet evolution data.
+	 *
+	 * @private
+	 * @param {unknown} stage - Legacy stage value from old data format
+	 * @returns {string} Corresponding EvolutionForm enum value
+	 *
+	 * @example
+	 * // Internal mapping during pet state migration
+	 * const newForm = this.mapOldStageToEvolutionForm('baby'); // returns 'BABY'
+	 * const defaultForm = this.mapOldStageToEvolutionForm('unknown'); // returns 'EGG'
+	 *
+	 * @since 1.0.0
 	 */
 	private mapOldStageToEvolutionForm(stage: unknown): string {
 		const mapping: Record<string, string> = {
@@ -498,7 +757,24 @@ export class DataMigrationService {
 }
 
 /**
- * Convenience function to run migration check
+ * Convenience function to run migration check during app startup.
+ * Creates service instance and executes migration check automatically.
+ *
+ * @returns {Promise<MigrationResult>} Detailed result of migration process
+ *
+ * @example
+ * // Run migration check during app initialization
+ * import { runMigrationCheck } from '$lib/utils/migration.js';
+ *
+ * const migrationResult = await runMigrationCheck();
+ * if (!migrationResult.success) {
+ *   console.error('Migration failed:', migrationResult.errors);
+ *   // Handle migration failure
+ * } else if (migrationResult.migratedEntities.length > 0) {
+ *   console.log('Data migrated successfully:', migrationResult.migratedEntities);
+ * }
+ *
+ * @since 1.0.0
  */
 export async function runMigrationCheck(): Promise<MigrationResult> {
 	const migrationService = new DataMigrationService();
@@ -506,7 +782,25 @@ export async function runMigrationCheck(): Promise<MigrationResult> {
 }
 
 /**
- * Convenience function to create data backup
+ * Convenience function to create comprehensive data backup.
+ * Useful for manual backup creation before major operations.
+ *
+ * @returns {Promise<BackupResult>} Result indicating backup success and details
+ *
+ * @example
+ * // Create manual backup before risky operation
+ * import { createDataBackup } from '$lib/utils/migration.js';
+ *
+ * const backup = await createDataBackup();
+ * if (backup.success) {
+ *   console.log(`Backup created with key: ${backup.backupKey}`);
+ *   console.log(`Backed up: ${backup.entities.join(', ')}`);
+ *   // Proceed with risky operation
+ * } else {
+ *   console.error('Failed to create backup - aborting operation');
+ * }
+ *
+ * @since 1.0.0
  */
 export async function createDataBackup(): Promise<BackupResult> {
 	const migrationService = new DataMigrationService();
@@ -514,7 +808,24 @@ export async function createDataBackup(): Promise<BackupResult> {
 }
 
 /**
- * Convenience function to clean up old backups
+ * Convenience function to clean up old backup files.
+ * Helps maintain optimal storage usage by removing expired backups.
+ *
+ * @param {number} [maxAgeDays=7] - Maximum age in days for keeping backups
+ * @returns {Promise<number>} Number of backup files removed
+ *
+ * @example
+ * // Clean up backups older than 3 days
+ * import { cleanupDataBackups } from '$lib/utils/migration.js';
+ *
+ * const removedCount = await cleanupDataBackups(3);
+ * console.log(`Removed ${removedCount} old backup files`);
+ *
+ * // Use default 7-day retention
+ * const defaultCleanup = await cleanupDataBackups();
+ * console.log(`Cleaned up ${defaultCleanup} expired backups`);
+ *
+ * @since 1.0.0
  */
 export async function cleanupDataBackups(maxAgeDays: number = 7): Promise<number> {
 	const migrationService = new DataMigrationService();

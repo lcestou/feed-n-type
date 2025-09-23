@@ -1,10 +1,16 @@
 /**
- * AchievementService Implementation
- *
- * Manages achievement unlocking, milestone tracking, celebration events, and
+ * @module AchievementService
+ * @description Manages achievement unlocking, milestone tracking, celebration events, and
  * accessory management for the gamified typing trainer. Provides intelligent
  * achievement detection, personal best tracking, and priority-based celebration
  * queue management with performance optimization.
+ *
+ * This service is designed for kids aged 7-12 and focuses on encouraging
+ * typing practice through gamification elements like virtual pet accessories
+ * and achievement celebrations.
+ *
+ * @since 1.0.0
+ * @performance Implements efficient queue management and lazy loading of achievement data
  */
 
 import type {
@@ -23,6 +29,35 @@ import type {
 import { AchievementProgressModel } from '$lib/models/AchievementProgress.js';
 import { dbManager } from '$lib/storage/db.js';
 
+/**
+ * @interface AchievementDefinition
+ * @description Defines the structure for achievement configurations
+ * including unlock conditions and rewards
+ *
+ * @property {string} id - Unique identifier for the achievement
+ * @property {string} title - Display title for the achievement (kid-friendly)
+ * @property {string} description - Explanation of how to unlock the achievement
+ * @property {string} icon - Icon identifier for visual representation
+ * @property {number} points - Points awarded when achievement is unlocked
+ * @property {'common' | 'rare' | 'epic' | 'legendary'} rarity - Achievement difficulty level
+ * @property {Function} checkCondition - Function to test if achievement criteria are met
+ * @property {string[]} [accessoryRewards] - Optional pet accessories unlocked with achievement
+ *
+ * @example
+ * // Speed achievement that unlocks a hat for the virtual pet
+ * const speedAchievement: AchievementDefinition = {
+ *   id: 'fast-typer',
+ *   title: 'Fast Typer',
+ *   description: 'Type 20 words per minute',
+ *   icon: 'speed-icon',
+ *   points: 50,
+ *   rarity: 'common',
+ *   checkCondition: (session) => session.wordsPerMinute >= 20,
+ *   accessoryRewards: ['speed-hat']
+ * };
+ *
+ * @since 1.0.0
+ */
 interface AchievementDefinition {
 	id: string;
 	title: string;
@@ -153,7 +188,27 @@ export class AchievementService implements IAchievementService {
 	];
 
 	/**
-	 * Check for newly unlocked achievements based on session data
+	 * Checks for newly unlocked achievements based on current session performance data.
+	 * Evaluates all achievement conditions and returns any newly earned achievements.
+	 *
+	 * @param {SessionSummary} sessionData - Current typing session performance metrics
+	 * @returns {Promise<Achievement[]>} Array of newly unlocked achievements
+	 * @throws {Error} If session data is invalid or corrupted
+	 *
+	 * @example
+	 * // Check achievements after a kid completes a typing session
+	 * const sessionData = {
+	 *   wordsPerMinute: 25,
+	 *   accuracyPercentage: 92,
+	 *   duration: 300000, // 5 minutes
+	 *   totalCharacters: 500,
+	 *   improvementFromLastSession: 3
+	 * };
+	 * const newAchievements = await achievementService.checkAchievements(sessionData);
+	 * // Returns achievements like 'Speedy Fingers' if criteria met
+	 *
+	 * @performance Optimized to skip already unlocked achievements
+	 * @since 1.0.0
 	 */
 	async checkAchievements(sessionData: SessionSummary): Promise<Achievement[]> {
 		// Validate session data
@@ -196,7 +251,23 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Unlock specific achievement and return unlock result
+	 * Unlocks a specific achievement and triggers associated rewards and celebrations.
+	 * Handles accessory unlocks, celebration queuing, and progress persistence.
+	 *
+	 * @param {string} achievementId - Unique identifier of the achievement to unlock
+	 * @returns {Promise<UnlockResult>} Detailed result including success status, rewards, and celebration info
+	 * @throws {Error} If achievement ID is not found in definitions
+	 *
+	 * @example
+	 * // Manually unlock an achievement (typically called by checkAchievements)
+	 * const result = await achievementService.unlockAchievement('speedy-fingers');
+	 * if (result.success) {
+	 *   console.log(`Earned ${result.pointsAwarded} points!`);
+	 *   console.log(`Unlocked ${result.accessoriesUnlocked.length} new accessories!`);
+	 * }
+	 *
+	 * @performance Batches database operations for efficiency
+	 * @since 1.0.0
 	 */
 	async unlockAchievement(achievementId: string): Promise<UnlockResult> {
 		await this.ensureModelLoaded();
@@ -287,7 +358,21 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Get all unlocked achievements
+	 * Retrieves all achievements that have been unlocked by the user.
+	 * Used for displaying achievement galleries and progress summaries.
+	 *
+	 * @returns {Promise<Achievement[]>} Array of all unlocked achievements with metadata
+	 *
+	 * @example
+	 * // Display all achievements earned by the kid
+	 * const achievements = await achievementService.getUnlockedAchievements();
+	 * achievements.forEach(achievement => {
+	 *   console.log(`${achievement.title}: ${achievement.description}`);
+	 *   console.log(`Earned on: ${achievement.dateEarned.toLocaleDateString()}`);
+	 * });
+	 *
+	 * @performance Cached in memory after first load
+	 * @since 1.0.0
 	 */
 	async getUnlockedAchievements(): Promise<Achievement[]> {
 		await this.ensureModelLoaded();
@@ -295,7 +380,27 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Queue celebration event with priority ordering
+	 * Queues a celebration event with automatic priority ordering and queue management.
+	 * Maintains a maximum queue size and removes low-priority events when needed.
+	 *
+	 * @param {Omit<CelebrationEvent, 'id'>} celebration - Celebration event without ID (auto-generated)
+	 * @returns {Promise<void>}
+	 *
+	 * @example
+	 * // Queue a celebration for a new achievement
+	 * await achievementService.queueCelebration({
+	 *   type: 'milestone',
+	 *   title: 'Well Done!',
+	 *   message: 'You typed super fast!',
+	 *   animation: 'sparkle',
+	 *   duration: 3000,
+	 *   soundEffect: 'cheer.mp3',
+	 *   priority: 'high',
+	 *   autoTrigger: true
+	 * });
+	 *
+	 * @performance Limited queue size prevents memory bloat
+	 * @since 1.0.0
 	 */
 	async queueCelebration(celebration: Omit<CelebrationEvent, 'id'>): Promise<void> {
 		// Check queue size limit
@@ -320,14 +425,43 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Get next celebration from priority queue
+	 * Retrieves the next highest-priority celebration event from the queue.
+	 * Returns null if no celebrations are pending.
+	 *
+	 * @returns {Promise<CelebrationEvent | null>} Next celebration to display or null if queue is empty
+	 *
+	 * @example
+	 * // Check for pending celebrations to show to the kid
+	 * const nextCelebration = await achievementService.getNextCelebration();
+	 * if (nextCelebration) {
+	 *   displayCelebration(nextCelebration);
+	 *   await achievementService.markCelebrationShown(nextCelebration.id);
+	 * }
+	 *
+	 * @performance O(1) operation - uses pre-sorted queue
+	 * @since 1.0.0
 	 */
 	async getNextCelebration(): Promise<CelebrationEvent | null> {
 		return this.celebrationQueue.length > 0 ? this.celebrationQueue[0] : null;
 	}
 
 	/**
-	 * Mark celebration as shown and remove from queue
+	 * Marks a celebration as displayed and removes it from the queue.
+	 * Call this after showing a celebration to the user.
+	 *
+	 * @param {string} celebrationId - Unique identifier of the shown celebration
+	 * @returns {Promise<void>}
+	 *
+	 * @example
+	 * // After showing celebration animation to the kid
+	 * const celebration = await achievementService.getNextCelebration();
+	 * if (celebration) {
+	 *   showCelebrationAnimation(celebration);
+	 *   await achievementService.markCelebrationShown(celebration.id);
+	 * }
+	 *
+	 * @performance O(n) operation but typically small queue size
+	 * @since 1.0.0
 	 */
 	async markCelebrationShown(celebrationId: string): Promise<void> {
 		const index = this.celebrationQueue.findIndex((c) => c.id === celebrationId);
@@ -337,7 +471,25 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Unlock accessory with reason validation
+	 * Unlocks a virtual pet accessory with validation and celebration handling.
+	 * Accessories enhance the visual appearance of the typing companion pet.
+	 *
+	 * @param {string} accessoryId - Unique identifier of the accessory to unlock
+	 * @param {string} reason - Explanation for why the accessory was unlocked
+	 * @returns {Promise<boolean>} True if accessory was successfully unlocked, false if already owned or invalid
+	 *
+	 * @example
+	 * // Unlock a hat for the virtual pet when kid achieves speed milestone
+	 * const unlocked = await achievementService.unlockAccessory(
+	 *   'speed-hat',
+	 *   'Achieved 25 WPM typing speed'
+	 * );
+	 * if (unlocked) {
+	 *   console.log('New hat available for your typing pet!');
+	 * }
+	 *
+	 * @performance Includes validation to prevent duplicate unlocks
+	 * @since 1.0.0
 	 */
 	async unlockAccessory(accessoryId: string, reason: string): Promise<boolean> {
 		await this.ensureModelLoaded();
@@ -369,7 +521,21 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Get available (unlocked) accessories
+	 * Retrieves all accessories that have been unlocked and are available for the virtual pet.
+	 * Used for displaying accessory selection menus.
+	 *
+	 * @returns {Promise<Accessory[]>} Array of unlocked accessories with metadata
+	 *
+	 * @example
+	 * // Show all available accessories for the kid to choose from
+	 * const accessories = await achievementService.getAvailableAccessories();
+	 * accessories.forEach(accessory => {
+	 *   console.log(`${accessory.name} (${accessory.category})`);
+	 *   console.log(`Unlocked: ${accessory.dateUnlocked.toLocaleDateString()}`);
+	 * });
+	 *
+	 * @performance Returns cached data from memory model
+	 * @since 1.0.0
 	 */
 	async getAvailableAccessories(): Promise<Accessory[]> {
 		await this.ensureModelLoaded();
@@ -377,7 +543,24 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Equip accessory with validation
+	 * Equips an accessory on the virtual pet after validating availability.
+	 * Only one accessory per category can be equipped at a time.
+	 *
+	 * @param {string} accessoryId - Unique identifier of the accessory to equip
+	 * @returns {Promise<void>}
+	 * @throws {Error} If accessory is not available or not unlocked
+	 *
+	 * @example
+	 * // Let the kid equip a hat on their virtual pet
+	 * try {
+	 *   await achievementService.equipAccessory('rainbow-hat');
+	 *   console.log('Rainbow hat equipped on your typing pet!');
+	 * } catch (error) {
+	 *   console.log('That accessory is not available yet. Keep typing to unlock it!');
+	 * }
+	 *
+	 * @performance Direct model operation with persistence
+	 * @since 1.0.0
 	 */
 	async equipAccessory(accessoryId: string): Promise<void> {
 		await this.ensureModelLoaded();
@@ -394,7 +577,26 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Check milestone achievements for progress data
+	 * Checks for milestone achievements based on cumulative user progress.
+	 * Milestones are special achievements for reaching round number goals.
+	 *
+	 * @param {UserProgress} progress - Cumulative user progress data
+	 * @returns {Promise<MilestoneData[]>} Array of newly reached milestones
+	 * @throws {Error} If progress data is corrupted or invalid
+	 *
+	 * @example
+	 * // Check if kid reached any typing speed milestones
+	 * const progress = {
+	 *   wordsPerMinute: 25,
+	 *   accuracyPercentage: 95,
+	 *   duration: 1800000, // 30 minutes
+	 *   totalSessions: 15
+	 * };
+	 * const milestones = await achievementService.checkMilestones(progress);
+	 * // Might return milestones for 25 WPM, 95% accuracy, or 30-minute session
+	 *
+	 * @performance Efficient modulo checks for round number milestones
+	 * @since 1.0.0
 	 */
 	async checkMilestones(progress: UserProgress): Promise<MilestoneData[]> {
 		// Validate progress data
@@ -439,7 +641,21 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Get personal best records
+	 * Retrieves all personal best records across different typing categories.
+	 * Used for displaying progress summaries and encouraging improvement.
+	 *
+	 * @returns {Promise<PersonalBest[]>} Array of personal best records
+	 *
+	 * @example
+	 * // Show the kid their best typing achievements
+	 * const personalBests = await achievementService.getPersonalBests();
+	 * personalBests.forEach(best => {
+	 *   console.log(`Best ${best.category}: ${best.value}`);
+	 *   console.log(`Achieved on: ${best.dateAchieved.toLocaleDateString()}`);
+	 * });
+	 *
+	 * @performance Returns cached data from achievement model
+	 * @since 1.0.0
 	 */
 	async getPersonalBests(): Promise<PersonalBest[]> {
 		await this.ensureModelLoaded();
@@ -447,7 +663,24 @@ export class AchievementService implements IAchievementService {
 	}
 
 	/**
-	 * Update personal best if improved
+	 * Updates a personal best record if the new value is an improvement.
+	 * Automatically triggers celebration if a new record is set.
+	 *
+	 * @param {string} category - Category of the personal best (wpm, accuracy, streak, etc.)
+	 * @param {number} value - New value to compare against current best
+	 * @returns {Promise<boolean>} True if a new personal best was set, false otherwise
+	 *
+	 * @example
+	 * // Update typing speed personal best after a session
+	 * const isNewRecord = await achievementService.updatePersonalBest('wpm', 28);
+	 * if (isNewRecord) {
+	 *   console.log('Congratulations! You set a new typing speed record!');
+	 * } else {
+	 *   console.log('Good job! Keep practicing to beat your best of 30 WPM.');
+	 * }
+	 *
+	 * @performance Only saves to database if improvement detected
+	 * @since 1.0.0
 	 */
 	async updatePersonalBest(category: string, value: number): Promise<boolean> {
 		await this.ensureModelLoaded();

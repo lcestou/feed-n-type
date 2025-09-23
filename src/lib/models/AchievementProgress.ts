@@ -1,8 +1,12 @@
 /**
- * AchievementProgress Model with Unlock Logic
+ * @fileoverview AchievementProgress Model with Unlock Logic
  *
- * Tracks unlocked achievements, accessories, and milestone celebrations
- * with comprehensive unlock conditions and progress tracking.
+ * Manages achievement progress, accessory unlocks, and celebration events
+ * for the gamified typing trainer. Tracks all player accomplishments
+ * and provides unlock logic for virtual pet accessories.
+ *
+ * @module AchievementProgressModel
+ * @since 1.0.0
  */
 
 import type {
@@ -16,6 +20,25 @@ import type {
 	UnlockResult
 } from '$lib/types/index.js';
 
+/**
+ * Configuration settings for the achievement system.
+ * Controls celebration queues, goal limits, and point values.
+ *
+ * @constant ACHIEVEMENT_SETTINGS
+ * @property {number} maxCelebrationQueue - Maximum number of celebrations in queue (10)
+ * @property {number} maxWeeklyGoals - Maximum weekly goals per user (5)
+ * @property {number} maxPersonalBests - Maximum personal best records (20)
+ * @property {number} weeklyGoalResetDay - Day of week for goal reset (1 = Monday)
+ * @property {number} celebrationCooldown - Cooldown between celebrations (5000ms)
+ * @property {object} achievementPointValues - Point values by rarity
+ * @property {number} achievementPointValues.common - Points for common achievements (10)
+ * @property {number} achievementPointValues.rare - Points for rare achievements (25)
+ * @property {number} achievementPointValues.epic - Points for epic achievements (50)
+ * @property {number} achievementPointValues.legendary - Points for legendary achievements (100)
+ * @example
+ * const pointsForEpic = ACHIEVEMENT_SETTINGS.achievementPointValues.epic; // 50
+ * @since 1.0.0
+ */
 export const ACHIEVEMENT_SETTINGS = {
 	maxCelebrationQueue: 10,
 	maxWeeklyGoals: 5,
@@ -30,6 +53,25 @@ export const ACHIEVEMENT_SETTINGS = {
 	}
 } as const;
 
+/**
+ * Predefined achievement definitions for the typing game.
+ * Each achievement has unlock conditions based on typing performance.
+ *
+ * @constant ACHIEVEMENT_DEFINITIONS
+ * @property {object} speed_demon - Epic achievement for 50+ WPM
+ * @property {object} lightning_fingers - Rare achievement for 30+ WPM
+ * @property {object} perfectionist - Legendary achievement for 99% accuracy
+ * @property {object} sharp_shooter - Epic achievement for 95% accuracy
+ * @property {object} week_warrior - Rare achievement for 7-day streak
+ * @property {object} month_master - Legendary achievement for 30-day streak
+ * @property {object} word_collector - Common achievement for 1000 total words
+ * @property {object} typing_champion - Legendary achievement for 10000 total words
+ * @example
+ * const speedAchievement = ACHIEVEMENT_DEFINITIONS.speed_demon;
+ * console.log(speedAchievement.title); // 'Speed Demon'
+ * @see {@link Achievement} for achievement structure
+ * @since 1.0.0
+ */
 export const ACHIEVEMENT_DEFINITIONS = {
 	// Speed achievements
 	speed_demon: {
@@ -96,6 +138,27 @@ export const ACHIEVEMENT_DEFINITIONS = {
 	}
 } as const;
 
+/**
+ * Predefined accessory definitions for the virtual pet Typingotchi.
+ * Accessories are unlocked based on various achievement milestones.
+ *
+ * @constant ACCESSORY_DEFINITIONS
+ * @property {object} starter_cap - Basic hat for new players
+ * @property {object} speed_helmet - Hat unlocked at 25+ WPM
+ * @property {object} crown_of_accuracy - Premium hat for 95%+ accuracy
+ * @property {object} basic_collar - Collar for 3-day practice streak
+ * @property {object} golden_collar - Premium collar for 14-day streak
+ * @property {object} keyboard_toy - Toy unlocked at 500 words typed
+ * @property {object} trophy_toy - Toy for achieving 10 accomplishments
+ * @property {object} pokemon_bg - Background for Pokemon content completion
+ * @property {object} nintendo_bg - Background for Nintendo content completion
+ * @example
+ * const starterHat = ACCESSORY_DEFINITIONS.starter_cap;
+ * console.log(starterHat.category); // 'hat'
+ * @see {@link Accessory} for accessory structure
+ * @see {@link AccessoryCategory} for available categories
+ * @since 1.0.0
+ */
 export const ACCESSORY_DEFINITIONS = {
 	// Hats
 	starter_cap: {
@@ -169,6 +232,30 @@ export const ACCESSORY_DEFINITIONS = {
 	}
 } as const;
 
+/**
+ * Model class for managing achievement progress and unlocks in the gamified typing trainer.
+ * Handles achievements, accessories, celebrations, weekly goals, and personal bests.
+ * Designed for kids aged 7-12 with engaging progression systems.
+ *
+ * @class AchievementProgressModel
+ * @example
+ * const progress = new AchievementProgressModel({
+ *   userId: 'user123',
+ *   unlockedAccessories: [],
+ *   milestonesReached: []
+ * });
+ *
+ * // Check for new achievements
+ * const newAchievements = progress.checkAchievements({
+ *   wpm: 35,
+ *   accuracy: 96,
+ *   streak: 5,
+ *   totalWords: 1200,
+ *   sessionsCompleted: 10,
+ *   contentBySource: { pokemon: 5 }
+ * });
+ * @since 1.0.0
+ */
 export class AchievementProgressModel {
 	private _progress: AchievementProgress;
 
@@ -177,7 +264,14 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Get current achievement progress
+	 * Get a deep copy of the current achievement progress.
+	 * Returns immutable copy to prevent external modifications.
+	 *
+	 * @returns {AchievementProgress} Complete progress data with all collections
+	 * @example
+	 * const currentProgress = model.progress;
+	 * console.log(currentProgress.totalRewards); // Current reward points
+	 * @since 1.0.0
 	 */
 	get progress(): AchievementProgress {
 		return {
@@ -191,38 +285,119 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Get specific properties
+	 * Get the unique identifier for the user whose progress is tracked.
+	 *
+	 * @returns {string} User ID
+	 * @example
+	 * const id = model.userId; // 'user-1234567890'
+	 * @since 1.0.0
 	 */
 	get userId(): string {
 		return this._progress.userId;
 	}
 
+	/**
+	 * Get a copy of all unlocked Typingotchi accessories.
+	 * Includes hats, collars, toys, backgrounds, and other customization items.
+	 *
+	 * @returns {Accessory[]} Array of unlocked accessories
+	 * @example
+	 * const accessories = model.unlockedAccessories;
+	 * const hats = accessories.filter(acc => acc.category === 'hat');
+	 * @see {@link Accessory} for accessory structure
+	 * @since 1.0.0
+	 */
 	get unlockedAccessories(): Accessory[] {
 		return [...this._progress.unlockedAccessories];
 	}
 
+	/**
+	 * Get a copy of all earned achievements and milestones.
+	 * Achievements are earned through typing performance and consistency.
+	 *
+	 * @returns {Achievement[]} Array of earned achievements
+	 * @example
+	 * const achievements = model.milestonesReached;
+	 * const epicAchievements = achievements.filter(a => a.rarity === 'epic');
+	 * @see {@link Achievement} for achievement structure
+	 * @since 1.0.0
+	 */
 	get milestonesReached(): Achievement[] {
 		return [...this._progress.milestonesReached];
 	}
 
+	/**
+	 * Get a copy of all queued celebration events waiting to be displayed.
+	 * Celebrations are triggered when achievements are unlocked or goals completed.
+	 *
+	 * @returns {CelebrationEvent[]} Array of pending celebrations
+	 * @example
+	 * const pending = model.celebrationsPending;
+	 * if (pending.length > 0) {
+	 *   showCelebration(pending[0]);
+	 * }
+	 * @see {@link CelebrationEvent} for event structure
+	 * @since 1.0.0
+	 */
 	get celebrationsPending(): CelebrationEvent[] {
 		return [...this._progress.celebrationsPending];
 	}
 
+	/**
+	 * Get a copy of all weekly goals (current and past).
+	 * Weekly goals provide short-term objectives to maintain engagement.
+	 *
+	 * @returns {WeeklyGoal[]} Array of weekly goals
+	 * @example
+	 * const goals = model.weeklyGoals;
+	 * const currentGoals = model.getCurrentWeeklyGoals();
+	 * @see {@link WeeklyGoal} for goal structure
+	 * @since 1.0.0
+	 */
 	get weeklyGoals(): WeeklyGoal[] {
 		return [...this._progress.weeklyGoals];
 	}
 
+	/**
+	 * Get a copy of all personal best records.
+	 * Tracks highest achievements in WPM, accuracy, streaks, and other metrics.
+	 *
+	 * @returns {PersonalBest[]} Array of personal best records
+	 * @example
+	 * const bests = model.personalBests;
+	 * const wpmRecord = bests.find(pb => pb.category === 'wpm');
+	 * @see {@link PersonalBest} for record structure
+	 * @since 1.0.0
+	 */
 	get personalBests(): PersonalBest[] {
 		return [...this._progress.personalBests];
 	}
 
+	/**
+	 * Get the total reward points earned across all achievements.
+	 * Points are used to measure overall player progress and engagement.
+	 *
+	 * @returns {number} Total reward points
+	 * @example
+	 * const points = model.totalRewards; // 250
+	 * console.log(`You have ${points} total points!`);
+	 * @since 1.0.0
+	 */
 	get totalRewards(): number {
 		return this._progress.totalRewards;
 	}
 
 	/**
-	 * Validate and normalize achievement progress data
+	 * Validate and normalize achievement progress data to ensure data integrity.
+	 * Fills in missing properties with safe defaults and creates defensive copies.
+	 *
+	 * @private
+	 * @param {Partial<AchievementProgress>} progress - Partial progress data to normalize
+	 * @returns {AchievementProgress} Validated and normalized progress data
+	 * @example
+	 * // Internal use only - called by constructor
+	 * const normalized = this.validateAndNormalize({ userId: 'test' });
+	 * @since 1.0.0
 	 */
 	private validateAndNormalize(progress: Partial<AchievementProgress>): AchievementProgress {
 		const userId = progress.userId || `user-${Date.now()}`;
@@ -245,7 +420,32 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Check for new achievements based on current stats
+	 * Check for new achievements based on current typing performance statistics.
+	 * Compares stats against achievement unlock conditions and awards new achievements.
+	 *
+	 * @param {object} stats - Current typing performance statistics
+	 * @param {number} stats.wpm - Words per minute typing speed
+	 * @param {number} stats.accuracy - Typing accuracy percentage (0-100)
+	 * @param {number} stats.streak - Current daily practice streak
+	 * @param {number} stats.totalWords - Total words typed across all sessions
+	 * @param {number} stats.sessionsCompleted - Number of completed typing sessions
+	 * @param {Record<string, number>} stats.contentBySource - Words typed by content source
+	 * @returns {Achievement[]} Array of newly unlocked achievements
+	 * @example
+	 * const newAchievements = model.checkAchievements({
+	 *   wpm: 35,
+	 *   accuracy: 96,
+	 *   streak: 8,
+	 *   totalWords: 1500,
+	 *   sessionsCompleted: 12,
+	 *   contentBySource: { pokemon: 5, nintendo: 3 }
+	 * });
+	 *
+	 * if (newAchievements.length > 0) {
+	 *   console.log(`Unlocked ${newAchievements.length} new achievements!`);
+	 * }
+	 * @see {@link Achievement} for achievement structure
+	 * @since 1.0.0
 	 */
 	checkAchievements(stats: {
 		wpm: number;
@@ -303,7 +503,17 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Create achievement object from definition
+	 * Create an achievement object from a predefined achievement definition.
+	 * Converts the definition into a complete Achievement with current timestamp.
+	 *
+	 * @private
+	 * @param {keyof typeof ACHIEVEMENT_DEFINITIONS} achievementId - ID of achievement to create
+	 * @returns {Achievement} Complete achievement object with metadata
+	 * @example
+	 * // Internal use only
+	 * const achievement = this.createAchievement('speed_demon');
+	 * @see {@link ACHIEVEMENT_DEFINITIONS} for available achievements
+	 * @since 1.0.0
 	 */
 	private createAchievement(achievementId: keyof typeof ACHIEVEMENT_DEFINITIONS): Achievement {
 		const definition = ACHIEVEMENT_DEFINITIONS[achievementId];
@@ -319,7 +529,35 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Check for new accessory unlocks
+	 * Check for new Typingotchi accessory unlocks based on player statistics.
+	 * Awards accessories like hats, collars, toys, and backgrounds when conditions are met.
+	 *
+	 * @param {object} stats - Current player statistics for unlock checking
+	 * @param {number} stats.wpm - Words per minute typing speed
+	 * @param {number} stats.accuracy - Typing accuracy percentage (0-100)
+	 * @param {number} stats.streak - Current daily practice streak
+	 * @param {number} stats.totalWords - Total words typed across all sessions
+	 * @param {number} stats.sessionsCompleted - Number of completed typing sessions
+	 * @param {number} stats.achievementCount - Total achievements unlocked
+	 * @param {Record<string, number>} stats.contentBySource - Sessions by content source
+	 * @returns {Accessory[]} Array of newly unlocked accessories
+	 * @example
+	 * const newAccessories = model.checkAccessoryUnlocks({
+	 *   wpm: 26,
+	 *   accuracy: 94,
+	 *   streak: 4,
+	 *   totalWords: 600,
+	 *   sessionsCompleted: 8,
+	 *   achievementCount: 3,
+	 *   contentBySource: { pokemon: 2 }
+	 * });
+	 *
+	 * newAccessories.forEach(accessory => {
+	 *   console.log(`Unlocked ${accessory.name} for your Typingotchi!`);
+	 * });
+	 * @see {@link Accessory} for accessory structure
+	 * @see {@link ACCESSORY_DEFINITIONS} for available accessories
+	 * @since 1.0.0
 	 */
 	checkAccessoryUnlocks(stats: {
 		wpm: number;
@@ -398,7 +636,19 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Unlock specific achievement manually
+	 * Manually unlock a specific achievement by ID.
+	 * Used for testing or special events where achievements are awarded directly.
+	 *
+	 * @param {string} achievementId - Unique identifier of achievement to unlock
+	 * @returns {UnlockResult} Result object with success status and unlock details
+	 * @example
+	 * const result = model.unlockAchievement('speed_demon');
+	 * if (result.success) {
+	 *   console.log(`Unlocked: ${result.achievement.title}`);
+	 *   console.log(`Points awarded: ${result.pointsAwarded}`);
+	 * }
+	 * @see {@link UnlockResult} for result structure
+	 * @since 1.0.0
 	 */
 	unlockAchievement(achievementId: string): UnlockResult {
 		const existingAchievement = this._progress.milestonesReached.find(
@@ -450,7 +700,19 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Unlock accessory
+	 * Unlock a specific Typingotchi accessory by ID.
+	 * Adds the accessory to the player's collection and queues a celebration.
+	 *
+	 * @param {string} accessoryId - Unique identifier of accessory to unlock
+	 * @param {string} reason - Human-readable reason for unlocking
+	 * @returns {boolean} True if successfully unlocked, false if already owned or invalid
+	 * @example
+	 * const unlocked = model.unlockAccessory('speed_helmet', 'Achieved 25+ WPM');
+	 * if (unlocked) {
+	 *   console.log('New accessory unlocked for your Typingotchi!');
+	 * }
+	 * @see {@link ACCESSORY_DEFINITIONS} for available accessories
+	 * @since 1.0.0
 	 */
 	unlockAccessory(accessoryId: string, reason: string): boolean {
 		const existingAccessory = this._progress.unlockedAccessories.find((a) => a.id === accessoryId);
@@ -490,7 +752,18 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Equip accessory (unequip others in same category)
+	 * Equip an accessory on the Typingotchi, unequipping others in the same category.
+	 * Only one accessory per category can be equipped at a time.
+	 *
+	 * @param {string} accessoryId - ID of accessory to equip
+	 * @returns {boolean} True if successfully equipped, false if not unlocked
+	 * @example
+	 * const equipped = model.equipAccessory('crown_of_accuracy');
+	 * if (equipped) {
+	 *   console.log('Typingotchi is now wearing the Crown of Accuracy!');
+	 * }
+	 * @see {@link AccessoryCategory} for equipment categories
+	 * @since 1.0.0
 	 */
 	equipAccessory(accessoryId: string): boolean {
 		const accessory = this._progress.unlockedAccessories.find((a) => a.id === accessoryId);
@@ -511,7 +784,21 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Get equipped accessories by category
+	 * Get all currently equipped accessories organized by category.
+	 * Returns a record with one slot per accessory category.
+	 *
+	 * @returns {Record<AccessoryCategory, Accessory | null>} Equipped accessories by category
+	 * @example
+	 * const equipped = model.getEquippedAccessories();
+	 * const currentHat = equipped.hat;
+	 * const currentToy = equipped.toy;
+	 *
+	 * if (currentHat) {
+	 *   console.log(`Typingotchi is wearing: ${currentHat.name}`);
+	 * }
+	 * @see {@link AccessoryCategory} for available categories
+	 * @see {@link Accessory} for accessory structure
+	 * @since 1.0.0
 	 */
 	getEquippedAccessories(): Record<AccessoryCategory, Accessory | null> {
 		const equipped: Record<AccessoryCategory, Accessory | null> = {
@@ -533,7 +820,24 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Queue celebration event
+	 * Queue a celebration event to be displayed to the player.
+	 * Celebrations provide positive feedback for achievements and milestones.
+	 *
+	 * @param {Omit<CelebrationEvent, 'id'>} celebration - Celebration data without ID
+	 * @returns {void}
+	 * @example
+	 * model.queueCelebration({
+	 *   type: 'milestone',
+	 *   title: 'Great Job!',
+	 *   message: 'You completed your first lesson!',
+	 *   animation: 'bounce',
+	 *   duration: 2000,
+	 *   soundEffect: 'cheer',
+	 *   priority: 'medium',
+	 *   autoTrigger: true
+	 * });
+	 * @see {@link CelebrationEvent} for event structure
+	 * @since 1.0.0
 	 */
 	queueCelebration(celebration: Omit<CelebrationEvent, 'id'>): void {
 		const event: CelebrationEvent = {
@@ -550,7 +854,18 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Get next celebration to show
+	 * Get the next celebration event from the queue to display.
+	 * Returns the first celebration in the queue without removing it.
+	 *
+	 * @returns {CelebrationEvent | null} Next celebration to show, or null if queue empty
+	 * @example
+	 * const nextCelebration = model.getNextCelebration();
+	 * if (nextCelebration) {
+	 *   showCelebrationModal(nextCelebration);
+	 *   model.markCelebrationShown(nextCelebration.id);
+	 * }
+	 * @see {@link CelebrationEvent} for event structure
+	 * @since 1.0.0
 	 */
 	getNextCelebration(): CelebrationEvent | null {
 		return this._progress.celebrationsPending.length > 0
@@ -559,7 +874,18 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Mark celebration as shown and remove from queue
+	 * Mark a celebration as shown and remove it from the queue.
+	 * Call this after displaying a celebration to the player.
+	 *
+	 * @param {string} celebrationId - Unique ID of the celebration to mark as shown
+	 * @returns {boolean} True if celebration was found and removed, false otherwise
+	 * @example
+	 * const celebration = model.getNextCelebration();
+	 * if (celebration) {
+	 *   displayCelebration(celebration);
+	 *   model.markCelebrationShown(celebration.id);
+	 * }
+	 * @since 1.0.0
 	 */
 	markCelebrationShown(celebrationId: string): boolean {
 		const index = this._progress.celebrationsPending.findIndex((c) => c.id === celebrationId);
@@ -572,7 +898,25 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Update personal best record
+	 * Update a personal best record if the new value exceeds the current record.
+	 * Automatically calculates improvement percentage and queues celebrations for significant gains.
+	 *
+	 * @param {'wpm' | 'accuracy' | 'streak' | 'session_time' | 'words_total'} category - Category of record
+	 * @param {number} value - New value to compare against current record
+	 * @returns {boolean} True if new record was set, false if not improved
+	 * @example
+	 * const newRecord = model.updatePersonalBest('wpm', 42);
+	 * if (newRecord) {
+	 *   console.log('New WPM record set!');
+	 * }
+	 *
+	 * // Check improvement
+	 * const wpmRecord = model.personalBests.find(pb => pb.category === 'wpm');
+	 * if (wpmRecord.improvementPercentage > 10) {
+	 *   console.log('Significant improvement!');
+	 * }
+	 * @see {@link PersonalBest} for record structure
+	 * @since 1.0.0
 	 */
 	updatePersonalBest(
 		category: 'wpm' | 'accuracy' | 'streak' | 'session_time' | 'words_total',
@@ -619,7 +963,29 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Create weekly goals
+	 * Create new weekly goals for the current week.
+	 * Replaces any existing goals for the current week with the new set.
+	 *
+	 * @param {Array<object>} goals - Array of goal definitions
+	 * @param {string} goals[].title - Short title for the goal
+	 * @param {string} goals[].description - Detailed description of what to achieve
+	 * @param {number} goals[].targetValue - Target value to reach for completion
+	 * @returns {void}
+	 * @example
+	 * model.createWeeklyGoals([
+	 *   {
+	 *     title: 'Speed Builder',
+	 *     description: 'Reach 25 WPM in any session',
+	 *     targetValue: 25
+	 *   },
+	 *   {
+	 *     title: 'Consistency Champion',
+	 *     description: 'Practice 5 days this week',
+	 *     targetValue: 5
+	 *   }
+	 * ]);
+	 * @see {@link WeeklyGoal} for goal structure
+	 * @since 1.0.0
 	 */
 	createWeeklyGoals(
 		goals: Array<{
@@ -650,7 +1016,24 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Update weekly goal progress
+	 * Update progress on a specific weekly goal.
+	 * Automatically marks goal as completed when target is reached and queues celebration.
+	 *
+	 * @param {string} goalId - Unique identifier of the goal to update
+	 * @param {number} progress - Current progress value
+	 * @returns {boolean} True if goal was found and updated, false otherwise
+	 * @example
+	 * const goals = model.getCurrentWeeklyGoals();
+	 * const speedGoal = goals.find(g => g.title === 'Speed Builder');
+	 *
+	 * if (speedGoal) {
+	 *   const updated = model.updateWeeklyGoalProgress(speedGoal.id, 27);
+	 *   if (updated && speedGoal.completed) {
+	 *     console.log('Goal completed!');
+	 *   }
+	 * }
+	 * @see {@link WeeklyGoal} for goal structure
+	 * @since 1.0.0
 	 */
 	updateWeeklyGoalProgress(goalId: string, progress: number): boolean {
 		const goal = this._progress.weeklyGoals.find((g) => g.id === goalId);
@@ -681,7 +1064,18 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Get current week's goals
+	 * Get all weekly goals for the current week (Monday to Sunday).
+	 * Filters all goals to return only those for the current week period.
+	 *
+	 * @returns {WeeklyGoal[]} Array of current week's goals
+	 * @example
+	 * const currentGoals = model.getCurrentWeeklyGoals();
+	 * const completedGoals = currentGoals.filter(goal => goal.completed);
+	 * const remainingGoals = currentGoals.filter(goal => !goal.completed);
+	 *
+	 * console.log(`${completedGoals.length}/${currentGoals.length} goals completed`);
+	 * @see {@link WeeklyGoal} for goal structure
+	 * @since 1.0.0
 	 */
 	getCurrentWeeklyGoals(): WeeklyGoal[] {
 		const weekStart = this.getStartOfWeek(new Date());
@@ -691,7 +1085,16 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Get start of week (Monday)
+	 * Calculate the start of the week (Monday) for a given date.
+	 * Used internally for weekly goal management and date calculations.
+	 *
+	 * @private
+	 * @param {Date} date - Date to find the week start for
+	 * @returns {Date} Date object representing Monday of that week at 00:00:00
+	 * @example
+	 * // Internal use only
+	 * const weekStart = this.getStartOfWeek(new Date());
+	 * @since 1.0.0
 	 */
 	private getStartOfWeek(date: Date): Date {
 		const d = new Date(date);
@@ -703,7 +1106,27 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Get achievement statistics
+	 * Get comprehensive statistics about the player's achievement progress.
+	 * Provides overview data for progress displays and analytics.
+	 *
+	 * @returns {object} Achievement statistics object
+	 * @returns {number} returns.totalAchievements - Total number of achievements unlocked
+	 * @returns {number} returns.totalPoints - Total points earned from achievements
+	 * @returns {Record<string, number>} returns.byRarity - Achievement count by rarity level
+	 * @returns {Achievement[]} returns.recentAchievements - Achievements from last 7 days
+	 * @returns {number} returns.completionPercentage - Percentage of all achievements unlocked
+	 * @example
+	 * const stats = model.getAchievementStatistics();
+	 * console.log(`Progress: ${stats.completionPercentage}% (${stats.totalAchievements} unlocked)`);
+	 * console.log(`Points: ${stats.totalPoints}`);
+	 * console.log(`Recent: ${stats.recentAchievements.length} this week`);
+	 *
+	 * // Show rarity breakdown
+	 * Object.entries(stats.byRarity).forEach(([rarity, count]) => {
+	 *   console.log(`${rarity}: ${count}`);
+	 * });
+	 * @see {@link Achievement} for achievement structure
+	 * @since 1.0.0
 	 */
 	getAchievementStatistics(): {
 		totalAchievements: number;
@@ -738,14 +1161,39 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Export progress for persistence
+	 * Export the current progress data for persistence to storage.
+	 * Returns a plain object suitable for JSON serialization.
+	 *
+	 * @returns {AchievementProgress} Plain object representation of progress
+	 * @example
+	 * const progressData = model.toJSON();
+	 * localStorage.setItem('achievement-progress', JSON.stringify(progressData));
+	 * @since 1.0.0
 	 */
 	toJSON(): AchievementProgress {
 		return { ...this._progress };
 	}
 
 	/**
-	 * Create instance from persisted data
+	 * Create an AchievementProgressModel instance from persisted JSON data.
+	 * Handles date deserialization and data validation.
+	 *
+	 * @static
+	 * @param {unknown} data - Raw data from storage (JSON parsed)
+	 * @returns {AchievementProgressModel} New model instance with restored data
+	 * @throws {Error} When data is invalid or corrupted
+	 * @example
+	 * const savedData = JSON.parse(localStorage.getItem('achievement-progress'));
+	 * const model = AchievementProgressModel.fromJSON(savedData);
+	 *
+	 * // Handle missing data
+	 * try {
+	 *   const model = AchievementProgressModel.fromJSON(data);
+	 * } catch (error) {
+	 *   console.error('Failed to load progress:', error);
+	 *   const model = new AchievementProgressModel(); // Fresh start
+	 * }
+	 * @since 1.0.0
 	 */
 	static fromJSON(data: unknown): AchievementProgressModel {
 		if (!data || typeof data !== 'object') {
@@ -789,7 +1237,26 @@ export class AchievementProgressModel {
 	}
 
 	/**
-	 * Validate achievement progress state
+	 * Validate the current state of achievement progress data.
+	 * Checks for data integrity issues and constraint violations.
+	 *
+	 * @returns {object} Validation result
+	 * @returns {boolean} returns.isValid - True if all validations pass
+	 * @returns {string[]} returns.errors - Array of validation error messages
+	 * @example
+	 * const validation = model.validateState();
+	 * if (!validation.isValid) {
+	 *   console.error('Progress data has issues:');
+	 *   validation.errors.forEach(error => console.error(`- ${error}`));
+	 * }
+	 *
+	 * // Use for debugging or data migration
+	 * if (validation.isValid) {
+	 *   saveProgressData(model.toJSON());
+	 * } else {
+	 *   reportDataCorruption(validation.errors);
+	 * }
+	 * @since 1.0.0
 	 */
 	validateState(): { isValid: boolean; errors: string[] } {
 		const errors: string[] = [];
