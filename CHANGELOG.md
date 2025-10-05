@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### 2025-10-05
+
+**Changed:**
+
+- **Spec-kit infrastructure update**: Updated spec-kit from v0.0.45 to latest version via uvx reinstall, improving workflow automation and template system
+  - Command templates: Updated constitution, implement, plan, specify, and tasks command definitions in `.claude/commands/`
+  - Workflow scripts: Consolidated prerequisite checking with new unified script (check-prerequisites.sh), enhanced update-agent-context.sh (+700 lines)
+  - Templates: Refreshed spec, plan, tasks, and agent-file templates in `.specify/templates/` for improved structure
+  - Command additions: New analyze and clarify commands for better development workflow
+
+**Added:**
+
+- **New workflow command**: Added check-prerequisites.sh consolidating implementation and task prerequisite validation
+
+**Removed:**
+
+- **Deprecated scripts**: Removed check-implementation-prerequisites.sh, check-task-prerequisites.sh, and get-feature-paths.sh in favor of unified prerequisite checking
+
 #### 2025-09-22
 
 **Enhanced:**
