@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### 2025-10-18
+
+**Changed:**
+
+- **Spec-kit command templates**: Updated formatting and indentation in `.claude/commands/` workflow templates (analyze, clarify, constitution, implement, plan, specify, tasks) for improved readability
+- **Spec-kit templates**: Enhanced markdown formatting in `.specify/templates/` (agent-file, plan, spec, tasks templates) with consistent structure and clearer code blocks
+- **MCP configuration**: Migrated Svelte MCP server from HTTP (svelte-llm) to stdio mode (@sveltejs/mcp) for better reliability and performance
+- **Project documentation**: Updated CLAUDE.md with refined workflow rules and MCP usage guidelines
+
+**Fixed:**
+
+- **Accessibility fix**: Added missing `id="typing-area-section"` to typing area section in `src/routes/+page.svelte` for proper anchor link functionality
+
+**Tests:**
+
+- **Test documentation**: Enhanced JSDoc documentation in all contract tests (`tests/contracts/*.test.ts`) and integration tests (`tests/integration/*.test.ts`) for better test clarity and maintainability
+
 #### 2025-10-05
 
 **Changed:**

@@ -1171,7 +1171,7 @@
 
 			<!-- Combined typing area with Typingotchi -->
 			<section
-				id="game-container"
+				id="typing-area-section"
 				class="min-h-0 flex-[3] rounded-lg bg-white shadow-lg"
 				data-testid="game-container"
 				aria-label="Typing practice and virtual pet area"

@@ -3,6 +3,7 @@ import { EmotionalState, EvolutionForm } from '$lib/types/index.js';
 import type { PetState, FeedingResult, SessionSummary } from '$lib/types/index.js';
 
 type MockedService<T> = {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	[K in keyof T]: T[K] extends (...args: any[]) => any ? MockedFunction<T[K]> : T[K];
 };
 

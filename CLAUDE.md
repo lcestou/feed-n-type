@@ -1,7 +1,7 @@
 ## 🚨 CRITICAL RULES - READ FIRST 🚨
 
 **🔴 ALWAYS READ files before editing** - Use Read tool first, then Edit/MultiEdit
-**🔴 ALWAYS use MCP for Svelte 5** - `mcp__svelte-llm` → `list_sections` → `get_documentation`
+**🔴 ALWAYS use MCP for Svelte 5** - `mcp__svelte` → `list-sections` → `get-documentation` → `svelte-autofixer`
 **🔴 NEVER use 'any' types** - TypeScript strict mode enforced
 **🔴 QUALITY GATES** - Must pass: `pnpm check` → `pnpm build` → manual test
 
@@ -29,7 +29,7 @@
 
 ## MCP Priority
 
-1. **Svelte**: `mcp__svelte-llm__list_sections` → `get_documentation`
+1. **Svelte**: `mcp__svelte__list-sections` → `get-documentation` → `svelte-autofixer`
 2. **Search**: `mcp__serena__find_file`, `mcp__serena__search_for_pattern`
 3. **Edit**: `mcp__serena__replace_symbol_body` for symbols, Edit/MultiEdit for lines
 4. **Web**: `mcp__brave-search__*` before WebSearch
