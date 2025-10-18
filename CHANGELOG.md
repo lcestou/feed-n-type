@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Changed:**
 
+- **Dependency updates**: Updated 26 packages to latest versions for improved stability and features
+  - Svelte: 5.38.6 → 5.41.0 (patch improvements and bug fixes)
+  - SvelteKit: 2.37.0 → 2.47.1 (enhanced routing and SSR capabilities)
+  - Vite: 7.1.4 → 7.1.10 (build performance and HMR improvements)
+  - Tailwind CSS: 4.1.12 → 4.1.14 (latest utility classes and optimizations)
+  - TypeScript: 5.7.3 → 5.7.5 (type checking improvements)
+  - Vitest: 3.0.4 → 3.0.9 (testing framework enhancements)
+  - Prettier: 3.5.0 → 3.5.2 (code formatting consistency)
+  - Plus 19 additional dev dependency updates for tooling and build system
+- **Git workflow automation**: Updated `/push` command to remove attribution line and clarify automated vs manual steps in commit messages
 - **Spec-kit command templates**: Updated formatting and indentation in `.claude/commands/` workflow templates (analyze, clarify, constitution, implement, plan, specify, tasks) for improved readability
 - **Spec-kit templates**: Enhanced markdown formatting in `.specify/templates/` (agent-file, plan, spec, tasks templates) with consistent structure and clearer code blocks
 - **MCP configuration**: Migrated Svelte MCP server from HTTP (svelte-llm) to stdio mode (@sveltejs/mcp) for better reliability and performance
