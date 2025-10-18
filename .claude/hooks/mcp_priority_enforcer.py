@@ -20,7 +20,7 @@ TOOL_REPLACEMENTS = {
 
 # Tools that should never be blocked
 ALWAYS_ALLOWED = {
-    "Bash",        # System commands, git, pnpm
+    "Bash",        # System commands, git, bun
     "TodoWrite",   # Task tracking
     "Task",        # Agent delegation
     "BashOutput",  # Reading command output

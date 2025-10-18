@@ -7,7 +7,7 @@ When completing any development task, run these commands in order:
 ### 1. Type Checking
 
 ```bash
-pnpm check
+bun check
 ```
 
 - Ensures TypeScript and Svelte types are correct
@@ -16,7 +16,7 @@ pnpm check
 ### 2. Code Formatting
 
 ```bash
-pnpm format
+bun format
 ```
 
 - Auto-formats code with Prettier
@@ -25,7 +25,7 @@ pnpm format
 ### 3. Linting
 
 ```bash
-pnpm lint
+bun lint
 ```
 
 - Runs Prettier check, Oxlint, and ESLint
@@ -34,7 +34,7 @@ pnpm lint
 ### 4. Build Verification
 
 ```bash
-pnpm build
+bun build
 ```
 
 - Ensures code compiles for production
@@ -43,8 +43,8 @@ pnpm build
 ### 5. Testing (Optional but Recommended)
 
 ```bash
-pnpm test:unit
-pnpm test:e2e
+bun test:unit
+bun test:e2e
 ```
 
 ## Additional Considerations

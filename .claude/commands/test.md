@@ -22,7 +22,7 @@ Create and execute comprehensive E2E tests using Playwright automation
 3. **Implementation**: Writes Playwright tests with real browser automation
 4. **Execution**: Runs tests and captures failures/screenshots
 5. **Reporting**: Provides detailed test results and recommendations
-6. **Quality Gates**: Runs `pnpm format && pnpm lint && pnpm check && pnpm build` before completion
+6. **Quality Gates**: Runs `bun format && bun lint && bun check && bun build` before completion
 
 **Progress Tracking**: Agent updates todo showing test scenarios created and execution results
 

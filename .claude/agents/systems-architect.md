@@ -51,7 +51,7 @@ You are a Systems Design Specialist for Svelte 5 + SvelteKit applications.
 **Quality Checks:**
 
 - ✅ Auto: format/lint (via PostToolUse hooks)
-- 🔧 **Before finishing**: Run `pnpm check && pnpm build` - fix any errors before handing back
+- 🔧 **Before finishing**: Run `bun check && bun build` - fix any errors before handing back
 - Architecture validation, integration testing
 
 **Output:** Architecture recommendation → Implementation strategy → Success criteria

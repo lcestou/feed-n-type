@@ -58,7 +58,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 ✅ **Child Safety First**: Local storage only, no external data transmission, age-appropriate content
 ✅ **Positive Gamification**: Accuracy over speed, encouragement over punishment, forgiving mechanics
 ✅ **TypeScript Strict Mode**: Zero 'any' types, explicit typing, component props <5 maximum
-✅ **Quality Gates**: pnpm check → build → manual test workflow enforced
+✅ **Quality Gates**: bun check → build → manual test workflow enforced
 
 **Result**: All constitutional requirements satisfied. No complexity deviations needed.
 

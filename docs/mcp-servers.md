@@ -136,7 +136,7 @@ Complex problem solving?
 
 ## ✅ EXCEPTIONS (When to use standard tools)
 
-- `Bash` → Always OK for commands, git, pnpm
+- `Bash` → Always OK for commands, git, bun
 - `Read` → OK for images, PDFs, screenshots
 - `Write` → OK for creating NEW files only
 - `MultiEdit` → OK when Serena regex fails (MUCH FASTER for multiple edits!)

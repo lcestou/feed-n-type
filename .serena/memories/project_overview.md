@@ -14,7 +14,7 @@ Feed-n-Type is a gamified typing learning application targeted at kid-friendly c
 - **Framework**: SvelteKit with Svelte 5 runes
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS v4
-- **Package Manager**: pnpm
+- **Package Manager**: bun
 - **Testing**: Vitest (unit tests), Playwright (E2E)
 - **Deployment**: Cloudflare Pages (via Wrangler)
 - **Linting**: ESLint + Oxlint, Prettier formatting

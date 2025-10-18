@@ -3,7 +3,7 @@
 **🔴 ALWAYS READ files before editing** - Use Read tool first, then Edit/MultiEdit
 **🔴 ALWAYS use MCP for Svelte 5** - `mcp__svelte` → `list-sections` → `get-documentation` → `svelte-autofixer`
 **🔴 NEVER use 'any' types** - TypeScript strict mode enforced
-**🔴 QUALITY GATES** - Must pass: `pnpm check` → `pnpm build` → manual test
+**🔴 QUALITY GATES** - Must pass: `bun check` → `bun run build` → manual test
 
 ## Project: Feed-n-Type
 
@@ -36,7 +36,7 @@
 
 ## Commands & Workflow
 
-- **Dev**: `/dev` (starts server) | Build: `pnpm build|check|test`
+- **Dev**: `/dev` (starts server) | Build: `bun run build|check|test`
 - **Git**: `/push` (requires user request) | `/merge` (PR creation)
 - **Branches**: `feat/`, `docs/`, `hotfix/` + description
 - **Agents**: Use for complex tasks (see agent list in docs)

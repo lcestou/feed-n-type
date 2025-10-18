@@ -209,8 +209,8 @@
 
 **Ready for Production When**:
 
-- `pnpm check` passes with zero errors
-- `pnpm build` generates optimized bundle <200KB
+- `bun check` passes with zero errors
+- `bun build` generates optimized bundle <200KB
 - Manual testing confirms smooth user experience
 - Cross-browser compatibility verified
 - Parent approval obtained for child safety features

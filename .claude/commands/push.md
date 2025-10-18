@@ -9,7 +9,7 @@ Execute automated git push workflow with two modes:
 
 Automated workflow with quality gates and changelog updates:
 
-1. Run quality gates: `pnpm format && pnpm lint && pnpm check && pnpm build`
+1. Run quality gates: `bun format && bun lint && bun check && bun build`
 2. Automatically update CHANGELOG.md using technical-documentation-writer agent
 3. Analyze changes and craft intelligent commit message based on actual file changes
 4. Commit and push all changes

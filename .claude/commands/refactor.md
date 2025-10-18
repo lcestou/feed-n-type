@@ -38,7 +38,7 @@ Improve code quality and modernize to current tech stack standards
 4. **Structure Improvement**: Organizes code for better maintainability
 5. **Duplication Removal**: Consolidates repeated logic into reusable functions
 6. **Naming Enhancement**: Improves clarity through better naming conventions
-7. **Quality Gates**: Runs `pnpm format && pnpm lint && pnpm check && pnpm build` before completion
+7. **Quality Gates**: Runs `bun format && bun lint && bun check && bun build` before completion
 
 **Progress Tracking**: Agent updates todo showing files refactored and patterns modernized
 

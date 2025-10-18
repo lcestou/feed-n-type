@@ -122,7 +122,7 @@ def start_dev_server():
 
         # Use subprocess.Popen to start in background
         process = subprocess.Popen(
-            ['pnpm', 'run', 'dev', '--open'],
+            ['bun', 'run', 'dev', '--open'],
             stdout=open(log_file, 'a'),
             stderr=subprocess.STDOUT,
             start_new_session=True  # Detach from parent process

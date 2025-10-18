@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### 2025-10-18
 
+**Infrastructure:**
+
+- **Build system migration**: Migrated from pnpm to Bun for package management and runtime
+	- Removed Node.js dependency, using Bun runtime via symlink (`/usr/local/bin/node` → `/home/lutechi/.bun/bin/bun`)
+	- Updated all documentation, scripts, and commands to use `bun` instead of `pnpm`
+	- Install performance: 4.23s for 358 packages (significant improvement)
+	- Modified 37 files across project (commands, scripts, docs, configs)
+	- Benefits: Faster installs, simpler runtime, full compatibility maintained
+
 **Changed:**
 
 - **Dependency updates**: Updated 26 packages to latest versions for improved stability and features

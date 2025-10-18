@@ -189,7 +189,7 @@ Spec Kit commands integrate with the existing project workflow:
 
 - Use after `/dev` to plan new features
 - Compatible with `/push` and `/merge` commands
-- Works alongside `pnpm` build system
+- Works alongside `bun` build system
 - Follows project branch naming conventions (`feat/`, `docs/`, `hotfix/`)
 
 ---

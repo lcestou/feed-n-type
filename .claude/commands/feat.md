@@ -61,7 +61,7 @@ Implement new features using specialized agents with modern tech stack
 4. **Quality Assurance**: Ensures accessibility, performance, and code quality
 5. **Integration**: Seamlessly integrates with existing codebase
 6. **Verification**: Tests functionality and runs quality gates
-7. **Quality Cleanup**: Runs `pnpm format && pnpm lint && pnpm check && pnpm build` before completion
+7. **Quality Cleanup**: Runs `bun format && bun lint && bun check && bun build` before completion
 
 **Progress Tracking**: Agent updates todo list at each step, marking tasks completed as they finish
 

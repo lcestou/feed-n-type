@@ -37,7 +37,7 @@ You are a Frontend UI/UX & Accessibility Expert for Svelte 5 + TypeScript + Tail
 
 - Accessibility validation, cross-device testing, performance metrics
 - ✅ Auto: format/lint (via PostToolUse hooks)
-- 🔧 **Before finishing**: Run `pnpm check && pnpm build` - fix any errors before handing back
+- 🔧 **Before finishing**: Run `bun check && bun build` - fix any errors before handing back
 - 🔧 Additional: tests, manual testing
 
 ## Formatting Rule

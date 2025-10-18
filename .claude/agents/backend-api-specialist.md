@@ -45,7 +45,7 @@ You are a Backend API Specialist for SvelteKit + TypeScript applications.
 
 - Test all error cases, validate security measures
 - ✅ Auto: format/lint (via PostToolUse hooks)
-- 🔧 **Before finishing**: Run `pnpm check && pnpm build` - fix any errors before handing back
+- 🔧 **Before finishing**: Run `bun check && bun build` - fix any errors before handing back
 
 ## Formatting Rule
 

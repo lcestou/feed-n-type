@@ -17,7 +17,7 @@ Debug and resolve bugs, errors, or issues using systematic root-cause analysis
 - **SvelteKit 2**: SSR, routing, and build system
 - **TypeScript strict**: No `any` types, full type safety
 - **Tailwind v4**: Modern utility-first CSS
-- **pnpm**: Package management and scripts
+- **bun**: Package management and scripts
 
 ## Examples
 
@@ -36,7 +36,7 @@ Debug and resolve bugs, errors, or issues using systematic root-cause analysis
 2. **Systematic Analysis**: Uses root-cause methodology to identify the fundamental issue
 3. **Solution Implementation**: Fixes the underlying problem, not just symptoms
 4. **Verification**: Tests the fix and ensures no new issues are introduced
-5. **Quality Gates**: Runs `pnpm format && pnpm lint && pnpm check && pnpm build` before completion
+5. **Quality Gates**: Runs `bun format && bun lint && bun check && bun build` before completion
 
 **Progress Tracking**: Agent updates todo list showing investigation steps and fixes applied
 

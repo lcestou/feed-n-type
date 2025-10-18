@@ -24,7 +24,7 @@ Systematically enhance src/ folder with semantic IDs and JSDoc documentation
 3. **Parallel Processing**: Runs multiple agents simultaneously for speed
 4. **Semantic IDs**: Adds descriptive IDs like header-nav, game-area, score-display
 5. **JSDoc Enhancement**: Comprehensive function, component, and type documentation
-6. **Quality Gates**: Runs `pnpm format && pnpm lint && pnpm check && pnpm build` before completion
+6. **Quality Gates**: Runs `bun format && bun lint && bun check && bun build` before completion
 
 **Progress Tracking**: Agents update todo with "Processing file X of Y" and mark files completed
 

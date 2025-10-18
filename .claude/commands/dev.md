@@ -8,5 +8,5 @@ Run the development server and calling the dev function in the background
 Execute this command:
 
 ```bash
-pnpm run dev --open & DEV_PID=$!
+bun run dev --open & DEV_PID=$!
 ```

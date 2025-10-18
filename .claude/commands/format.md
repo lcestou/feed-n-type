@@ -8,7 +8,7 @@ Run code formatting and linting for quick cleanup
 Execute this command:
 
 ```bash
-pnpm format && pnpm lint
+bun format && bun lint
 ```
 
 ## What it does

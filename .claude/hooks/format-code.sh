@@ -11,11 +11,11 @@ fi
 # Format with prettier for supported file types
 case "$FILE_PATH" in
     *.ts|*.js|*.svelte|*.css|*.json|*.md)
-        if command -v pnpm >/dev/null 2>&1; then
+        if command -v bun >/dev/null 2>&1; then
             # Find project root and run prettier from there
             local project_root
             project_root=$(git rev-parse --show-toplevel 2>/dev/null || dirname "$FILE_PATH")
-            
+
             # Convert to absolute path if relative
             local abs_path
             if [[ "$FILE_PATH" = /* ]]; then
@@ -23,8 +23,8 @@ case "$FILE_PATH" in
             else
                 abs_path="$(pwd)/$FILE_PATH"
             fi
-            
-            cd "$project_root" && pnpm exec prettier --write "$abs_path" 2>/dev/null || true
+
+            cd "$project_root" && bun run prettier --write "$abs_path" 2>/dev/null || true
         fi
         ;;
 esac
@@ -32,11 +32,11 @@ esac
 # Lint with eslint for supported file types
 case "$FILE_PATH" in
     *.ts|*.js|*.svelte)
-        if command -v pnpm >/dev/null 2>&1; then
+        if command -v bun >/dev/null 2>&1; then
             # Find project root and run eslint from there
             local project_root
             project_root=$(git rev-parse --show-toplevel 2>/dev/null || dirname "$FILE_PATH")
-            
+
             # Convert to absolute path if relative
             local abs_path
             if [[ "$FILE_PATH" = /* ]]; then
@@ -44,8 +44,8 @@ case "$FILE_PATH" in
             else
                 abs_path="$(pwd)/$FILE_PATH"
             fi
-            
-            cd "$project_root" && pnpm exec eslint --fix "$abs_path" 2>/dev/null || true
+
+            cd "$project_root" && bun run eslint --fix "$abs_path" 2>/dev/null || true
         fi
         ;;
 esac

@@ -30,26 +30,26 @@ A gamified typing trainer for kids aged 7-12 where children learn proper typing 
 
 ```sh
 # Install dependencies
-pnpm install
+bun install
 
 # Start development server
-pnpm dev
+bun dev
 
 # or open in browser automatically
-pnpm dev --open
+bun dev --open
 ```
 
 ### Building
 
 ```sh
 # Type checking
-pnpm check
+bun check
 
 # Production build
-pnpm build
+bun build
 
 # Preview production build
-pnpm preview
+bun preview
 ```
 
 ## 🎮 Game Mechanics
@@ -94,7 +94,7 @@ src/
 
 1. **MCP-Driven**: Always consult Svelte 5 documentation via MCP server
 2. **Type Safety**: Strict TypeScript with zero `any` types
-3. **Quality Gates**: `pnpm check` → `pnpm build` → manual test
+3. **Quality Gates**: `bun check` → `bun build` → manual test
 4. **Child-First**: Every decision prioritizes child safety and learning
 5. **Local-Only**: No external APIs except content feeds
 

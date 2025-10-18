@@ -38,7 +38,7 @@ Analyze and improve application performance with modern tooling
 4. **Implementation**: Applies performance fixes and enhancements
 5. **Bundle Analysis**: Optimizes code splitting and tree shaking
 6. **Testing**: Verifies improvements with real-world metrics
-7. **Quality Gates**: Runs `pnpm format && pnpm lint && pnpm check && pnpm build` before completion
+7. **Quality Gates**: Runs `bun format && bun lint && bun check && bun build` before completion
 
 **Progress Tracking**: Agent updates todo with metrics improvements and optimization results
 

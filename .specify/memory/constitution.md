@@ -36,7 +36,7 @@ Zero tolerance for 'any' types in TypeScript. All variables must be explicitly t
 
 ### V. Quality Gates (MANDATORY)
 
-Every implementation MUST pass: pnpm check → pnpm build → manual test. Components must render without errors in dev mode. No console errors or warnings in browser. Maximum 200KB JavaScript bundle (before gzip).
+Every implementation MUST pass: bun check → bun build → manual test. Components must render without errors in dev mode. No console errors or warnings in browser. Maximum 200KB JavaScript bundle (before gzip).
 
 **Rationale**: The developer cannot debug complex issues. Code must work perfectly or not ship at all.
 
@@ -56,8 +56,8 @@ Primary palette: bright, high-contrast colors meeting WCAG AAA standards. Typogr
 
 1. Consult MCP documentation BEFORE writing any Svelte component
 2. Write component with TypeScript strict mode enforcement
-3. Run pnpm check to catch type errors
-4. Run pnpm build to verify production build
+3. Run bun check to catch type errors
+4. Run bun build to verify production build
 5. Manual test in dev mode for visual/interaction verification
 6. Commit only after all gates pass
 

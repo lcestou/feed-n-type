@@ -170,7 +170,7 @@ Task: "AchievementProgress model with unlock logic in src/lib/models/Achievement
 
 - ALWAYS use `mcp__svelte-llm__list_sections` → `get_documentation` before writing ANY Svelte 5 code
 - ZERO 'any' types - strict TypeScript throughout
-- Every task must pass: `pnpm check` → `pnpm build` → manual test
+- Every task must pass: `bun check` → `bun build` → manual test
 - Preserve ALL existing functionality while enhancing components
 
 **Component Enhancement Guidelines**:
@@ -212,8 +212,8 @@ Task: "AchievementProgress model with unlock logic in src/lib/models/Achievement
 
 **Ready for Production When**:
 
-- `pnpm check` passes with zero errors
-- `pnpm build` generates bundle <200KB
+- `bun check` passes with zero errors
+- `bun build` generates bundle <200KB
 - quickstart.md scenarios execute successfully
 - Cross-browser compatibility verified
 - Performance targets met (60fps animations, <100ms interactions)

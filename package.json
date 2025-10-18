@@ -17,8 +17,8 @@
 		"test": "vitest",
 		"test:run": "vitest run",
 		"test:e2e": "playwright test",
-		"deploy": "pnpm run build && wrangler pages deploy",
-		"preview:cf": "pnpm run build && wrangler pages dev",
+		"deploy": "bun run build && wrangler pages deploy",
+		"preview:cf": "bun run build && wrangler pages dev",
 		"cf:tail": "wrangler pages deployment tail"
 	},
 	"devDependencies": {
@@ -57,10 +57,5 @@
 		"vite": "^7.1.10",
 		"vitest": "^3.2.4",
 		"wrangler": "^4.43.0"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild"
-		]
 	}
 }

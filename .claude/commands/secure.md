@@ -23,7 +23,7 @@ Comprehensive security analysis and vulnerability remediation
 3. **Dependency Scanning**: Checks npm packages for known vulnerabilities
 4. **Input Validation**: Ensures proper sanitization and validation
 5. **Fix Implementation**: Applies security patches and improvements
-6. **Quality Gates**: Runs `pnpm format && pnpm lint && pnpm check && pnpm build` before completion
+6. **Quality Gates**: Runs `bun format && bun lint && bun check && bun build` before completion
 
 **Progress Tracking**: Agent updates todo showing vulnerabilities found and fixes applied
 

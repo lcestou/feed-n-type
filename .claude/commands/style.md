@@ -39,7 +39,7 @@ Improve visual design, styling, and user experience with modern tooling
 5. **Responsiveness**: Optimizes for mobile-first, cross-device experience
 6. **Performance**: Maintains fast rendering and smooth animations
 7. **Testing**: Verifies visual changes across different screen sizes
-8. **Quality Gates**: Runs `pnpm format && pnpm lint && pnpm check && pnpm build` before completion
+8. **Quality Gates**: Runs `bun format && bun lint && bun check && bun build` before completion
 
 **Progress Tracking**: Agent updates todo showing components styled and accessibility checks completed
 

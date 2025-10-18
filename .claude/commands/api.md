@@ -22,7 +22,7 @@ Design and implement backend APIs, server logic, and data operations
 3. **Database Integration**: Sets up data persistence and queries
 4. **Validation**: Implements input validation and error handling
 5. **Testing**: Creates API tests and documentation
-6. **Quality Gates**: Runs `pnpm format && pnpm lint && pnpm check && pnpm build` before completion
+6. **Quality Gates**: Runs `bun format && bun lint && bun check && bun build` before completion
 
 **Progress Tracking**: Agent updates todo showing endpoints created and integration status
 
